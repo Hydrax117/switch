@@ -9,8 +9,6 @@ import { z } from 'zod'
 import { generateOtp, storeOtp } from '@/lib/otp'
 import { resend, FROM_EMAIL } from '@/emails'
 import { OtpEmail } from '@/emails/otp-email'
-import { renderToStaticMarkup } from 'react-dom/server'
-import React from 'react'
 
 const schema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -35,14 +33,13 @@ export async function POST(request: Request) {
     const otp = generateOtp()
     await storeOtp(email, otp)
 
-    // Render the React email template to HTML
-    const html = renderToStaticMarkup(React.createElement(OtpEmail, { otp, action: actionLabel }))
-
+    // Pass the JSX element directly — Resend handles server-side rendering internally.
+    // This avoids importing react-dom/server which is blocked in Next.js App Router routes.
     const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: email,
       subject: `Your SWITCH ${actionLabel} code: ${otp}`,
-      html,
+      react: OtpEmail({ otp, action: actionLabel }),
     })
 
     if (error) {
