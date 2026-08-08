@@ -3,6 +3,11 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   // Turbopack is the default bundler in Next.js 16; no extra flag needed.
 
+  // Tell Turbopack/webpack not to bundle these packages — let Node.js resolve
+  // them at runtime. The Prisma generated client uses import.meta.url and
+  // must run in Node.js, not inside the Next.js bundle.
+  serverExternalPackages: ['@prisma/client', '@prisma/adapter-pg'],
+
   // Image optimization: allow common hosting domains
   images: {
     formats: ['image/avif', 'image/webp'],

@@ -1,22 +1,22 @@
 /**
  * Prisma Client singleton — Prisma 7 adapter-based setup.
  *
- * Uses a static import so Next.js bundler can resolve the module path
- * at build time. The PrismaPg driver adapter supplies the connection
- * string, replacing the removed datasource url field (Prisma 7, P1012).
+ * `server-only` ensures this module is never accidentally imported on the
+ * client. The generated client uses import.meta.url and must run in Node.js.
+ *
+ * next.config.ts lists @prisma/client and @prisma/adapter-pg in
+ * serverExternalPackages so Turbopack does not attempt to bundle them.
  *
  * Usage:
  *   import { db } from '@/lib/prisma'
  *   const users = await db.user.findMany()
  */
+import 'server-only'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '@/app/generated/prisma'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyPrismaClient = any
+import { PrismaClient } from '../app/generated/prisma/client'
 
 declare global {
-  var __db: AnyPrismaClient | undefined
+  var __db: PrismaClient | undefined
 }
 
 function createClient(): PrismaClient {
