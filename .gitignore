@@ -46,7 +46,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/app/generated/prisma
+# app/generated/prisma is intentionally tracked — prisma generate produces
+# plain TypeScript and must be present for the build to succeed.
 
 .vscode
 .windsurf
