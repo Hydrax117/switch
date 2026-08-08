@@ -1,36 +1,38 @@
 /**
  * Next.js Proxy (formerly Middleware — renamed in Next.js 16).
  *
- * Runs on the Node.js runtime before every matched request.
- *
- * Current responsibilities:
- *   - Pass-through (auth guards and locale detection will be added here)
- *
- * Future additions:
- *   - Auth.js session verification for /dashboard routes
- *   - Internationalisation locale detection
+ * Responsibilities:
+ *   - Redirect unauthenticated users away from /dashboard routes to /sign-in
  */
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+/** Paths that require authentication */
+const PROTECTED = ['/dashboard', '/profile']
+
 export function proxy(request: NextRequest) {
-  // Auth guards will be wired here once Auth.js is configured.
-  // e.g.: if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
-  //         return NextResponse.redirect(new URL('/sign-in', request.url))
-  //       }
+  const { pathname } = request.nextUrl
+
+  const isProtected = PROTECTED.some((p) => pathname.startsWith(p))
+
+  if (isProtected) {
+    // Check for the Auth.js session token cookie (JWT strategy)
+    const sessionToken =
+      request.cookies.get('authjs.session-token') ??
+      request.cookies.get('__Secure-authjs.session-token')
+
+    if (!sessionToken) {
+      const signInUrl = new URL('/sign-in', request.url)
+      signInUrl.searchParams.set('callbackUrl', pathname)
+      return NextResponse.redirect(signInUrl)
+    }
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
-  /*
-   * Match all request paths EXCEPT:
-   *   - _next/static  (static files)
-   *   - _next/image   (image optimisation)
-   *   - _next/data    (RSC data routes — always need to match the page)
-   *   - favicon.ico, sitemap.xml, robots.txt
-   *   - Static asset extensions
-   */
   matcher: [
-    '/((?!_next/static|_next/image|_next/data|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)',
+    '/((?!_next/static|_next/image|_next/data|favicon.ico|sitemap.xml|robots.txt|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)',
   ],
 }
