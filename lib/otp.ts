@@ -1,86 +1,77 @@
 /**
- * OTP utilities — generate, store, and verify one-time passwords.
+ * OTP (One-Time Password) Utilities
  *
- * Storage strategy:
- *   1. Redis (preferred, fast TTL-based expiry)
- *   2. Prisma VerificationToken table (fallback when Redis is unavailable)
+ * OTPs are stored in the `VerificationToken` table (already in the Prisma schema).
+ * The `identifier` field stores the email, `token` stores the hashed OTP, and
+ * `expires` enforces the 10-minute TTL.
  *
- * OTP format: 6-digit numeric code
- * TTL: 10 minutes
+ * We hash the OTP before storing it to prevent leakage if the DB is compromised.
  */
-import { redis } from '@/lib/redis'
-import { db } from '@/lib/prisma'
+import 'server-only'
+import { createHash, randomInt } from 'crypto'
+import { db } from '@/lib/db'
 
-const OTP_TTL_SECONDS = 10 * 60 // 10 minutes
+const OTP_TTL_MS = 10 * 60 * 1000 // 10 minutes
 const OTP_LENGTH = 6
 
-/** Generate a cryptographically random 6-digit OTP. */
+/** Generate a cryptographically random 6-digit OTP string. */
 export function generateOtp(): string {
-  const min = 10 ** (OTP_LENGTH - 1)
-  const max = 10 ** OTP_LENGTH - 1
-  // Use Math.random for simplicity — replace with crypto.getRandomValues in strict security contexts
-  return String(Math.floor(min + Math.random() * (max - min + 1)))
+  return String(randomInt(0, 1_000_000)).padStart(OTP_LENGTH, '0')
 }
 
-function redisKey(email: string) {
-  return `otp:${email.toLowerCase()}`
+function hashOtp(otp: string): string {
+  return createHash('sha256').update(otp).digest('hex')
 }
 
-/** Persist an OTP for the given email address. */
-export async function storeOtp(email: string, otp: string): Promise<void> {
-  const key = redisKey(email)
-  const expires = new Date(Date.now() + OTP_TTL_SECONDS * 1000)
+/**
+ * Persist a new OTP for the given email, invalidating any previous one.
+ * Returns the plain-text OTP so it can be emailed.
+ */
+export async function createOtp(email: string): Promise<string> {
+  const otp = generateOtp()
+  const expires = new Date(Date.now() + OTP_TTL_MS)
 
-  if (redis) {
-    // Store in Redis with automatic TTL expiry
-    await redis.set(key, otp, 'EX', OTP_TTL_SECONDS)
-    return
-  }
-
-  // Fallback: use the Prisma VerificationToken table
   // Delete any existing token for this email first
-  await db.verificationToken
-    .deleteMany({ where: { identifier: email.toLowerCase() } })
-    .catch(() => null)
+  await db.verificationToken.deleteMany({ where: { identifier: email } })
 
   await db.verificationToken.create({
     data: {
-      identifier: email.toLowerCase(),
-      token: otp,
+      identifier: email,
+      token: hashOtp(otp),
       expires,
     },
   })
+
+  return otp
 }
 
-/** Verify an OTP and consume it (one-time use). Returns true if valid. */
-export async function verifyOtp(email: string, otp: string): Promise<boolean> {
-  const key = redisKey(email)
+export type VerifyOtpResult =
+  { success: true; email: string } | { success: false; error: 'invalid' | 'expired' }
 
-  if (redis) {
-    const stored = await redis.get(key)
-    if (!stored || stored !== otp) return false
-    // Consume the token
-    await redis.del(key)
-    return true
+/** Verify the submitted OTP. Deletes the token on success or expiry. */
+export async function verifyOtp(email: string, otp: string): Promise<VerifyOtpResult> {
+  const record = await db.verificationToken.findFirst({
+    where: { identifier: email },
+  })
+
+  if (!record) {
+    return { success: false, error: 'invalid' }
   }
 
-  // Fallback: Prisma VerificationToken
-  const record = await db.verificationToken
-    .findFirst({
-      where: {
-        identifier: email.toLowerCase(),
-        token: otp,
-        expires: { gt: new Date() },
-      },
-    })
-    .catch(() => null)
+  // Check expiry
+  if (record.expires < new Date()) {
+    await db.verificationToken.delete({ where: { token: record.token } })
+    return { success: false, error: 'expired' }
+  }
 
-  if (!record) return false
+  // Constant-time comparison via hashing
+  const expectedHash = hashOtp(otp.trim())
+  if (record.token !== expectedHash) {
+    return { success: false, error: 'invalid' }
+  }
 
   // Consume the token
-  await db.verificationToken
-    .delete({ where: { identifier_token: { identifier: email.toLowerCase(), token: otp } } })
-    .catch(() => null)
+  await db.verificationToken.delete({ where: { token: record.token } })
 
-  return true
+  return { success: true, email }
 }

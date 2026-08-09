@@ -827,7 +827,7 @@ export function HeroSection() {
           {/* CTAs */}
           <motion.div {...vis(0.26)} className="mt-7 flex flex-wrap items-center gap-3">
             <PrimaryButton href="/events">Explore Events</PrimaryButton>
-            <SecondaryButton href="/sign-up">Become an Organizer</SecondaryButton>
+            <SecondaryButton href="/login">Become an Organizer</SecondaryButton>
           </motion.div>
 
           {/* Live activity cycling card */}

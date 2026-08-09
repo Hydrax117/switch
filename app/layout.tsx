@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import { siteConfig } from '@/config/site'
-import { Providers } from '@/providers'
-import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 // ─── Fonts ────────────────────────────────────────────────────────────────────
@@ -72,10 +70,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
-  ],
+  themeColor: '#0a0a0a',
   width: 'device-width',
   initialScale: 1,
 }
@@ -83,16 +78,9 @@ export const viewport: Viewport = {
 // ─── Root Layout ──────────────────────────────────────────────────────────────
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${inter.variable} ${jetbrainsMono.variable}`}
-    >
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
-        <Providers>
-          {children}
-          <Toaster />
-        </Providers>
+        {children}
       </body>
     </html>
   )

@@ -28,8 +28,8 @@ const nextConfig: NextConfig = {
     // Typesafe server actions
   },
 
-  // Typed routes (moved out of experimental in Next.js 16)
-  typedRoutes: true,
+  // Typed routes — disabled until all routes are implemented
+  // typedRoutes: true,
 
   // Compiler options
   compiler: {
