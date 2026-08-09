@@ -9,6 +9,9 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: process.env['DATABASE_URL'],
+    // Prisma v7 Datasource type only supports `url` (and `shadowDatabaseUrl`).
+    // The pooled URL is used here for migrate/introspect — the direct URL is
+    // handled at the driver-adapter level in lib/prisma.ts.
+    url: process.env['DIRECT_URL'] ?? process.env['DATABASE_URL'],
   },
 })

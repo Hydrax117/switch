@@ -25,7 +25,12 @@ function createClient(): PrismaClient {
     throw new Error('[Prisma] DATABASE_URL environment variable is not set.')
   }
 
-  const adapter = new PrismaPg({ connectionString })
+  // Prefer the direct (non-pooled) URL for the runtime adapter when available.
+  // Supabase transaction-mode pooler (?pgbouncer=true) doesn't support certain
+  // session-level features; using the session-mode / direct URL avoids issues.
+  const adapterUrl = process.env.DIRECT_URL ?? connectionString
+
+  const adapter = new PrismaPg({ connectionString: adapterUrl })
 
   return new PrismaClient({
     adapter,
