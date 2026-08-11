@@ -8,18 +8,21 @@ const nextConfig: NextConfig = {
   // must run in Node.js, not inside the Next.js bundle.
   serverExternalPackages: ['@prisma/client', '@prisma/adapter-pg'],
 
-  // Image optimization: allow common hosting domains
+  // Image optimization: allow common CDN and hosting domains
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
-      },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
+      // Cloudinary
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      // AWS S3 / CloudFront
+      { protocol: 'https', hostname: '*.s3.amazonaws.com' },
+      { protocol: 'https', hostname: '*.cloudfront.net' },
+      // Uploadthing
+      { protocol: 'https', hostname: 'utfs.io' },
+      // Supabase Storage
+      { protocol: 'https', hostname: '*.supabase.co' },
     ],
   },
 

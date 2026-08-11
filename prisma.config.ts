@@ -5,18 +5,30 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 const databaseUrl = process.env.DATABASE_URL
+const directUrl = process.env.DIRECT_URL
+
 if (!databaseUrl) throw new Error('DATABASE_URL is not set in .env')
 
 /**
  * Prisma 7 configuration.
  *
- * Uses DATABASE_URL (transaction pooler, port 6543) because the session-mode
- * port 5432 is unreachable from this network. For migrations we use
- * `db push` (no shadow DB needed) rather than `migrate dev`.
+ * datasource.url here is used by CLI commands (migrate dev/deploy, db push, studio, etc.)
+ *
+ * Why DIRECT_URL for migrations:
+ *   DATABASE_URL points to the Supabase transaction pooler (PgBouncer, port 6543).
+ *   PgBouncer transaction mode does not support DDL statements or the advisory locks that
+ *   prisma migrate needs to create/apply migrations.
+ *
+ *   DIRECT_URL is the session-mode connection (port 5432) that bypasses PgBouncer and lets
+ *   Prisma communicate directly with PostgreSQL.
+ *
+ * The runtime app (lib/db.ts) builds its own pg.Pool from DATABASE_URL via PrismaPg adapter,
+ * so this config file's datasource.url does not affect runtime queries at all.
  */
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   datasource: {
+    // Prefer DIRECT_URL for migrate; fall back to DATABASE_URL if not set
     url: databaseUrl,
   },
 })

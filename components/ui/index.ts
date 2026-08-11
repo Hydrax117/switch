@@ -83,3 +83,6 @@ export {
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 export { Toaster } from './toaster'
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip'
+export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './popover'
+export { Calendar } from './calendar'
+export { DateTimePicker } from './date-time-picker'
