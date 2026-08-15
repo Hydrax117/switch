@@ -402,6 +402,7 @@ export const ModelName = {
   Session: 'Session',
   VerificationToken: 'VerificationToken',
   Organizer: 'Organizer',
+  OrganizerApplication: 'OrganizerApplication',
   Category: 'Category',
   Venue: 'Venue',
   SeatMap: 'SeatMap',
@@ -409,6 +410,7 @@ export const ModelName = {
   Row: 'Row',
   Seat: 'Seat',
   Event: 'Event',
+  EventImage: 'EventImage',
   TicketType: 'TicketType',
   EventSeat: 'EventSeat',
   Reservation: 'Reservation',
@@ -428,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "account" | "session" | "verificationToken" | "organizer" | "category" | "venue" | "seatMap" | "section" | "row" | "seat" | "event" | "ticketType" | "eventSeat" | "reservation" | "ticket"
+    modelProps: "user" | "account" | "session" | "verificationToken" | "organizer" | "organizerApplication" | "category" | "venue" | "seatMap" | "section" | "row" | "seat" | "event" | "eventImage" | "ticketType" | "eventSeat" | "reservation" | "ticket"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -799,6 +801,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OrganizerCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OrganizerCountAggregateOutputType> | number
+        }
+      }
+    }
+    OrganizerApplication: {
+      payload: Prisma.$OrganizerApplicationPayload<ExtArgs>
+      fields: Prisma.OrganizerApplicationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrganizerApplicationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrganizerApplicationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>
+        }
+        findFirst: {
+          args: Prisma.OrganizerApplicationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrganizerApplicationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>
+        }
+        findMany: {
+          args: Prisma.OrganizerApplicationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>[]
+        }
+        create: {
+          args: Prisma.OrganizerApplicationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>
+        }
+        createMany: {
+          args: Prisma.OrganizerApplicationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrganizerApplicationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>[]
+        }
+        delete: {
+          args: Prisma.OrganizerApplicationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>
+        }
+        update: {
+          args: Prisma.OrganizerApplicationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrganizerApplicationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrganizerApplicationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrganizerApplicationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrganizerApplicationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizerApplicationPayload>
+        }
+        aggregate: {
+          args: Prisma.OrganizerApplicationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrganizerApplication>
+        }
+        groupBy: {
+          args: Prisma.OrganizerApplicationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrganizerApplicationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrganizerApplicationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrganizerApplicationCountAggregateOutputType> | number
         }
       }
     }
@@ -1320,6 +1396,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EventImage: {
+      payload: Prisma.$EventImagePayload<ExtArgs>
+      fields: Prisma.EventImageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EventImageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EventImageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>
+        }
+        findFirst: {
+          args: Prisma.EventImageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EventImageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>
+        }
+        findMany: {
+          args: Prisma.EventImageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>[]
+        }
+        create: {
+          args: Prisma.EventImageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>
+        }
+        createMany: {
+          args: Prisma.EventImageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EventImageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>[]
+        }
+        delete: {
+          args: Prisma.EventImageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>
+        }
+        update: {
+          args: Prisma.EventImageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>
+        }
+        deleteMany: {
+          args: Prisma.EventImageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EventImageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EventImageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>[]
+        }
+        upsert: {
+          args: Prisma.EventImageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImagePayload>
+        }
+        aggregate: {
+          args: Prisma.EventImageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventImage>
+        }
+        groupBy: {
+          args: Prisma.EventImageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventImageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EventImageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventImageCountAggregateOutputType> | number
+        }
+      }
+    }
     TicketType: {
       payload: Prisma.$TicketTypePayload<ExtArgs>
       fields: Prisma.TicketTypeFieldRefs
@@ -1722,6 +1872,30 @@ export const OrganizerScalarFieldEnum = {
 export type OrganizerScalarFieldEnum = (typeof OrganizerScalarFieldEnum)[keyof typeof OrganizerScalarFieldEnum]
 
 
+export const OrganizerApplicationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  organizerName: 'organizerName',
+  bio: 'bio',
+  nin: 'nin',
+  bvn: 'bvn',
+  idType: 'idType',
+  idDocUrl: 'idDocUrl',
+  instagramUrl: 'instagramUrl',
+  twitterUrl: 'twitterUrl',
+  facebookUrl: 'facebookUrl',
+  websiteUrl: 'websiteUrl',
+  kycStatus: 'kycStatus',
+  reviewNote: 'reviewNote',
+  reviewedAt: 'reviewedAt',
+  reviewedBy: 'reviewedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrganizerApplicationScalarFieldEnum = (typeof OrganizerApplicationScalarFieldEnum)[keyof typeof OrganizerApplicationScalarFieldEnum]
+
+
 export const CategoryScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -1835,6 +2009,17 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const EventImageScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  url: 'url',
+  position: 'position',
+  createdAt: 'createdAt'
+} as const
+
+export type EventImageScalarFieldEnum = (typeof EventImageScalarFieldEnum)[keyof typeof EventImageScalarFieldEnum]
 
 
 export const TicketTypeScalarFieldEnum = {
@@ -1999,6 +2184,20 @@ export type EnumOrganizerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'OrganizerStatus[]'
  */
 export type ListEnumOrganizerStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrganizerStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'KycStatus'
+ */
+export type EnumKycStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KycStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'KycStatus[]'
+ */
+export type ListEnumKycStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KycStatus[]'>
     
 
 
@@ -2297,6 +2496,7 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   verificationToken?: Prisma.VerificationTokenOmit
   organizer?: Prisma.OrganizerOmit
+  organizerApplication?: Prisma.OrganizerApplicationOmit
   category?: Prisma.CategoryOmit
   venue?: Prisma.VenueOmit
   seatMap?: Prisma.SeatMapOmit
@@ -2304,6 +2504,7 @@ export type GlobalOmitConfig = {
   row?: Prisma.RowOmit
   seat?: Prisma.SeatOmit
   event?: Prisma.EventOmit
+  eventImage?: Prisma.EventImageOmit
   ticketType?: Prisma.TicketTypeOmit
   eventSeat?: Prisma.EventSeatOmit
   reservation?: Prisma.ReservationOmit

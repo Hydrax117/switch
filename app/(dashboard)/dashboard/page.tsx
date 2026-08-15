@@ -1,13 +1,14 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { CalendarDays, Ticket, TrendingUp, Users, Plus, ArrowRight } from 'lucide-react'
+import { CalendarDays, Ticket, TrendingUp, Users, Plus, ArrowRight, Sparkles } from 'lucide-react'
 import { getSession } from '@/lib/session'
 import {
   getOrganizerByUserId,
   getOrganizerStats,
   getUserTickets,
 } from '@/features/organizer/queries'
+import { getOrganizerApplication } from '@/features/onboarding/queries'
 import { formatPrice } from '@/features/events/utils'
 import { format } from 'date-fns'
 
@@ -22,6 +23,9 @@ export default async function DashboardPage() {
   const stats = organizer ? await getOrganizerStats(organizer.id) : null
   const recentTickets = await getUserTickets(session.userId)
 
+  // For regular users — check if they have a pending application
+  const application = !isOrganizer ? await getOrganizerApplication(session.userId) : null
+
   return (
     <div className="space-y-8">
       {/* ── Page header ── */}
@@ -35,6 +39,56 @@ export default async function DashboardPage() {
             : 'Manage your tickets and account.'}
         </p>
       </div>
+
+      {/* ── Become an organizer banner (regular users only) ── */}
+      {!isOrganizer && !application && (
+        <div className="border-brand-500/20 bg-brand-500/5 flex flex-col gap-3 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="bg-brand-500/10 mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
+              <Sparkles className="text-brand-400 h-4.5 w-4.5" />
+            </div>
+            <div>
+              <p className="text-[14px] font-semibold">Want to host events?</p>
+              <p className="text-muted-foreground mt-0.5 text-[13px]">
+                Apply to become an organizer. It takes less than 5 minutes and we review within 1–3
+                business days.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/dashboard/become-organizer"
+            className="from-brand-600 shrink-0 rounded-xl bg-gradient-to-r to-violet-600 px-4 py-2.5 text-center text-[13.5px] font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Apply now
+          </Link>
+        </div>
+      )}
+
+      {/* ── Application pending banner ── */}
+      {!isOrganizer && application && application.kycStatus !== 'APPROVED' && (
+        <Link
+          href="/dashboard/become-organizer"
+          className={
+            application.kycStatus === 'REJECTED'
+              ? 'flex items-center justify-between gap-4 rounded-2xl border border-red-500/20 bg-red-500/5 p-4 transition-opacity hover:opacity-90'
+              : 'flex items-center justify-between gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 transition-opacity hover:opacity-90'
+          }
+        >
+          <div>
+            <p className="text-[13.5px] font-semibold">
+              {application.kycStatus === 'REJECTED'
+                ? 'Application rejected — resubmit to try again'
+                : 'Organizer application under review'}
+            </p>
+            <p className="text-muted-foreground mt-0.5 text-[12.5px]">
+              {application.kycStatus === 'REJECTED'
+                ? (application.reviewNote ?? 'Click to view details and resubmit.')
+                : "We'll notify you by email once reviewed."}
+            </p>
+          </div>
+          <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0" />
+        </Link>
+      )}
 
       {/* ── Organizer stats ── */}
       {stats && (

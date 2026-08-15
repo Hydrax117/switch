@@ -6,17 +6,20 @@ import Link from 'next/link'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
+import { VenuePicker, type VenuePlace } from '@/components/ui/venue-picker'
+import { EventImageUploader } from '@/components/ui/event-image-uploader'
 import { createEvent } from '../actions'
 
 interface CreateEventFormProps {
   categories: { id: string; name: string }[]
-  venues: { id: string; name: string; city: string }[]
 }
 
-export function CreateEventForm({ categories, venues }: CreateEventFormProps) {
+export function CreateEventForm({ categories }: CreateEventFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [venue, setVenue] = useState<VenuePlace | null>(null)
+  const [imageUrls, setImageUrls] = useState<string[]>([])
 
   // ── Controlled date/time state ────────────────────────────────────────────
   const [startsAt, setStartsAt] = useState('')
@@ -31,12 +34,15 @@ export function CreateEventForm({ categories, venues }: CreateEventFormProps) {
     const form = e.currentTarget
     const formData = new FormData(form)
 
-    // Inject datetime values (they arrive as "YYYY-MM-DDTHH:mm"; the action
-    // coerces them to ISO-8601 via z.string().datetime())
+    // Inject datetime values
     if (startsAt) formData.set('startsAt', new Date(startsAt).toISOString())
     if (endsAt) formData.set('endsAt', new Date(endsAt).toISOString())
     if (salesStart) formData.set('salesStart', new Date(salesStart).toISOString())
     if (salesEnd) formData.set('salesEnd', new Date(salesEnd).toISOString())
+
+    // Inject uploaded image URLs (repeated field)
+    formData.delete('imageUrls')
+    imageUrls.forEach((url) => formData.append('imageUrls', url))
 
     startTransition(async () => {
       const result = await createEvent(formData)
@@ -48,7 +54,6 @@ export function CreateEventForm({ categories, venues }: CreateEventFormProps) {
     })
   }
 
-  // Earliest end / sales-close date is whatever the user picked for start
   const startsAtDate = startsAt ? new Date(startsAt) : undefined
 
   return (
@@ -104,16 +109,16 @@ export function CreateEventForm({ categories, venues }: CreateEventFormProps) {
         </Field>
       </div>
 
-      {/* Venue */}
-      <Field label="Venue">
-        <select name="venueId" className={inputCls}>
-          <option value="">Select venue (optional)</option>
-          {venues.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name} — {v.city}
-            </option>
-          ))}
-        </select>
+      {/* Venue — Google Places Autocomplete */}
+      <Field
+        label="Venue"
+        hint={
+          venue
+            ? `${venue.city}${venue.state ? `, ${venue.state}` : ''}, ${venue.country}`
+            : 'Search for a venue verified on Google Maps'
+        }
+      >
+        <VenuePicker onSelect={setVenue} />
       </Field>
 
       {/* Event dates */}
@@ -154,21 +159,18 @@ export function CreateEventForm({ categories, venues }: CreateEventFormProps) {
         </Field>
       </div>
 
-      {/* Capacity + Image */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Capacity" hint="Leave blank for unlimited (GA events)">
-          <input
-            type="number"
-            name="capacity"
-            min={1}
-            placeholder="e.g. 5000"
-            className={inputCls}
-          />
-        </Field>
-        <Field label="Banner Image URL" hint="CDN/Cloudinary/S3 URL">
-          <input type="url" name="imageUrl" placeholder="https://…" className={inputCls} />
-        </Field>
-      </div>
+      {/* Capacity */}
+      <Field label="Capacity" hint="Leave blank for unlimited (GA events)">
+        <input type="number" name="capacity" min={1} placeholder="e.g. 5000" className={inputCls} />
+      </Field>
+
+      {/* Event images — Supabase Storage upload */}
+      <Field
+        label="Event Images"
+        hint="First image is used as the banner. You can upload up to 6 images."
+      >
+        <EventImageUploader onChange={setImageUrls} maxImages={6} />
+      </Field>
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-3 pt-2">

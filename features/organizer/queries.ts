@@ -93,6 +93,16 @@ export async function getOrganizerStats(organizerId: string) {
   }
 }
 
+// ─── Get event images ─────────────────────────────────────────────────────────
+
+export async function getEventImages(eventId: string) {
+  return db.eventImage.findMany({
+    where: { eventId },
+    select: { url: true, position: true },
+    orderBy: { position: 'asc' },
+  })
+}
+
 // ─── User ticket history ──────────────────────────────────────────────────────
 
 export async function getUserTickets(userId: string) {

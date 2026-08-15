@@ -28,7 +28,8 @@ if (!databaseUrl) throw new Error('DATABASE_URL is not set in .env')
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   datasource: {
-    // Prefer DIRECT_URL for migrate; fall back to DATABASE_URL if not set
-    url: databaseUrl,
+    // Prefer DIRECT_URL (session-mode, bypasses PgBouncer) for CLI commands.
+    // Falls back to DATABASE_URL when DIRECT_URL is not set.
+    url: directUrl ?? databaseUrl,
   },
 })

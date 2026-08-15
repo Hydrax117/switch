@@ -11,6 +11,7 @@ import {
   Settings,
   ShieldCheck,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -97,7 +98,22 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="border-border border-t px-3 py-3">
+      <div className="border-border space-y-1 border-t px-3 py-3">
+        {/* Become an Organizer CTA — only for regular users */}
+        {role === 'USER' && (
+          <Link
+            href="/dashboard/become-organizer"
+            className={cn(
+              'flex items-center gap-2 rounded-lg px-3 py-2 text-[12.5px] font-medium transition-colors',
+              pathname.startsWith('/dashboard/become-organizer')
+                ? 'bg-brand-500/10 text-brand-400'
+                : 'text-violet-400 hover:bg-violet-500/10 hover:text-violet-300'
+            )}
+          >
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            Become an Organizer
+          </Link>
+        )}
         <Link
           href="/events"
           className="text-muted-foreground hover:text-foreground hover:bg-muted/60 flex items-center gap-2 rounded-lg px-3 py-2 text-[12.5px] transition-colors"

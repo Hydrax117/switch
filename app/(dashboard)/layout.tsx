@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     <div className="flex min-h-screen">
       <DashboardSidebar role={session.role} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <DashboardHeader email={session.email} />
+        <DashboardHeader email={session.email} role={session.role} />
         <main className="flex-1 px-5 py-6 sm:px-8 sm:py-8">{children}</main>
       </div>
     </div>

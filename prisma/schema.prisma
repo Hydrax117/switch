@@ -24,6 +24,13 @@ enum OrganizerStatus {
   SUSPENDED
 }
 
+enum KycStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
 enum EventStatus {
   DRAFT
   PUBLISHED
@@ -102,6 +109,7 @@ model User {
   organizer     Organizer?
   reservations  Reservation[]
   tickets       Ticket[]
+  organizerApplication OrganizerApplication?
 
   @@map("users")
 }
@@ -164,6 +172,51 @@ model Organizer {
   events Event[]
 
   @@map("organizers")
+}
+
+// ─── Organizer Application (KYC) ─────────────────────────────────────────────
+
+model OrganizerApplication {
+  id     String    @id @default(cuid())
+  userId String    @unique
+
+  /// Public display name for the organizer page
+  organizerName String
+  /// Short bio / description
+  bio           String?  @db.Text
+
+  // ── Identity verification ─────────────────────────────────────────────────
+  /// National Identification Number
+  nin    String
+  /// Bank Verification Number
+  bvn    String
+
+  /// Means of ID type submitted (e.g. "NATIONAL_ID", "DRIVERS_LICENSE", "INTL_PASSPORT", "VOTERS_CARD")
+  idType    String
+  /// CDN / storage URL of the uploaded ID document
+  idDocUrl  String
+
+  // ── Social handles (all optional) ────────────────────────────────────────
+  instagramUrl String?
+  twitterUrl   String?
+  facebookUrl  String?
+  websiteUrl   String?
+
+  // ── Review ────────────────────────────────────────────────────────────────
+  kycStatus      KycStatus @default(PENDING)
+  /// Admin note — rejection reason or approval note
+  reviewNote     String?   @db.Text
+  reviewedAt     DateTime?
+  /// Admin user who reviewed this application
+  reviewedBy     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([kycStatus])
+  @@map("organizer_applications")
 }
 
 // ─── Category ─────────────────────────────────────────────────────────────────
@@ -343,11 +396,29 @@ model Event {
   eventSeats  EventSeat[]  @relation("EventToEventSeats")
   reservations Reservation[]
   tickets     Ticket[]
+  images      EventImage[]
 
   @@index([status, startsAt])
   @@index([organizerId])
   @@index([categoryId])
   @@map("events")
+}
+
+// ─── Event Image ──────────────────────────────────────────────────────────────
+
+model EventImage {
+  id        String   @id @default(cuid())
+  eventId   String
+  /// Public CDN/Supabase Storage URL
+  url       String
+  /// Display order — 0 = primary banner
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, position])
+  @@map("event_images")
 }
 
 // ─── Ticket Type ──────────────────────────────────────────────────────────────

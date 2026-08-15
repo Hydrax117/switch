@@ -56,6 +56,7 @@ export const ModelName = {
   Session: 'Session',
   VerificationToken: 'VerificationToken',
   Organizer: 'Organizer',
+  OrganizerApplication: 'OrganizerApplication',
   Category: 'Category',
   Venue: 'Venue',
   SeatMap: 'SeatMap',
@@ -63,6 +64,7 @@ export const ModelName = {
   Row: 'Row',
   Seat: 'Seat',
   Event: 'Event',
+  EventImage: 'EventImage',
   TicketType: 'TicketType',
   EventSeat: 'EventSeat',
   Reservation: 'Reservation',
@@ -150,6 +152,30 @@ export const OrganizerScalarFieldEnum = {
 } as const
 
 export type OrganizerScalarFieldEnum = (typeof OrganizerScalarFieldEnum)[keyof typeof OrganizerScalarFieldEnum]
+
+
+export const OrganizerApplicationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  organizerName: 'organizerName',
+  bio: 'bio',
+  nin: 'nin',
+  bvn: 'bvn',
+  idType: 'idType',
+  idDocUrl: 'idDocUrl',
+  instagramUrl: 'instagramUrl',
+  twitterUrl: 'twitterUrl',
+  facebookUrl: 'facebookUrl',
+  websiteUrl: 'websiteUrl',
+  kycStatus: 'kycStatus',
+  reviewNote: 'reviewNote',
+  reviewedAt: 'reviewedAt',
+  reviewedBy: 'reviewedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrganizerApplicationScalarFieldEnum = (typeof OrganizerApplicationScalarFieldEnum)[keyof typeof OrganizerApplicationScalarFieldEnum]
 
 
 export const CategoryScalarFieldEnum = {
@@ -265,6 +291,17 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const EventImageScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  url: 'url',
+  position: 'position',
+  createdAt: 'createdAt'
+} as const
+
+export type EventImageScalarFieldEnum = (typeof EventImageScalarFieldEnum)[keyof typeof EventImageScalarFieldEnum]
 
 
 export const TicketTypeScalarFieldEnum = {

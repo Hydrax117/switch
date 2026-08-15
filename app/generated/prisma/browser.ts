@@ -43,6 +43,11 @@ export type VerificationToken = Prisma.VerificationTokenModel
  */
 export type Organizer = Prisma.OrganizerModel
 /**
+ * Model OrganizerApplication
+ * 
+ */
+export type OrganizerApplication = Prisma.OrganizerApplicationModel
+/**
  * Model Category
  * 
  */
@@ -77,6 +82,11 @@ export type Seat = Prisma.SeatModel
  * 
  */
 export type Event = Prisma.EventModel
+/**
+ * Model EventImage
+ * 
+ */
+export type EventImage = Prisma.EventImageModel
 /**
  * Model TicketType
  * 

@@ -3,9 +3,14 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ExternalLink, ChevronLeft } from 'lucide-react'
 import { getSession } from '@/lib/session'
-import { getOrganizerByUserId, getOrganizerEvent } from '@/features/organizer/queries'
+import {
+  getOrganizerByUserId,
+  getOrganizerEvent,
+  getEventImages,
+} from '@/features/organizer/queries'
 import { EventStatusControl } from '@/features/organizer/components/event-status-control'
 import { TicketTypesManager } from '@/features/organizer/components/ticket-types-manager'
+import { EventImagesManager } from '@/features/organizer/components/event-images-manager'
 import { format } from 'date-fns'
 import { formatPrice } from '@/features/events/utils'
 
@@ -29,6 +34,8 @@ export default async function ManageEventPage({ params }: PageProps) {
 
   const event = await getOrganizerEvent(id, organizer.id)
   if (!event) notFound()
+
+  const [eventImages] = await Promise.all([getEventImages(id)])
 
   const totalSold = event.ticketTypes.reduce((s, tt) => s + tt.sold, 0)
   const totalRevenue = event.ticketTypes.reduce((s, tt) => s + tt.price * tt.sold, 0)
@@ -83,6 +90,9 @@ export default async function ManageEventPage({ params }: PageProps) {
 
       {/* ── Publish control ── */}
       <EventStatusControl eventId={event.id} status={event.status} />
+
+      {/* ── Event images ── */}
+      <EventImagesManager eventId={event.id} initialUrls={eventImages.map((img) => img.url)} />
 
       {/* ── Ticket types ── */}
       <TicketTypesManager eventId={event.id} ticketTypes={event.ticketTypes} />

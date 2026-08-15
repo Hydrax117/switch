@@ -211,6 +211,7 @@ export type UserWhereInput = {
   organizer?: Prisma.XOR<Prisma.OrganizerNullableScalarRelationFilter, Prisma.OrganizerWhereInput> | null
   reservations?: Prisma.ReservationListRelationFilter
   tickets?: Prisma.TicketListRelationFilter
+  organizerApplication?: Prisma.XOR<Prisma.OrganizerApplicationNullableScalarRelationFilter, Prisma.OrganizerApplicationWhereInput> | null
 }
 
 export type UserOrderByWithRelationInput = {
@@ -227,6 +228,7 @@ export type UserOrderByWithRelationInput = {
   organizer?: Prisma.OrganizerOrderByWithRelationInput
   reservations?: Prisma.ReservationOrderByRelationAggregateInput
   tickets?: Prisma.TicketOrderByRelationAggregateInput
+  organizerApplication?: Prisma.OrganizerApplicationOrderByWithRelationInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -246,6 +248,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   organizer?: Prisma.XOR<Prisma.OrganizerNullableScalarRelationFilter, Prisma.OrganizerWhereInput> | null
   reservations?: Prisma.ReservationListRelationFilter
   tickets?: Prisma.TicketListRelationFilter
+  organizerApplication?: Prisma.XOR<Prisma.OrganizerApplicationNullableScalarRelationFilter, Prisma.OrganizerApplicationWhereInput> | null
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -290,6 +293,7 @@ export type UserCreateInput = {
   organizer?: Prisma.OrganizerCreateNestedOneWithoutUserInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -306,6 +310,7 @@ export type UserUncheckedCreateInput = {
   organizer?: Prisma.OrganizerUncheckedCreateNestedOneWithoutUserInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -322,6 +327,7 @@ export type UserUpdateInput = {
   organizer?: Prisma.OrganizerUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -338,6 +344,7 @@ export type UserUncheckedUpdateInput = {
   organizer?: Prisma.OrganizerUncheckedUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -473,6 +480,20 @@ export type UserUpdateOneRequiredWithoutOrganizerNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOrganizerInput, Prisma.UserUpdateWithoutOrganizerInput>, Prisma.UserUncheckedUpdateWithoutOrganizerInput>
 }
 
+export type UserCreateNestedOneWithoutOrganizerApplicationInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOrganizerApplicationInput, Prisma.UserUncheckedCreateWithoutOrganizerApplicationInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrganizerApplicationInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutOrganizerApplicationNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutOrganizerApplicationInput, Prisma.UserUncheckedCreateWithoutOrganizerApplicationInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutOrganizerApplicationInput
+  upsert?: Prisma.UserUpsertWithoutOrganizerApplicationInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOrganizerApplicationInput, Prisma.UserUpdateWithoutOrganizerApplicationInput>, Prisma.UserUncheckedUpdateWithoutOrganizerApplicationInput>
+}
+
 export type UserCreateNestedOneWithoutReservationsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutReservationsInput, Prisma.UserUncheckedCreateWithoutReservationsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutReservationsInput
@@ -514,6 +535,7 @@ export type UserCreateWithoutAccountsInput = {
   organizer?: Prisma.OrganizerCreateNestedOneWithoutUserInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -529,6 +551,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   organizer?: Prisma.OrganizerUncheckedCreateNestedOneWithoutUserInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -560,6 +583,7 @@ export type UserUpdateWithoutAccountsInput = {
   organizer?: Prisma.OrganizerUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -575,6 +599,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   organizer?: Prisma.OrganizerUncheckedUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -590,6 +615,7 @@ export type UserCreateWithoutSessionsInput = {
   organizer?: Prisma.OrganizerCreateNestedOneWithoutUserInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -605,6 +631,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   organizer?: Prisma.OrganizerUncheckedCreateNestedOneWithoutUserInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -636,6 +663,7 @@ export type UserUpdateWithoutSessionsInput = {
   organizer?: Prisma.OrganizerUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -651,6 +679,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   organizer?: Prisma.OrganizerUncheckedUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOrganizerInput = {
@@ -666,6 +695,7 @@ export type UserCreateWithoutOrganizerInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrganizerInput = {
@@ -681,6 +711,7 @@ export type UserUncheckedCreateWithoutOrganizerInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutUserInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrganizerInput = {
@@ -712,6 +743,7 @@ export type UserUpdateWithoutOrganizerInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrganizerInput = {
@@ -725,6 +757,87 @@ export type UserUncheckedUpdateWithoutOrganizerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  reservations?: Prisma.ReservationUncheckedUpdateManyWithoutUserNestedInput
+  tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedUpdateOneWithoutUserNestedInput
+}
+
+export type UserCreateWithoutOrganizerApplicationInput = {
+  id?: string
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  organizer?: Prisma.OrganizerCreateNestedOneWithoutUserInput
+  reservations?: Prisma.ReservationCreateNestedManyWithoutUserInput
+  tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutOrganizerApplicationInput = {
+  id?: string
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  organizer?: Prisma.OrganizerUncheckedCreateNestedOneWithoutUserInput
+  reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutUserInput
+  tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutOrganizerApplicationInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutOrganizerApplicationInput, Prisma.UserUncheckedCreateWithoutOrganizerApplicationInput>
+}
+
+export type UserUpsertWithoutOrganizerApplicationInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutOrganizerApplicationInput, Prisma.UserUncheckedUpdateWithoutOrganizerApplicationInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutOrganizerApplicationInput, Prisma.UserUncheckedCreateWithoutOrganizerApplicationInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutOrganizerApplicationInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutOrganizerApplicationInput, Prisma.UserUncheckedUpdateWithoutOrganizerApplicationInput>
+}
+
+export type UserUpdateWithoutOrganizerApplicationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  organizer?: Prisma.OrganizerUpdateOneWithoutUserNestedInput
+  reservations?: Prisma.ReservationUpdateManyWithoutUserNestedInput
+  tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutOrganizerApplicationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  organizer?: Prisma.OrganizerUncheckedUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutUserNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -742,6 +855,7 @@ export type UserCreateWithoutReservationsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   organizer?: Prisma.OrganizerCreateNestedOneWithoutUserInput
   tickets?: Prisma.TicketCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReservationsInput = {
@@ -757,6 +871,7 @@ export type UserUncheckedCreateWithoutReservationsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   organizer?: Prisma.OrganizerUncheckedCreateNestedOneWithoutUserInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReservationsInput = {
@@ -788,6 +903,7 @@ export type UserUpdateWithoutReservationsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   organizer?: Prisma.OrganizerUpdateOneWithoutUserNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReservationsInput = {
@@ -803,6 +919,7 @@ export type UserUncheckedUpdateWithoutReservationsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   organizer?: Prisma.OrganizerUncheckedUpdateOneWithoutUserNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTicketsInput = {
@@ -818,6 +935,7 @@ export type UserCreateWithoutTicketsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   organizer?: Prisma.OrganizerCreateNestedOneWithoutUserInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationCreateNestedOneWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTicketsInput = {
@@ -833,6 +951,7 @@ export type UserUncheckedCreateWithoutTicketsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   organizer?: Prisma.OrganizerUncheckedCreateNestedOneWithoutUserInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutUserInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedCreateNestedOneWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTicketsInput = {
@@ -864,6 +983,7 @@ export type UserUpdateWithoutTicketsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   organizer?: Prisma.OrganizerUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUpdateOneWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTicketsInput = {
@@ -879,6 +999,7 @@ export type UserUncheckedUpdateWithoutTicketsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   organizer?: Prisma.OrganizerUncheckedUpdateOneWithoutUserNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutUserNestedInput
+  organizerApplication?: Prisma.OrganizerApplicationUncheckedUpdateOneWithoutUserNestedInput
 }
 
 
@@ -953,6 +1074,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   organizer?: boolean | Prisma.User$organizerArgs<ExtArgs>
   reservations?: boolean | Prisma.User$reservationsArgs<ExtArgs>
   tickets?: boolean | Prisma.User$ticketsArgs<ExtArgs>
+  organizerApplication?: boolean | Prisma.User$organizerApplicationArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -996,6 +1118,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   organizer?: boolean | Prisma.User$organizerArgs<ExtArgs>
   reservations?: boolean | Prisma.User$reservationsArgs<ExtArgs>
   tickets?: boolean | Prisma.User$ticketsArgs<ExtArgs>
+  organizerApplication?: boolean | Prisma.User$organizerApplicationArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1009,6 +1132,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     organizer: Prisma.$OrganizerPayload<ExtArgs> | null
     reservations: Prisma.$ReservationPayload<ExtArgs>[]
     tickets: Prisma.$TicketPayload<ExtArgs>[]
+    organizerApplication: Prisma.$OrganizerApplicationPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1418,6 +1542,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   organizer<T extends Prisma.User$organizerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$organizerArgs<ExtArgs>>): Prisma.Prisma__OrganizerClient<runtime.Types.Result.GetResult<Prisma.$OrganizerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reservations<T extends Prisma.User$reservationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reservationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tickets<T extends Prisma.User$ticketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  organizerApplication<T extends Prisma.User$organizerApplicationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$organizerApplicationArgs<ExtArgs>>): Prisma.Prisma__OrganizerApplicationClient<runtime.Types.Result.GetResult<Prisma.$OrganizerApplicationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1960,6 +2085,25 @@ export type User$ticketsArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.TicketScalarFieldEnum | Prisma.TicketScalarFieldEnum[]
+}
+
+/**
+ * User.organizerApplication
+ */
+export type User$organizerApplicationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OrganizerApplication
+   */
+  select?: Prisma.OrganizerApplicationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrganizerApplication
+   */
+  omit?: Prisma.OrganizerApplicationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrganizerApplicationInclude<ExtArgs> | null
+  where?: Prisma.OrganizerApplicationWhereInput
 }
 
 /**

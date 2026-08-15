@@ -15,10 +15,10 @@ export default async function NewEventPage() {
   const organizer = await getOrganizerByUserId(session.userId)
   if (!organizer || organizer.status !== 'ACTIVE') redirect('/dashboard')
 
-  const [categories, venues] = await Promise.all([
-    db.category.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
-    db.venue.findMany({ select: { id: true, name: true, city: true }, orderBy: { name: 'asc' } }),
-  ])
+  const categories = await db.category.findMany({
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  })
 
   return (
     <div className="mx-auto max-w-[720px] space-y-6">
@@ -28,7 +28,7 @@ export default async function NewEventPage() {
           Fill in the details below. You can save as draft and publish later.
         </p>
       </div>
-      <CreateEventForm categories={categories} venues={venues} />
+      <CreateEventForm categories={categories} />
     </div>
   )
 }

@@ -4,6 +4,7 @@ export {
   getOrganizerEvent,
   getOrganizerStats,
   getUserTickets,
+  getEventImages,
 } from './queries'
 
 export {
@@ -13,4 +14,5 @@ export {
   unpublishEvent,
   addTicketType,
   deleteTicketType,
+  saveEventImages,
 } from './actions'

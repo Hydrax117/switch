@@ -27,6 +27,16 @@ export const OrganizerStatus = {
 export type OrganizerStatus = (typeof OrganizerStatus)[keyof typeof OrganizerStatus]
 
 
+export const KycStatus = {
+  PENDING: 'PENDING',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type KycStatus = (typeof KycStatus)[keyof typeof KycStatus]
+
+
 export const EventStatus = {
   DRAFT: 'DRAFT',
   PUBLISHED: 'PUBLISHED',
