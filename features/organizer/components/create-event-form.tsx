@@ -7,6 +7,7 @@ import { AlertCircle, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { VenuePicker, type VenuePlace } from '@/components/ui/venue-picker'
+import { LocationPicker } from '@/components/ui/location-picker'
 import { EventImageUploader } from '@/components/ui/event-image-uploader'
 import { createEvent } from '../actions'
 interface CreateEventFormProps {
@@ -143,16 +144,20 @@ export function CreateEventForm({ categories }: CreateEventFormProps) {
 
       {/* Venue — Google Places Autocomplete */}
       {!isVirtual && (
-        <Field
-          label="Venue"
-          hint={
-            venue
-              ? `${venue.city}${venue.state ? `, ${venue.state}` : ''}, ${venue.country}`
-              : 'Search for a venue verified on Google Maps'
-          }
-        >
-          <VenuePicker onSelect={setVenue} />
-        </Field>
+        <>
+          <Field label="Venue Name" hint="Search on Google Maps or type a name">
+            <VenuePicker onSelect={setVenue} />
+          </Field>
+          <Field label="State & City / LGA" hint="Select the event location">
+            <LocationPicker
+              defaultState={venue?.state}
+              defaultCity={venue?.city}
+              onChange={(loc) => {
+                if (venue) setVenue({ ...venue, state: loc.state, city: loc.city })
+              }}
+            />
+          </Field>
+        </>
       )}
 
       {/* Event dates */}

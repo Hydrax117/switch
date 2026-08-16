@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { VenuePicker, type VenuePlace } from '@/components/ui/venue-picker'
+import { LocationPicker } from '@/components/ui/location-picker'
 import { updateEvent } from '../actions'
 import type { Category, Event, Venue } from '@/app/generated/prisma/client'
 
@@ -187,16 +188,31 @@ export function EditEventForm({ event, categories }: EditEventFormProps) {
 
         {/* Venue — only when not virtual */}
         {!isVirtual && (
-          <Field
-            label="Venue"
-            hint={
-              venue
-                ? `${venue.city}${venue.state ? `, ${venue.state}` : ''}, ${venue.country}`
-                : 'Search for a venue on Google Maps'
-            }
-          >
-            <VenuePicker defaultValue={event.venue?.name} onSelect={setVenue} />
-          </Field>
+          <>
+            <Field label="Venue Name" hint="Search on Google Maps or type a name">
+              <VenuePicker defaultValue={event.venue?.name} onSelect={setVenue} />
+            </Field>
+            <Field label="State & City / LGA" hint="Select the event location">
+              <LocationPicker
+                defaultState={venue?.state ?? event.venue?.state ?? ''}
+                defaultCity={venue?.city ?? event.venue?.city ?? ''}
+                onChange={(loc) => {
+                  setVenue((prev) =>
+                    prev
+                      ? { ...prev, state: loc.state, city: loc.city }
+                      : {
+                          name: event.venue?.name ?? '',
+                          address: event.venue?.address ?? '',
+                          city: loc.city,
+                          state: loc.state,
+                          country: 'Nigeria',
+                          placeId: '',
+                        }
+                  )
+                }}
+              />
+            </Field>
+          </>
         )}
 
         {/* Event dates */}
