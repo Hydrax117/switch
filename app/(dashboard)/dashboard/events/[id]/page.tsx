@@ -7,11 +7,13 @@ import {
   getOrganizerByUserId,
   getOrganizerEvent,
   getEventImages,
+  getEventSpeakers,
 } from '@/features/organizer/queries'
 import { EventStatusControl } from '@/features/organizer/components/event-status-control'
 import { TicketTypesManager } from '@/features/organizer/components/ticket-types-manager'
 import { EventImagesManager } from '@/features/organizer/components/event-images-manager'
 import { EditEventForm } from '@/features/organizer/components/edit-event-form'
+import { SpeakersManager } from '@/features/organizer/components/speakers-manager'
 import { PromoCodesManager } from '@/features/promo-codes/components/promo-codes-manager'
 import { getPromoCodesForEvent } from '@/features/promo-codes/queries'
 import { db } from '@/lib/db'
@@ -36,9 +38,10 @@ export default async function ManageEventPage({ params }: PageProps) {
   const organizer = await getOrganizerByUserId(session.userId)
   if (!organizer) redirect('/dashboard')
 
-  const [event, eventImages, categories, promoCodes] = await Promise.all([
+  const [event, eventImages, eventSpeakers, categories, promoCodes] = await Promise.all([
     getOrganizerEvent(id, organizer.id),
     getEventImages(id),
+    getEventSpeakers(id),
     db.category.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
     getPromoCodesForEvent(id, organizer.id),
   ])
@@ -116,6 +119,9 @@ export default async function ManageEventPage({ params }: PageProps) {
 
       {/* ── Event images ── */}
       <EventImagesManager eventId={event.id} initialUrls={eventImages.map((img) => img.url)} />
+
+      {/* ── Speakers / Guests / Performers ── */}
+      <SpeakersManager eventId={event.id} initialSpeakers={eventSpeakers} />
 
       {/* ── Ticket types ── */}
       <TicketTypesManager eventId={event.id} ticketTypes={event.ticketTypes} />

@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Calendar, Clock, MapPin, Users, Tag, ChevronLeft, Share2 } from 'lucide-react'
+import { Calendar, Clock, MapPin, Users, Tag, ChevronLeft, Share2, User } from 'lucide-react'
 import { SiteHeader } from '@/components/layout/site-header'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { getSession } from '@/lib/session'
@@ -167,6 +167,51 @@ export default async function EventDetailPage({ params }: PageProps) {
                 </div>
               )}
 
+              {/* Speakers / Guests / Performers */}
+              {event.speakers && event.speakers.length > 0 && (
+                <div className="border-border/60 mt-6 border-t pt-6">
+                  <h2 className="mb-4 text-[15px] font-semibold">
+                    {buildSpeakersHeading(event.speakers)}
+                  </h2>
+                  <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {event.speakers.map((speaker) => (
+                      <li
+                        key={speaker.id}
+                        className="border-border bg-muted/30 flex flex-col items-center gap-2 rounded-xl border p-4 text-center"
+                      >
+                        {/* Avatar */}
+                        <div className="bg-muted relative h-14 w-14 overflow-hidden rounded-full">
+                          {speaker.avatarUrl ? (
+                            <Image
+                              src={speaker.avatarUrl}
+                              alt={speaker.name}
+                              fill
+                              className="object-cover"
+                              sizes="56px"
+                              unoptimized
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center">
+                              <User className="text-muted-foreground h-6 w-6" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="w-full min-w-0">
+                          <p className="truncate text-[13px] leading-snug font-semibold">
+                            {speaker.name}
+                          </p>
+                          {speaker.role && (
+                            <p className="text-muted-foreground mt-0.5 truncate text-[11.5px]">
+                              {speaker.role}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Venue details */}
               {event.venue && (
                 <div className="border-border/60 mt-6 border-t pt-6">
@@ -218,4 +263,33 @@ function MetaItem({
       <span>{children}</span>
     </div>
   )
+}
+
+/**
+ * Builds a section heading from the distinct roles present in the speakers list.
+ * e.g. ["Speaker", "DJ", "Host"] → "Speakers, DJs & Hosts"
+ * Falls back to "Lineup" if no roles are set.
+ */
+function buildSpeakersHeading(speakers: { role: string | null }[]): string {
+  // Collect unique non-empty roles, preserving insertion order
+  const seen = new Set<string>()
+  const roles: string[] = []
+  for (const s of speakers) {
+    if (s.role) {
+      const normalised = s.role.trim()
+      if (normalised && !seen.has(normalised.toLowerCase())) {
+        seen.add(normalised.toLowerCase())
+        roles.push(normalised)
+      }
+    }
+  }
+
+  if (roles.length === 0) return 'Lineup'
+
+  // Pluralise each role naively (append 's' if not already ending in 's')
+  const pluralised = roles.map((r) => (r.toLowerCase().endsWith('s') ? r : `${r}s`))
+
+  if (pluralised.length === 1) return pluralised[0]
+  const last = pluralised.pop()!
+  return `${pluralised.join(', ')} & ${last}`
 }

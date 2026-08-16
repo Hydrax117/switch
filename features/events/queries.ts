@@ -111,6 +111,10 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
         where: { status: { not: 'INACTIVE' } },
         orderBy: { price: 'asc' },
       },
+      speakers: {
+        orderBy: { position: 'asc' as const },
+        select: { id: true, name: true, role: true, avatarUrl: true, position: true },
+      },
       seatMap: {
         include: {
           sections: {
@@ -163,6 +167,10 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
       ticketTypes: {
         where: { status: { not: 'INACTIVE' } },
         orderBy: { price: 'asc' },
+      },
+      speakers: {
+        orderBy: { position: 'asc' as const },
+        select: { id: true, name: true, role: true, avatarUrl: true, position: true },
       },
       seatMap: {
         include: {

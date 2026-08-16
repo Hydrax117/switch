@@ -103,6 +103,16 @@ export async function getEventImages(eventId: string) {
   })
 }
 
+// ─── Get event speakers ───────────────────────────────────────────────────────
+
+export async function getEventSpeakers(eventId: string) {
+  return db.eventSpeaker.findMany({
+    where: { eventId },
+    select: { id: true, name: true, role: true, avatarUrl: true, position: true },
+    orderBy: { position: 'asc' },
+  })
+}
+
 // ─── User ticket history ──────────────────────────────────────────────────────
 
 export async function getUserTickets(userId: string) {
