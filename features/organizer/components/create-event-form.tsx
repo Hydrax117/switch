@@ -302,6 +302,7 @@ function ToggleField({
       </div>
       {/* Track */}
       <div
+        suppressHydrationWarning
         style={{
           position: 'relative',
           width: '36px',
@@ -314,6 +315,7 @@ function ToggleField({
       >
         {/* Thumb */}
         <span
+          suppressHydrationWarning
           style={{
             position: 'absolute',
             top: '2px',

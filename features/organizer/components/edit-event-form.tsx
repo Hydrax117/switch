@@ -344,7 +344,9 @@ function ToggleField({
         <p className="text-[13px] font-medium">{label}</p>
         <p className="text-muted-foreground text-[11.5px]">{hint}</p>
       </div>
+      {/* Track */}
       <div
+        suppressHydrationWarning
         style={{
           position: 'relative',
           width: '36px',
@@ -355,7 +357,9 @@ function ToggleField({
           backgroundColor: checked ? '#7c3aed' : 'rgba(113,113,122,0.35)',
         }}
       >
+        {/* Thumb */}
         <span
+          suppressHydrationWarning
           style={{
             position: 'absolute',
             top: '2px',
