@@ -319,13 +319,22 @@ function ToggleField({
   onChange: (v: boolean) => void
 }) {
   return (
-    <button
-      type="button"
+    <div
       role="switch"
       aria-checked={checked}
-      onClick={() => onChange(!checked)}
+      tabIndex={0}
+      onClick={(e) => {
+        e.stopPropagation()
+        onChange(!checked)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onChange(!checked)
+        }
+      }}
       className={cn(
-        'flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors',
+        'flex w-full cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors select-none',
         checked ? 'border-brand-500/40 bg-brand-500/5' : 'border-border hover:border-brand-500/30'
       )}
     >
@@ -346,6 +355,6 @@ function ToggleField({
           )}
         />
       </div>
-    </button>
+    </div>
   )
 }
