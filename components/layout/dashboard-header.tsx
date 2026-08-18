@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   Bell,
@@ -69,9 +70,14 @@ export function DashboardHeader({ email, role }: DashboardHeaderProps) {
           href="/"
           className="text-foreground flex items-center gap-2 text-[15px] font-semibold lg:hidden"
         >
-          <span className="bg-brand-600 flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-black text-white">
-            S
-          </span>
+          <Image
+            src="/android-chrome-192x192.png"
+            alt="SWITCH logo"
+            width={26}
+            height={26}
+            className="rounded-md"
+            priority
+          />
           SWITCH
         </Link>
 
@@ -181,9 +187,13 @@ export function DashboardHeader({ email, role }: DashboardHeaderProps) {
                   className="text-foreground flex items-center gap-2 text-[15px] font-semibold tracking-tight transition-opacity hover:opacity-80"
                   onClick={() => setMobileNavOpen(false)}
                 >
-                  <span className="bg-brand-600 flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-black text-white">
-                    S
-                  </span>
+                  <Image
+                    src="/android-chrome-192x192.png"
+                    alt="SWITCH logo"
+                    width={26}
+                    height={26}
+                    className="rounded-md"
+                  />
                   SWITCH
                 </Link>
               </div>
