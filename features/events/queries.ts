@@ -115,6 +115,10 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
         orderBy: { position: 'asc' as const },
         select: { id: true, name: true, role: true, avatarUrl: true, position: true },
       },
+      images: {
+        select: { id: true, url: true, position: true },
+        orderBy: { position: 'asc' as const },
+      },
       seatMap: {
         include: {
           sections: {
@@ -171,6 +175,10 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
       speakers: {
         orderBy: { position: 'asc' as const },
         select: { id: true, name: true, role: true, avatarUrl: true, position: true },
+      },
+      images: {
+        select: { id: true, url: true, position: true },
+        orderBy: { position: 'asc' as const },
       },
       seatMap: {
         include: {
@@ -243,6 +251,27 @@ export async function getEventsByCategory(
       status: EventStatus.PUBLISHED,
       startsAt: { gte: new Date() },
       category: { slug: categorySlug },
+    },
+    select: eventListSelect,
+    orderBy: { startsAt: 'asc' },
+    take: limit,
+  })
+  return events as EventListItem[]
+}
+
+// ─── Get related events (same category, excluding current) ───────────────────
+
+export async function getRelatedEvents(
+  eventId: string,
+  categoryId: string | null,
+  limit = 6
+): Promise<EventListItem[]> {
+  const events = await db.event.findMany({
+    where: {
+      id: { not: eventId },
+      status: EventStatus.PUBLISHED,
+      startsAt: { gte: new Date() },
+      ...(categoryId ? { categoryId } : {}),
     },
     select: eventListSelect,
     orderBy: { startsAt: 'asc' },
