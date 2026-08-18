@@ -1,35 +1,40 @@
 ﻿'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LayoutDashboard, LogOut } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/shared/theme-toggle'
 
-// ΓöÇΓöÇΓöÇ Logo mark ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ─── Logo mark ────────────────────────────────────────────────────────────────
 function LogoMark() {
   return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden>
-      <rect width="22" height="22" rx="6" fill="currentColor" className="text-brand-600" />
-      <path
-        d="M6 11.5L10 7l6 8"
-        stroke="white"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <Image
+      src="/android-chrome-192x192.png"
+      alt="SWITCH logo"
+      width={28}
+      height={28}
+      className="rounded-md"
+      priority
+    />
   )
 }
 
-export function SiteHeader() {
+interface SiteHeaderProps {
+  /** Pass the user's email from a server component when logged in */
+  userEmail?: string | null
+}
+
+export function SiteHeader({ userEmail }: SiteHeaderProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
+  const isLoggedIn = Boolean(userEmail)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -54,7 +59,7 @@ export function SiteHeader() {
       )}
     >
       <div className="mx-auto flex h-[60px] max-w-[1120px] items-center justify-between px-5 sm:px-8">
-        {/* ΓöÇΓöÇ Logo ΓöÇΓöÇ */}
+        {/* ── Logo ── */}
         <Link
           href="/"
           className="text-foreground flex items-center gap-2.5 transition-opacity hover:opacity-80"
@@ -63,7 +68,7 @@ export function SiteHeader() {
           <span className="text-[15px] font-semibold tracking-tight">{siteConfig.name}</span>
         </Link>
 
-        {/* ΓöÇΓöÇ Desktop Nav ΓöÇΓöÇ */}
+        {/* ── Desktop Nav ── */}
         <nav className="hidden items-center gap-0.5 md:flex" role="navigation">
           {siteConfig.mainNav.map((item) => (
             <Link
@@ -86,28 +91,56 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        {/* ΓöÇΓöÇ Actions ΓöÇΓöÇ */}
+        {/* ── Actions ── */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
 
           <div className="hidden items-center gap-1.5 md:flex">
-            <Link
-              href="/sign-in"
-              className="text-muted-foreground hover:text-foreground rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/sign-up"
-              className={cn(
-                'inline-flex items-center rounded-lg px-4 py-2 text-[13.5px] font-medium',
-                'bg-foreground text-background',
-                'transition-all duration-200 hover:opacity-85',
-                'focus-visible:outline-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'
-              )}
-            >
-              Get started
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors"
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  Dashboard
+                </Link>
+                <form action="/api/auth/logout" method="POST">
+                  <button
+                    type="submit"
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[13.5px] font-medium',
+                      'border-border border bg-transparent',
+                      'text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200',
+                      'focus-visible:outline-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'
+                    )}
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    Sign out
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-muted-foreground hover:text-foreground rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/login"
+                  className={cn(
+                    'inline-flex items-center rounded-lg px-4 py-2 text-[13.5px] font-medium',
+                    'bg-foreground text-background',
+                    'transition-all duration-200 hover:opacity-85',
+                    'focus-visible:outline-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'
+                  )}
+                >
+                  Get started
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -122,7 +155,7 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {/* ΓöÇΓöÇ Mobile Nav ΓöÇΓöÇ */}
+      {/* ── Mobile Nav ── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -151,18 +184,40 @@ export function SiteHeader() {
                 ))}
               </nav>
               <div className="border-border/60 mt-5 flex flex-col gap-2 border-t pt-5">
-                <Link
-                  href="/sign-in"
-                  className="border-border hover:bg-muted rounded-lg border px-4 py-2.5 text-center text-sm font-medium transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/sign-up"
-                  className="bg-foreground text-background rounded-lg px-4 py-2.5 text-center text-sm font-medium transition-opacity hover:opacity-85"
-                >
-                  Get started
-                </Link>
+                {isLoggedIn ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="border-border hover:bg-muted inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-center text-sm font-medium transition-colors"
+                    >
+                      <LayoutDashboard className="h-4 w-4" />
+                      Dashboard
+                    </Link>
+                    <form action="/api/auth/logout" method="POST">
+                      <button
+                        type="submit"
+                        className="border-border hover:bg-muted text-muted-foreground w-full rounded-lg border px-4 py-2.5 text-center text-sm font-medium transition-colors"
+                      >
+                        Sign out
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="border-border hover:bg-muted rounded-lg border px-4 py-2.5 text-center text-sm font-medium transition-colors"
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href="/login"
+                      className="bg-foreground text-background rounded-lg px-4 py-2.5 text-center text-sm font-medium transition-opacity hover:opacity-85"
+                    >
+                      Get started
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

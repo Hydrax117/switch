@@ -1,9 +1,22 @@
-/**
- * Events Feature Module — Public API
- *
- * Re-export everything that other modules are allowed to consume.
- * Internal implementation details remain private to this directory.
- */
+// Public API for the events feature module
+export type {
+  EventListItem,
+  EventDetail,
+  EventWithRelations,
+  EventFilters,
+  EventsPage,
+} from './types'
 
-// Types will be exported from here once the feature is implemented
-// export type { Event, EventCategory, EventStatus } from './types'
+export {
+  getEvents,
+  getEventBySlug,
+  getCategories,
+  getUpcomingEvents,
+  getEventsByCategory,
+  getRelatedEvents,
+} from './queries'
+
+export { eventFiltersSchema } from './schemas'
+export type { EventFiltersInput, EventFiltersParsed } from './schemas'
+
+export { getMinPrice, isSoldOut, hasFreeTickets, formatPrice } from './utils'

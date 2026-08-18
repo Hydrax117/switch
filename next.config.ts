@@ -3,18 +3,29 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   // Turbopack is the default bundler in Next.js 16; no extra flag needed.
 
-  // Image optimization: allow common hosting domains
+  // Tell Turbopack/webpack not to bundle these packages — let Node.js resolve
+  // them at runtime. The Prisma generated client uses import.meta.url and
+  // must run in Node.js, not inside the Next.js bundle.
+  serverExternalPackages: ['@prisma/client', '@prisma/adapter-pg'],
+
+  // Image optimization: allow common CDN and hosting domains
   images: {
+    // Next.js 16 requires an explicit qualities allowlist — omitting it causes
+    // a 400 Bad Request for any image optimization request.
+    qualities: [25, 50, 75, 90, 100],
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
-      },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
+      // Cloudinary
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      // AWS S3 / CloudFront
+      { protocol: 'https', hostname: '*.s3.amazonaws.com' },
+      { protocol: 'https', hostname: '*.cloudfront.net' },
+      // Uploadthing
+      { protocol: 'https', hostname: 'utfs.io' },
+      // Supabase Storage
+      { protocol: 'https', hostname: '*.supabase.co' },
     ],
   },
 
@@ -23,8 +34,8 @@ const nextConfig: NextConfig = {
     // Typesafe server actions
   },
 
-  // Typed routes (moved out of experimental in Next.js 16)
-  typedRoutes: true,
+  // Typed routes — disabled until all routes are implemented
+  // typedRoutes: true,
 
   // Compiler options
   compiler: {

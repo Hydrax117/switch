@@ -47,21 +47,8 @@
   --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
-/* ─── Light Theme ────────────────────────────────────────────────────────────*/
-:root,
-.light {
-  --background: #fafaf9;
-  --foreground: #0c0a09;
-  --surface: #ffffff;
-  --surface-2: #f5f5f4;
-  --border: #e7e5e4;
-  --border-subtle: #f0eeed;
-  --muted: #f5f5f4;
-  --muted-foreground: #78716c;
-}
-
-/* ─── Dark Theme (default) ───────────────────────────────────────────────────*/
-.dark {
+/* ─── Theme (dark, fixed) ────────────────────────────────────────────────────*/
+:root {
   --background: #0a0a0a;
   --foreground: #fafaf9;
   --surface: #111110;
