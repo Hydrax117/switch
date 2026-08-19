@@ -15,6 +15,7 @@ import { EventImagesManager } from '@/features/organizer/components/event-images
 import { EditEventForm } from '@/features/organizer/components/edit-event-form'
 import { SpeakersManager } from '@/features/organizer/components/speakers-manager'
 import { PromoCodesManager } from '@/features/promo-codes/components/promo-codes-manager'
+import { ScanPinManager } from '@/features/organizer/components/scan-pin-manager'
 import { getPromoCodesForEvent } from '@/features/promo-codes/queries'
 import { db } from '@/lib/db'
 import { format } from 'date-fns'
@@ -141,6 +142,12 @@ export default async function ManageEventPage({ params }: PageProps) {
         eventId={event.id}
         promoCodes={promoCodes}
         ticketTypes={event.ticketTypes.map((tt) => ({ id: tt.id, name: tt.name }))}
+      />
+
+      {/* ── Door staff scanner PIN ── */}
+      <ScanPinManager
+        eventId={event.id}
+        appUrl={process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}
       />
     </div>
   )
