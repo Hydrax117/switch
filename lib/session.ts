@@ -54,6 +54,11 @@ export async function createSession(payload: Omit<SessionPayload, 'expiresAt'>):
     expires: expiresAt,
     sameSite: 'lax',
     path: '/',
+    // Set domain so the cookie is shared between www and bare domain in production.
+    // In development (localhost) no domain is needed.
+    ...(process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN
+      ? { domain: process.env.COOKIE_DOMAIN }
+      : {}),
   })
 }
 
@@ -87,5 +92,8 @@ export async function refreshSession(): Promise<void> {
     expires: expiresAt,
     sameSite: 'lax',
     path: '/',
+    ...(process.env.NODE_ENV === 'production' && process.env.COOKIE_DOMAIN
+      ? { domain: process.env.COOKIE_DOMAIN }
+      : {}),
   })
 }

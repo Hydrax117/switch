@@ -24,8 +24,9 @@ export async function GET(req: NextRequest) {
   }
 
   const reservation = await db.reservation.findUnique({
-    where: { id: reservationId, userId: session.userId },
+    where: { id: reservationId },
     select: {
+      userId: true,
       status: true,
       expiresAt: true,
       eventId: true,
@@ -52,7 +53,12 @@ export async function GET(req: NextRequest) {
   })
 
   if (!reservation) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Reservation not found' }, { status: 404 })
+  }
+
+  // Ownership check — must be the reservation owner
+  if (reservation.userId !== session.userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
   // Surface EXPIRED so the client stops polling
