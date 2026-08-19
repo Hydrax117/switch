@@ -182,22 +182,29 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
       eventSeat: { select: { seat: { select: { label: true } } } },
     },
     orderBy: { issuedAt: 'asc' },
-  }).then((tickets) =>
-    sendTicketConfirmationEmail({
-      userId,
-      eventTitle: reservation.event.title,
-      eventDate: reservation.event.startsAt,
-      eventSlug: reservation.event.slug,
-      ticketCount: totalTickets,
-      reservationId,
-      tickets: tickets.map((t) => ({
-        ticketNumber: t.ticketNumber,
-        qrCode: t.qrCode,
-        ticketTypeName: t.ticketType.name,
-        seatLabel: t.eventSeat?.seat?.label ?? null,
-      })),
-    })
-  ).catch((err) => console.error('[webhook/paystack] email error:', err))
+  }).then((tickets) => {
+    // Load venue for PDF
+    return db.event.findUnique({
+      where: { id: reservation.eventId },
+      select: { venue: { select: { name: true, city: true } } },
+    }).then((ev) =>
+      sendTicketConfirmationEmail({
+        userId,
+        eventTitle: reservation.event.title,
+        eventDate: reservation.event.startsAt,
+        eventSlug: reservation.event.slug,
+        ticketCount: totalTickets,
+        reservationId,
+        venueName: ev?.venue ? `${ev.venue.name}, ${ev.venue.city}` : null,
+        tickets: tickets.map((t) => ({
+          ticketNumber: t.ticketNumber,
+          qrCode: t.qrCode,
+          ticketTypeName: t.ticketType.name,
+          seatLabel: t.eventSeat?.seat?.label ?? null,
+        })),
+      })
+    )
+  }).catch((err) => console.error('[webhook/paystack] email error:', err))
 }
 
 // ─── GA charge handler ────────────────────────────────────────────────────────
