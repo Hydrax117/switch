@@ -81,11 +81,26 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
   const reference = data.reference as string
   const paystackTransactionId = String(data.id)
 
-  // Idempotency: skip if already processed
-  const existing = await db.payment.findFirst({
-    where: { paystackReference: reference, status: PaymentStatus.SUCCESS },
-  })
-  if (existing) return
+  // Idempotency: skip if already processed.
+  // For GA multi-ticket orders the reference is suffixed per ticket,
+  // so check via reservation status instead of payment reference.
+  const reservationIdMeta = (
+    (data.metadata ?? {}) as Record<string, unknown>
+  ).reservationId as string | undefined
+
+  if (reservationIdMeta) {
+    const existingReservation = await db.reservation.findUnique({
+      where: { id: reservationIdMeta },
+      select: { status: true },
+    })
+    if (existingReservation?.status === ReservationStatus.COMPLETED) return
+  } else {
+    // Fallback for non-reservation payments (shouldn't happen, but be safe)
+    const existing = await db.payment.findFirst({
+      where: { paystackReference: reference, status: PaymentStatus.SUCCESS },
+    })
+    if (existing) return
+  }
 
   // Metadata we embed when initializing the transaction
   const meta = (data.metadata ?? {}) as Record<string, unknown>
@@ -251,8 +266,14 @@ async function handleGAChargeSuccess({
         // Per-ticket amounts: split discount evenly
         const perTicketDiscount =
           discountAmount > 0 ? Math.round(discountAmount / totalTickets) : 0
-        const perTicketAmount = sel.price - perTicketDiscount
         const perTicketFee = Math.round(sel.price * (feePercent / 100))
+
+        // paystackReference must be unique per Payment row.
+        // Append the ticket's own random hex suffix to make it unique
+        // while still being traceable back to the original Paystack reference.
+        const uniqueReference = totalTickets === 1
+          ? reference
+          : `${reference}-${ticket.id.slice(-8)}`
 
         await tx.payment.create({
           data: {
@@ -266,15 +287,12 @@ async function handleGAChargeSuccess({
             platformFeeAmount: perTicketFee,
             netAmount: sel.price - perTicketFee,
             status: PaymentStatus.SUCCESS,
-            paystackReference: reference,
+            paystackReference: uniqueReference,
             paystackTransactionId,
             promoCodeId: promoCodeId ?? null,
             discountAmount: perTicketDiscount > 0 ? perTicketDiscount : null,
           },
         })
-
-        // Silence unused variable warning
-        void perTicketAmount
       }
 
       // Increment sold count on the ticket type

@@ -32,6 +32,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
     select: {
       status: true,
       eventId: true,
+      createdAt: true,
       expiresAt: true,
       event: {
         select: {
@@ -79,7 +80,11 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
 
     if (isGA) {
       const gaTickets = await db.ticket.findMany({
-        where: { eventId: reservation.eventId, userId: session.userId },
+        where: {
+          eventId: reservation.eventId,
+          userId: session.userId,
+          issuedAt: { gte: reservation.createdAt },
+        },
         select: {
           id: true,
           ticketNumber: true,

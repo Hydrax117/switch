@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
       userId: true,
       status: true,
       expiresAt: true,
+      createdAt: true,
       eventId: true,
       event: {
         select: {
@@ -83,8 +84,14 @@ export async function GET(req: NextRequest) {
   }
 
   if (isGA) {
+    // Scope to tickets issued at or after this reservation was created,
+    // so a user who bought the same event before doesn't see old tickets here.
     const gaTickets = await db.ticket.findMany({
-      where: { eventId: reservation.eventId, userId: session.userId },
+      where: {
+        eventId: reservation.eventId,
+        userId: session.userId,
+        issuedAt: { gte: reservation.createdAt },
+      },
       select: {
         id: true,
         ticketNumber: true,
