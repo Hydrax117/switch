@@ -4,17 +4,11 @@ import { SiteHeader } from '@/components/layout/site-header'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { getSession } from '@/lib/session'
 import { db } from '@/lib/db'
-import {
-  PaymentConfirmationPoller,
-  type ConfirmedEventInfo,
-  type ConfirmedTicket,
-  type ConfirmedTicketGroup,
-} from '@/features/checkout/components/payment-confirmation-poller'
+import { PaymentConfirmationPoller } from '@/features/checkout/components/payment-confirmation-poller'
 
 export const metadata: Metadata = { title: 'Booking Confirmed' }
 
-// Never cache this page — it must re-render fresh on router.refresh() calls
-// from the poller so ticket data appears as soon as the webhook fires.
+// Always render fresh — never serve a cached version of this page
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
@@ -27,20 +21,20 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
   const { reservation: reservationId, type } = await searchParams
 
   const session = await getSession()
-  if (!session) redirect(`/login`)
+  if (!session) redirect('/login')
   if (!reservationId) redirect(`/events/${slug}`)
 
   const isGA = type === 'ga'
 
-  // Load the reservation — we accept both ACTIVE (webhook not yet fired) and
-  // COMPLETED (webhook already processed). Any other status means something
-  // went wrong and we redirect away.
+  // Load reservation — accept ACTIVE (webhook not yet fired) and COMPLETED
   const reservation = await db.reservation.findUnique({
     where: { id: reservationId, userId: session.userId },
-    include: {
+    select: {
+      status: true,
+      eventId: true,
+      expiresAt: true,
       event: {
         select: {
-          id: true,
           title: true,
           slug: true,
           imageUrl: true,
@@ -50,12 +44,12 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
         },
       },
       eventSeats: {
-        include: {
-          tickets: {
-            select: { id: true, ticketNumber: true },
-          },
+        select: {
+          id: true,
+          price: true,
+          tickets: { select: { id: true, ticketNumber: true } },
           seat: { select: { label: true } },
-          ticketType: { select: { id: true, name: true, currency: true } },
+          ticketType: { select: { name: true, currency: true } },
         },
       },
     },
@@ -65,37 +59,46 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
   if (!reservation) redirect(`/events/${slug}`)
   if (reservation.status === 'CANCELLED') redirect(`/events/${slug}`)
 
-  const isPending = reservation.status === 'ACTIVE'
+  const isPending = reservation.status !== 'COMPLETED'
 
-  // ── Build confirmed data (only meaningful when COMPLETED) ─────────────────
+  // ── Build initialData for the fast path (reservation already COMPLETED) ───
+  // When still pending we pass nothing — the poller fetches it via the API.
 
-  let event: ConfirmedEventInfo | undefined
-  let reservedTickets: ConfirmedTicket[] = []
-  let gaTicketGroups: ConfirmedTicketGroup[] = []
-  let totalTicketCount = 0
-  let totalPaid = 0
-  let currency = 'NGN'
+  type InitialData = React.ComponentProps<typeof PaymentConfirmationPoller>['initialData']
+  let initialData: InitialData | undefined
 
   if (!isPending) {
-    event = {
-      ...reservation.event,
-      startsAt: reservation.event.startsAt,
-      endsAt: reservation.event.endsAt ?? null,
+    const event = {
+      title: reservation.event.title,
+      slug: reservation.event.slug,
+      imageUrl: reservation.event.imageUrl,
+      startsAt: reservation.event.startsAt.toISOString(),
+      endsAt: reservation.event.endsAt?.toISOString() ?? null,
+      venue: reservation.event.venue ?? null,
     }
 
     if (isGA) {
-      // GA: load tickets directly (no eventSeat linkage)
-      const rawGaTickets = await db.ticket.findMany({
+      const gaTickets = await db.ticket.findMany({
         where: { eventId: reservation.eventId, userId: session.userId },
-        include: {
+        select: {
+          id: true,
+          ticketNumber: true,
           ticketType: { select: { id: true, name: true, price: true, currency: true } },
         },
         orderBy: { issuedAt: 'asc' },
       })
 
-      // Group by ticket type
-      const groupMap: Record<string, ConfirmedTicketGroup> = {}
-      for (const t of rawGaTickets) {
+      const groupMap: Record<
+        string,
+        {
+          ticketTypeId: string
+          name: string
+          price: number
+          currency: string
+          tickets: { id: string; ticketNumber: string }[]
+        }
+      > = {}
+      for (const t of gaTickets) {
         const key = t.ticketType.id
         if (!groupMap[key]) {
           groupMap[key] = {
@@ -108,14 +111,17 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
         }
         groupMap[key]!.tickets.push({ id: t.id, ticketNumber: t.ticketNumber })
       }
-      gaTicketGroups = Object.values(groupMap)
 
-      totalTicketCount = rawGaTickets.length
-      totalPaid = rawGaTickets.reduce((sum, t) => sum + t.ticketType.price, 0)
-      currency = rawGaTickets[0]?.ticketType.currency ?? 'NGN'
+      initialData = {
+        event,
+        gaTicketGroups: Object.values(groupMap),
+        reservedTickets: [],
+        totalTicketCount: gaTickets.length,
+        totalPaid: gaTickets.reduce((s, t) => s + t.ticketType.price, 0),
+        currency: gaTickets[0]?.ticketType.currency ?? 'NGN',
+      }
     } else {
-      // Reserved seating: one ticket per eventSeat
-      reservedTickets = reservation.eventSeats.map((es) => ({
+      const reservedTickets = reservation.eventSeats.map((es) => ({
         id: es.tickets[0]?.id ?? es.id,
         ticketNumber: es.tickets[0]?.ticketNumber ?? '—',
         ticketTypeName: es.ticketType?.name ?? 'Ticket',
@@ -124,9 +130,14 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
         currency: es.ticketType?.currency ?? 'NGN',
       }))
 
-      totalTicketCount = reservedTickets.length
-      totalPaid = reservedTickets.reduce((sum, t) => sum + t.price, 0)
-      currency = reservedTickets[0]?.currency ?? 'NGN'
+      initialData = {
+        event,
+        reservedTickets,
+        gaTicketGroups: [],
+        totalTicketCount: reservedTickets.length,
+        totalPaid: reservedTickets.reduce((s, t) => s + t.price, 0),
+        currency: reservedTickets[0]?.currency ?? 'NGN',
+      }
     }
   }
 
@@ -138,13 +149,9 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
         <PaymentConfirmationPoller
           reservationId={reservationId}
           eventSlug={slug}
+          isGA={isGA}
           initiallyConfirmed={!isPending}
-          event={event}
-          reservedTickets={reservedTickets}
-          gaTicketGroups={gaTicketGroups}
-          totalTicketCount={totalTicketCount}
-          totalPaid={totalPaid}
-          currency={currency}
+          initialData={initialData}
         />
       </main>
 

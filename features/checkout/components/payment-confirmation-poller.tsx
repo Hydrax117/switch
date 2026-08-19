@@ -1,17 +1,14 @@
 'use client'
 
 /**
- * Polls /api/payments/status until the reservation is COMPLETED (webhook
- * processed), then renders the confirmed booking UI.
- *
- * Rendered by the CheckoutSuccessPage server component when the reservation
- * is still ACTIVE — i.e. the user arrived before the Paystack webhook fired.
+ * Polls /api/payments/status until the reservation is COMPLETED, then
+ * renders the confirmed booking UI using data fetched directly from the
+ * API — no dependency on server-component prop re-delivery.
  */
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import {
   CheckCircle,
   Calendar,
@@ -24,9 +21,9 @@ import {
 import { format } from 'date-fns'
 import { formatPrice } from '@/features/events/utils'
 
-// ─── Types (mirroring what the server page passes down) ───────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface ConfirmedTicket {
+interface ConfirmedTicket {
   id: string
   ticketNumber: string
   ticketTypeName: string
@@ -35,7 +32,7 @@ export interface ConfirmedTicket {
   currency: string
 }
 
-export interface ConfirmedTicketGroup {
+interface ConfirmedTicketGroup {
   ticketTypeId: string
   name: string
   price: number
@@ -43,45 +40,47 @@ export interface ConfirmedTicketGroup {
   tickets: { id: string; ticketNumber: string }[]
 }
 
-export interface ConfirmedEventInfo {
-  title: string
-  slug: string
-  imageUrl: string | null
-  startsAt: Date
-  endsAt: Date | null
-  venue: { name: string; city: string; state: string | null } | null
+interface ConfirmedData {
+  event: {
+    title: string
+    slug: string
+    imageUrl: string | null
+    startsAt: string // JSON date — parse before use
+    endsAt: string | null
+    venue: { name: string; city: string; state: string | null } | null
+  }
+  reservedTickets: ConfirmedTicket[]
+  gaTicketGroups: ConfirmedTicketGroup[]
+  totalTicketCount: number
+  totalPaid: number
+  currency: string
 }
 
 interface Props {
   reservationId: string
   eventSlug: string
-  /** Pre-loaded when reservation was already COMPLETED on first render */
+  isGA: boolean
+  /** True when the reservation was already COMPLETED on the first server render */
   initiallyConfirmed: boolean
-  /** Populated only when initiallyConfirmed = true */
-  event?: ConfirmedEventInfo
-  reservedTickets?: ConfirmedTicket[]   // reserved seating
-  gaTicketGroups?: ConfirmedTicketGroup[] // GA
-  totalTicketCount?: number
-  totalPaid?: number
-  currency?: string
+  /** Pre-loaded confirmed data (only when initiallyConfirmed = true) */
+  initialData?: ConfirmedData
 }
 
 const POLL_INTERVAL_MS = 2_000
-const POLL_TIMEOUT_MS = 90_000 // give up after 90 s
+const POLL_TIMEOUT_MS  = 90_000
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function PaymentConfirmationPoller({
   reservationId,
   eventSlug,
+  isGA,
   initiallyConfirmed,
-  event,
-  reservedTickets = [],
-  gaTicketGroups = [],
-  totalTicketCount = 0,
-  totalPaid = 0,
-  currency = 'NGN',
+  initialData,
 }: Props) {
-  const router = useRouter()
-  const [confirmed, setConfirmed] = useState(initiallyConfirmed)
+  const [confirmedData, setConfirmedData] = useState<ConfirmedData | null>(
+    initiallyConfirmed && initialData ? initialData : null
+  )
   const [timedOut, setTimedOut] = useState(false)
 
   const poll = useCallback(async () => {
@@ -96,17 +95,18 @@ export function PaymentConfirmationPoller({
       }
 
       try {
-        const res = await fetch(`/api/payments/status?reservation=${reservationId}`, {
-          cache: 'no-store',
-        })
+        const res = await fetch(
+          `/api/payments/status?reservation=${reservationId}${isGA ? '&type=ga' : ''}`,
+          { cache: 'no-store' }
+        )
         if (!res.ok) continue
 
-        const json = (await res.json()) as { status: string }
+        const json = (await res.json()) as { status: string } & Partial<ConfirmedData>
 
         if (json.status === 'COMPLETED') {
-          // Reload the page — the server component will now have tickets to render
-          router.refresh()
-          setConfirmed(true)
+          const { status: _s, ...data } = json
+          void _s
+          setConfirmedData(data as ConfirmedData)
           return
         }
 
@@ -119,15 +119,15 @@ export function PaymentConfirmationPoller({
         // network hiccup — keep trying
       }
     }
-  }, [reservationId, router])
+  }, [reservationId, isGA])
 
   useEffect(() => {
     if (initiallyConfirmed) return
     void poll()
   }, [initiallyConfirmed, poll])
 
-  // ── Pending state ──────────────────────────────────────────────────────────
-  if (!confirmed && !timedOut) {
+  // ── Pending ────────────────────────────────────────────────────────────────
+  if (!confirmedData && !timedOut) {
     return (
       <div className="flex flex-col items-center justify-center py-28 text-center">
         <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-brand-500/10">
@@ -141,17 +141,20 @@ export function PaymentConfirmationPoller({
     )
   }
 
-  // ── Timed-out / failed state ───────────────────────────────────────────────
+  // ── Timed out ──────────────────────────────────────────────────────────────
   if (timedOut) {
     return (
       <div className="flex flex-col items-center justify-center py-28 text-center">
         <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10">
           <AlertCircle className="h-8 w-8 text-amber-500" />
         </div>
-        <h1 className="text-[22px] font-semibold tracking-tight">Payment confirmation delayed</h1>
+        <h1 className="text-[22px] font-semibold tracking-tight">
+          Payment confirmation delayed
+        </h1>
         <p className="text-muted-foreground mt-2 max-w-sm text-[14px]">
-          If your payment went through, your tickets will appear in your dashboard shortly. If you
-          were charged and don&apos;t see tickets within 10 minutes, please contact support.
+          If your payment went through, your tickets will appear in your dashboard shortly.
+          If you were charged and don&apos;t see tickets within 10 minutes, please contact
+          support.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link
@@ -172,21 +175,15 @@ export function PaymentConfirmationPoller({
     )
   }
 
-  // ── Confirmed state ────────────────────────────────────────────────────────
-  if (!event) {
-    // Reload triggered above via router.refresh() — server will re-render with data
-    return (
-      <div className="flex flex-col items-center justify-center py-28 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
-      </div>
-    )
-  }
-
-  const isGAOrder = gaTicketGroups.length > 0
+  // ── Confirmed ──────────────────────────────────────────────────────────────
+  const d = confirmedData!
+  const startsAt = new Date(d.event.startsAt)
+  const endsAt   = d.event.endsAt ? new Date(d.event.endsAt) : null
+  const isGAOrder = d.gaTicketGroups.length > 0
 
   return (
     <div className="mx-auto max-w-[680px] px-5 py-12 sm:px-8 sm:py-16">
-      {/* ── Success header ── */}
+      {/* Success header */}
       <div className="mb-10 text-center">
         <div className="mb-4 flex justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15">
@@ -199,13 +196,13 @@ export function PaymentConfirmationPoller({
         </p>
       </div>
 
-      {/* ── Event card ── */}
+      {/* Event card */}
       <div className="border-border bg-surface mb-6 overflow-hidden rounded-2xl border">
-        {event.imageUrl && (
+        {d.event.imageUrl && (
           <div className="relative h-[160px] w-full">
             <Image
-              src={event.imageUrl}
-              alt={event.title}
+              src={d.event.imageUrl}
+              alt={d.event.title}
               fill
               className="object-cover object-center"
               sizes="680px"
@@ -214,28 +211,28 @@ export function PaymentConfirmationPoller({
           </div>
         )}
         <div className="p-5">
-          <h2 className="text-[17px] font-semibold">{event.title}</h2>
+          <h2 className="text-[17px] font-semibold">{d.event.title}</h2>
           <div className="mt-3 space-y-2">
             <div className="text-muted-foreground flex items-center gap-2 text-[13px]">
               <Calendar className="h-4 w-4 shrink-0" />
-              {format(event.startsAt, 'EEEE, MMMM d, yyyy · h:mm a')}
-              {event.endsAt && ` – ${format(event.endsAt, 'h:mm a')}`}
+              {format(startsAt, 'EEEE, MMMM d, yyyy · h:mm a')}
+              {endsAt && ` – ${format(endsAt, 'h:mm a')}`}
             </div>
-            {event.venue && (
+            {d.event.venue && (
               <div className="text-muted-foreground flex items-center gap-2 text-[13px]">
                 <MapPin className="h-4 w-4 shrink-0" />
-                {event.venue.name}, {event.venue.city}
-                {event.venue.state ? `, ${event.venue.state}` : ''}
+                {d.event.venue.name}, {d.event.venue.city}
+                {d.event.venue.state ? `, ${d.event.venue.state}` : ''}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* ── Tickets ── */}
+      {/* Tickets */}
       <div className="mb-6 space-y-3">
         {isGAOrder
-          ? gaTicketGroups.map((group) => (
+          ? d.gaTicketGroups.map((group) => (
               <div
                 key={group.ticketTypeId}
                 className="border-border bg-surface rounded-2xl border p-4"
@@ -248,8 +245,7 @@ export function PaymentConfirmationPoller({
                     <p className="text-[13.5px] font-semibold">
                       {group.name}
                       <span className="text-muted-foreground font-normal">
-                        {' '}
-                        × {group.tickets.length}
+                        {' '}× {group.tickets.length}
                       </span>
                     </p>
                     <p className="text-muted-foreground mt-0.5 font-mono text-[11.5px]">
@@ -265,7 +261,7 @@ export function PaymentConfirmationPoller({
                 </div>
               </div>
             ))
-          : reservedTickets.map((t) => (
+          : d.reservedTickets.map((t) => (
               <div
                 key={t.id}
                 className="border-border bg-surface flex items-center gap-4 rounded-2xl border p-4"
@@ -278,8 +274,7 @@ export function PaymentConfirmationPoller({
                     {t.ticketTypeName}
                     {t.seatLabel && (
                       <span className="text-muted-foreground font-normal">
-                        {' '}
-                        · Seat {t.seatLabel}
+                        {' '}· Seat {t.seatLabel}
                       </span>
                     )}
                   </p>
@@ -294,14 +289,14 @@ export function PaymentConfirmationPoller({
             ))}
       </div>
 
-      {/* ── Order total ── */}
+      {/* Order total */}
       <div className="border-border bg-surface mb-8 rounded-2xl border p-5">
         <div className="flex items-center justify-between text-[13.5px]">
           <span className="text-muted-foreground">
-            {totalTicketCount} ticket{totalTicketCount !== 1 ? 's' : ''}
+            {d.totalTicketCount} ticket{d.totalTicketCount !== 1 ? 's' : ''}
           </span>
           <span className="font-bold">
-            {totalPaid === 0 ? 'Free' : formatPrice(totalPaid, currency)}
+            {d.totalPaid === 0 ? 'Free' : formatPrice(d.totalPaid, d.currency)}
           </span>
         </div>
         <div className="border-border/60 mt-3 border-t pt-3">
@@ -312,7 +307,7 @@ export function PaymentConfirmationPoller({
         </div>
       </div>
 
-      {/* ── Actions ── */}
+      {/* Actions */}
       <div className="flex flex-col gap-3 sm:flex-row">
         <Link
           href="/dashboard/tickets"
