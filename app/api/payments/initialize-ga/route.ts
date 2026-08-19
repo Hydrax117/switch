@@ -210,6 +210,10 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  // Schedule background cleanup if user abandons after redirect
+  const { scheduleReservationExpiry } = await import('@/lib/queues')
+  scheduleReservationExpiry(reservation.id, expiresAt).catch(console.error)
+
   // 6. Free tickets — create tickets immediately and confirm reservation
   if (totalAmount === 0) {
     const totalTickets = selections.reduce((sum, s) => sum + s.quantity, 0)

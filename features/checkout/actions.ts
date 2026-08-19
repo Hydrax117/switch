@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { acquireSeatLock, releaseAllSeatLocks, SEAT_LOCK_TTL } from '@/lib/redis'
 import { getSession } from '@/lib/session'
 import { sendTicketConfirmationEmail } from '@/lib/email'
+import { scheduleReservationExpiry } from '@/lib/queues'
 import {
   reserveSeatsSchema,
   reserveGASchema,
@@ -130,6 +131,9 @@ export async function reserveSeats(input: unknown): Promise<ReserveSeatsResult> 
       return reservation
     })
 
+    // Schedule background cleanup in case the user abandons checkout
+    scheduleReservationExpiry(result.id, result.expiresAt).catch(console.error)
+
     return {
       success: true,
       reservationId: result.id,
@@ -146,8 +150,6 @@ export async function reserveSeats(input: unknown): Promise<ReserveSeatsResult> 
     return { success: false, error: 'Failed to reserve seats. Please try again.' }
   }
 }
-
-// ─── Reserve GA tickets ───────────────────────────────────────────────────────
 
 export async function reserveGATickets(input: unknown): Promise<ReserveSeatsResult> {
   const session = await getSession()
@@ -194,6 +196,9 @@ export async function reserveGATickets(input: unknown): Promise<ReserveSeatsResu
         },
       })
     })
+
+    // Schedule background cleanup in case the user abandons checkout
+    scheduleReservationExpiry(result.id, result.expiresAt).catch(console.error)
 
     return {
       success: true,
