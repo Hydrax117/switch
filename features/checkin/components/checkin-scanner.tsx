@@ -1,19 +1,20 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import dynamic from 'next/dynamic'
 import { CheckCircle2, XCircle, AlertCircle, Loader2, RotateCcw, UserCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-// Lazy-load the scanner — html5-qrcode is browser-only
-const QrScanner = dynamic(
-  () => import('./qr-scanner').then((m) => ({ default: m.QrScanner })),
-  { ssr: false, loading: () => <ScannerPlaceholder /> }
-)
+import { QrScanner } from './qr-scanner'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ScanState = 'idle' | 'loading' | 'success' | 'already_used' | 'cancelled' | 'invalid' | 'error'
+type ScanState =
+  | 'idle'
+  | 'loading'
+  | 'success'
+  | 'already_used'
+  | 'cancelled'
+  | 'invalid'
+  | 'error'
 
 interface ScanResult {
   ticketNumber: string
@@ -81,13 +82,12 @@ export function CheckinScanner({ eventId, eventTitle }: CheckinScannerProps) {
     [eventId]
   )
 
-  const handleReset = () => {
-    // Briefly disarm before re-arming so the scanner ref resets cleanly
-    setScanning(false)
-    setState('idle')
+  function handleReset() {
     setResult(null)
-    // Small tick so the armed=false effect fires before we re-arm
-    setTimeout(() => setScanning(true), 50)
+    setState('idle')
+    // Briefly disarm then re-arm so the scanner ref flips cleanly
+    setScanning(false)
+    requestAnimationFrame(() => setScanning(true))
   }
 
   return (
@@ -98,11 +98,11 @@ export function CheckinScanner({ eventId, eventTitle }: CheckinScannerProps) {
         <p className="text-[14px] font-semibold">{eventTitle}</p>
       </div>
 
-      {/* Scanner viewport */}
+      {/* Scanner — always mounted so the camera stays running */}
       <div className="relative">
         <QrScanner onScan={handleScan} scanning={scanning} />
 
-        {/* Overlay when processing */}
+        {/* Processing overlay on top of the camera */}
         {state === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/60 backdrop-blur-sm">
             <Loader2 className="h-10 w-10 animate-spin text-white" />
@@ -115,7 +115,7 @@ export function CheckinScanner({ eventId, eventTitle }: CheckinScannerProps) {
         <ResultCard state={state} result={result} onReset={handleReset} />
       )}
 
-      {/* Instruction */}
+      {/* Idle instruction */}
       {state === 'idle' && (
         <p className="text-muted-foreground text-center text-[13px]">
           Point the camera at an attendee&apos;s ticket QR code
@@ -209,16 +209,6 @@ function DetailRow({ icon: Icon, label }: { icon: React.ElementType | null; labe
     <div className="flex items-center gap-2 text-[13px]">
       {Icon && <Icon className="h-3.5 w-3.5 shrink-0 opacity-60" />}
       <span>{label}</span>
-    </div>
-  )
-}
-
-// ─── Scanner placeholder (SSR / loading state) ────────────────────────────────
-
-function ScannerPlaceholder() {
-  return (
-    <div className="bg-muted flex h-64 w-full items-center justify-center rounded-2xl">
-      <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
     </div>
   )
 }
