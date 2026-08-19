@@ -82,9 +82,12 @@ export function CheckinScanner({ eventId, eventTitle }: CheckinScannerProps) {
   )
 
   const handleReset = () => {
+    // Briefly disarm before re-arming so the scanner ref resets cleanly
+    setScanning(false)
     setState('idle')
     setResult(null)
-    setScanning(true)
+    // Small tick so the armed=false effect fires before we re-arm
+    setTimeout(() => setScanning(true), 50)
   }
 
   return (
