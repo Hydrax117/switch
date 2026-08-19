@@ -311,13 +311,30 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
     )
 
     // Send confirmation email (non-blocking — don't fail the order if email fails)
-    sendTicketConfirmationEmail({
-      userId,
-      eventTitle: reservation.event.title,
-      eventDate: reservation.event.startsAt,
-      ticketCount: ticketIds.length,
-      reservationId,
-    }).catch((err) => console.error('[confirmOrder] email error:', err))
+    db.ticket.findMany({
+      where: { id: { in: ticketIds } },
+      select: {
+        ticketNumber: true,
+        qrCode: true,
+        ticketType: { select: { name: true } },
+        eventSeat: { select: { seat: { select: { label: true } } } },
+      },
+    }).then((tickets) =>
+      sendTicketConfirmationEmail({
+        userId,
+        eventTitle: reservation.event.title,
+        eventDate: reservation.event.startsAt,
+        eventSlug: reservation.event.slug,
+        ticketCount: ticketIds.length,
+        reservationId,
+        tickets: tickets.map((t) => ({
+          ticketNumber: t.ticketNumber,
+          qrCode: t.qrCode,
+          ticketTypeName: t.ticketType.name,
+          seatLabel: t.eventSeat?.seat?.label ?? null,
+        })),
+      })
+    ).catch((err) => console.error('[confirmOrder] email error:', err))
 
     return { success: true, ticketIds }
   } catch (err) {

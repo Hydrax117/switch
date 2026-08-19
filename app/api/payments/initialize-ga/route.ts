@@ -259,13 +259,30 @@ export async function POST(req: NextRequest) {
     })
 
     // Fire confirmation email non-blocking
-    sendTicketConfirmationEmail({
-      userId,
-      eventTitle: event.title,
-      eventDate: event.startsAt,
-      ticketCount: totalTickets,
-      reservationId: reservation.id,
-    }).catch((err) => console.error('[initialize-ga] email error:', err))
+    db.ticket.findMany({
+      where: { eventId, userId },
+      select: {
+        ticketNumber: true,
+        qrCode: true,
+        ticketType: { select: { name: true } },
+      },
+      orderBy: { issuedAt: 'asc' },
+    }).then((tickets) =>
+      sendTicketConfirmationEmail({
+        userId,
+        eventTitle: event.title,
+        eventDate: event.startsAt,
+        eventSlug: event.slug,
+        ticketCount: totalTickets,
+        reservationId: reservation.id,
+        tickets: tickets.map((t) => ({
+          ticketNumber: t.ticketNumber,
+          qrCode: t.qrCode,
+          ticketTypeName: t.ticketType.name,
+          seatLabel: null,
+        })),
+      })
+    ).catch((err) => console.error('[initialize-ga] email error:', err))
 
     return NextResponse.json({
       free: true,

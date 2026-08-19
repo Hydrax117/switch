@@ -172,13 +172,32 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
     ? gaSelections.reduce((sum, s) => sum + s.quantity, 0)
     : reservation.eventSeats.length
 
-  sendTicketConfirmationEmail({
-    userId,
-    eventTitle: reservation.event.title,
-    eventDate: reservation.event.startsAt,
-    ticketCount: totalTickets,
-    reservationId,
-  }).catch((err) => console.error('[webhook/paystack] email error:', err))
+  // Load the created tickets for the email (QR codes needed)
+  db.ticket.findMany({
+    where: { eventId: reservation.eventId, userId },
+    select: {
+      ticketNumber: true,
+      qrCode: true,
+      ticketType: { select: { name: true } },
+      eventSeat: { select: { seat: { select: { label: true } } } },
+    },
+    orderBy: { issuedAt: 'asc' },
+  }).then((tickets) =>
+    sendTicketConfirmationEmail({
+      userId,
+      eventTitle: reservation.event.title,
+      eventDate: reservation.event.startsAt,
+      eventSlug: reservation.event.slug,
+      ticketCount: totalTickets,
+      reservationId,
+      tickets: tickets.map((t) => ({
+        ticketNumber: t.ticketNumber,
+        qrCode: t.qrCode,
+        ticketTypeName: t.ticketType.name,
+        seatLabel: t.eventSeat?.seat?.label ?? null,
+      })),
+    })
+  ).catch((err) => console.error('[webhook/paystack] email error:', err))
 }
 
 // ─── GA charge handler ────────────────────────────────────────────────────────
