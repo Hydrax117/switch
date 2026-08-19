@@ -111,7 +111,6 @@ export async function generateTicketPdf(input: TicketPdfInput): Promise<Uint8Arr
       x: qrX - 6, y: qrY - 6,
       width: QR_SIZE + 12, height: QR_SIZE + 12,
       color: rgb(1, 1, 1),
-      borderRadius: 4,
     })
     page.drawImage(qrImage, {
       x: qrX, y: qrY,
