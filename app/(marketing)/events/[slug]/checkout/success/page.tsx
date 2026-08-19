@@ -14,16 +14,18 @@ export const metadata: Metadata = { title: 'Booking Confirmed' }
 
 interface PageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ reservation?: string }>
+  searchParams: Promise<{ reservation?: string; type?: string }>
 }
 
 export default async function CheckoutSuccessPage({ params, searchParams }: PageProps) {
   const { slug } = await params
-  const { reservation: reservationId } = await searchParams
+  const { reservation: reservationId, type } = await searchParams
 
   const session = await getSession()
   if (!session) redirect(`/login`)
   if (!reservationId) redirect(`/events/${slug}`)
+
+  const isGA = type === 'ga'
 
   // Load confirmed reservation and its tickets
   const reservation = await db.reservation.findUnique({
@@ -40,15 +42,11 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
           venue: { select: { name: true, city: true, state: true } },
         },
       },
+      // Reserved seating: load via eventSeats
       eventSeats: {
         include: {
           tickets: {
-            select: {
-              id: true,
-              ticketNumber: true,
-              qrCode: true,
-              status: true,
-            },
+            select: { id: true, ticketNumber: true, qrCode: true, status: true },
           },
           seat: { select: { label: true } },
           ticketType: { select: { name: true, currency: true } },
@@ -61,13 +59,26 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
     redirect(`/events/${slug}`)
   }
 
-  const { event } = reservation
-  const tickets = reservation.eventSeats
-    .flatMap((es) => es.tickets)
-    .filter((t): t is NonNullable<typeof t> => t !== null)
+  // GA: load tickets directly (no eventSeat linkage)
+  const gaTickets = isGA
+    ? await db.ticket.findMany({
+        where: { eventId: reservation.eventId, userId: session.userId },
+        include: { ticketType: { select: { id: true, name: true, price: true, currency: true } } },
+        orderBy: { issuedAt: 'asc' },
+      })
+    : []
 
-  const totalPaid = reservation.eventSeats.reduce((sum, es) => sum + es.price, 0)
-  const currency = reservation.eventSeats[0]?.ticketType?.currency ?? 'NGN'
+  const { event } = reservation
+
+  // Determine totals
+  const isGAOrder = isGA || reservation.eventSeats.length === 0
+  const totalTicketCount = isGAOrder ? gaTickets.length : reservation.eventSeats.length
+  const totalPaid = isGAOrder
+    ? gaTickets.reduce((sum, t) => sum + t.ticketType.price, 0)
+    : reservation.eventSeats.reduce((sum, es) => sum + es.price, 0)
+  const currency = isGAOrder
+    ? (gaTickets[0]?.ticketType.currency ?? 'NGN')
+    : (reservation.eventSeats[0]?.ticketType?.currency ?? 'NGN')
 
   return (
     <div className="relative flex min-h-screen flex-col">
@@ -123,47 +134,101 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
 
           {/* ── Tickets ── */}
           <div className="mb-6 space-y-3">
-            {reservation.eventSeats.map((es) => (
-              <div
-                key={es.id}
-                className="border-border bg-surface flex items-center gap-4 rounded-2xl border p-4"
-              >
-                {/* QR placeholder */}
-                <div className="bg-muted flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
-                  <Ticket className="text-muted-foreground h-6 w-6" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13.5px] font-semibold">
-                    {es.ticketType?.name ?? 'Ticket'}
-                    {es.seat && (
-                      <span className="text-muted-foreground font-normal">
-                        {' '}
-                        · Seat {es.seat.label}
-                      </span>
-                    )}
-                  </p>
-                  {es.tickets[0] && (
-                    <p className="text-muted-foreground mt-0.5 font-mono text-[11.5px]">
-                      {es.tickets[0].ticketNumber}
+            {isGAOrder
+              ? // GA tickets: group by ticket type for a cleaner display
+                Object.values(
+                  gaTickets.reduce<
+                    Record<
+                      string,
+                      {
+                        name: string
+                        price: number
+                        currency: string
+                        tickets: typeof gaTickets
+                      }
+                    >
+                  >((acc, t) => {
+                    const key = t.ticketType.id
+                    if (!acc[key]) {
+                      acc[key] = {
+                        name: t.ticketType.name,
+                        price: t.ticketType.price,
+                        currency: t.ticketType.currency,
+                        tickets: [],
+                      }
+                    }
+                    acc[key]!.tickets.push(t)
+                    return acc
+                  }, {})
+                ).map((group) => (
+                  <div
+                    key={group.name}
+                    className="border-border bg-surface rounded-2xl border p-4"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="bg-muted flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
+                        <Ticket className="text-muted-foreground h-6 w-6" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13.5px] font-semibold">
+                          {group.name}
+                          <span className="text-muted-foreground font-normal">
+                            {' '}
+                            × {group.tickets.length}
+                          </span>
+                        </p>
+                        <p className="text-muted-foreground mt-0.5 font-mono text-[11.5px]">
+                          {group.tickets[0]?.ticketNumber}
+                          {group.tickets.length > 1 && ` + ${group.tickets.length - 1} more`}
+                        </p>
+                      </div>
+                      <p className="text-brand-500 shrink-0 text-[13.5px] font-bold">
+                        {group.price === 0
+                          ? 'Free'
+                          : formatPrice(group.price * group.tickets.length, group.currency)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              : // Reserved tickets: one card per seat
+                reservation.eventSeats.map((es) => (
+                  <div
+                    key={es.id}
+                    className="border-border bg-surface flex items-center gap-4 rounded-2xl border p-4"
+                  >
+                    <div className="bg-muted flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
+                      <Ticket className="text-muted-foreground h-6 w-6" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13.5px] font-semibold">
+                        {es.ticketType?.name ?? 'Ticket'}
+                        {es.seat && (
+                          <span className="text-muted-foreground font-normal">
+                            {' '}
+                            · Seat {es.seat.label}
+                          </span>
+                        )}
+                      </p>
+                      {es.tickets[0] && (
+                        <p className="text-muted-foreground mt-0.5 font-mono text-[11.5px]">
+                          {es.tickets[0].ticketNumber}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-brand-500 shrink-0 text-[13.5px] font-bold">
+                      {es.price === 0
+                        ? 'Free'
+                        : formatPrice(es.price, es.ticketType?.currency ?? currency)}
                     </p>
-                  )}
-                </div>
-
-                <p className="text-brand-500 shrink-0 text-[13.5px] font-bold">
-                  {es.price === 0
-                    ? 'Free'
-                    : formatPrice(es.price, es.ticketType?.currency ?? currency)}
-                </p>
-              </div>
-            ))}
+                  </div>
+                ))}
           </div>
 
           {/* ── Order total ── */}
           <div className="border-border bg-surface mb-8 rounded-2xl border p-5">
             <div className="flex items-center justify-between text-[13.5px]">
               <span className="text-muted-foreground">
-                {tickets.length} ticket{tickets.length !== 1 ? 's' : ''}
+                {totalTicketCount} ticket{totalTicketCount !== 1 ? 's' : ''}
               </span>
               <span className="font-bold">
                 {totalPaid === 0 ? 'Free' : formatPrice(totalPaid, currency)}
