@@ -118,7 +118,12 @@ export async function getEventSpeakers(eventId: string) {
 export async function getUserTickets(userId: string) {
   return db.ticket.findMany({
     where: { userId },
-    include: {
+    select: {
+      id: true,
+      ticketNumber: true,
+      qrCode: true,
+      status: true,
+      issuedAt: true,
       event: {
         select: {
           id: true,
@@ -131,7 +136,7 @@ export async function getUserTickets(userId: string) {
       },
       ticketType: { select: { name: true, currency: true } },
       eventSeat: {
-        include: {
+        select: {
           seat: { select: { label: true } },
         },
       },
