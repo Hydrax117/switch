@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ExternalLink, ChevronLeft, Wifi, Gift } from 'lucide-react'
+import { ExternalLink, ChevronLeft, Wifi, Gift, ScanLine } from 'lucide-react'
 import { getSession } from '@/lib/session'
 import {
   getOrganizerByUserId,
@@ -64,9 +64,9 @@ export default async function ManageEventPage({ params }: PageProps) {
       </Link>
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-[20px] font-semibold tracking-tight">{event.title}</h1>
             {event.isVirtual && (
               <span className="flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold text-blue-400">
@@ -84,14 +84,24 @@ export default async function ManageEventPage({ params }: PageProps) {
             {event.venue ? ` · ${event.venue.name}` : ''}
           </p>
         </div>
-        <Link
-          href={`/events/${event.slug}`}
-          target="_blank"
-          className="border-border hover:bg-muted flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors"
-        >
-          <ExternalLink className="h-3.5 w-3.5" />
-          View page
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          {/* Check-in scanner button */}
+          <Link
+            href={`/dashboard/events/${event.id}/scan`}
+            className="from-brand-600 flex items-center gap-1.5 rounded-lg bg-gradient-to-r to-violet-600 px-3 py-1.5 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            <ScanLine className="h-3.5 w-3.5" />
+            Check-in Scanner
+          </Link>
+          <Link
+            href={`/events/${event.slug}`}
+            target="_blank"
+            className="border-border hover:bg-muted flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            View page
+          </Link>
+        </div>
       </div>
 
       {/* ── Stats ── */}
