@@ -11,6 +11,7 @@ import {
   TrendingUp,
   ArrowRight,
   Clock,
+  UsersRound,
 } from 'lucide-react'
 import { getSession } from '@/lib/session'
 import { getAdminOverviewStats } from '@/features/admin/queries'
@@ -53,6 +54,15 @@ export default async function AdminPage() {
       badge: stats.openRefunds,
       badgeCls: 'bg-red-500/15 text-red-400',
       color: 'red',
+    },
+    {
+      href: '/dashboard/admin/groups',
+      label: 'Group Order Refunds',
+      description: 'Expired all-or-nothing groups with paid slots',
+      icon: UsersRound,
+      badge: stats.expiredGroupsWithPaidSlots,
+      badgeCls: 'bg-orange-500/15 text-orange-400',
+      color: 'orange',
     },
   ] as const
 
@@ -106,7 +116,7 @@ export default async function AdminPage() {
       </div>
 
       {/* ── Action queues ── */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {actionItems.map((item) => (
           <Link
             key={item.href}
@@ -160,6 +170,7 @@ const COLOR_MAP = {
   violet: 'bg-violet-500/10 text-violet-400',
   emerald: 'bg-emerald-500/10 text-emerald-400',
   amber: 'bg-amber-500/10 text-amber-400',
+  orange: 'bg-orange-500/10 text-orange-400',
 } as const
 
 function StatCard({

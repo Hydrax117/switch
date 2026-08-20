@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
+import { paystack } from '@/lib/paystack'
+import { PaymentStatus, TicketStatus } from '@/app/generated/prisma/client'
 
 type ActionResult<T = void> = { success: true; data: T } | { success: false; error: string }
 
@@ -130,5 +132,91 @@ export async function markRefundUnderReview(refundRequestId: string): Promise<Ac
   })
 
   revalidatePath('/dashboard/admin/refunds')
+  return { success: true, data: undefined }
+}
+
+// ─── Admin: refund a paid group slot ──────────────────────────────────────────
+
+/**
+ * Issues a Paystack refund for a single paid GroupOrderSlot.
+ * Updates the payment → REFUNDED, the ticket → REFUNDED, and the slot → RELEASED.
+ * Safe to call multiple times — idempotent once the payment is already REFUNDED.
+ */
+export async function refundGroupSlot(slotId: string): Promise<ActionResult> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+  if (session.role !== 'ADMIN') return { success: false, error: 'Admin only' }
+
+  const slot = await db.groupOrderSlot.findUnique({
+    where: { id: slotId },
+    include: {
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          paystackTransactionId: true,
+          paystackReference: true,
+        },
+      },
+      ticket: { select: { id: true, status: true } },
+    },
+  })
+
+  if (!slot) return { success: false, error: 'Slot not found' }
+  if (slot.status !== 'PAID') {
+    return { success: false, error: `Slot is not in PAID state (current: ${slot.status})` }
+  }
+  if (!slot.payment) {
+    return { success: false, error: 'No payment record linked to this slot' }
+  }
+
+  // Idempotency: already refunded
+  if (slot.payment.status === 'REFUNDED') {
+    return { success: false, error: 'This slot has already been refunded' }
+  }
+
+  const transactionRef =
+    slot.payment.paystackTransactionId ?? slot.payment.paystackReference
+  if (!transactionRef) {
+    return { success: false, error: 'No Paystack transaction reference on file for this payment' }
+  }
+
+  // Initiate Paystack refund
+  let paystackRefundId: string
+  try {
+    const refund = await paystack.refundTransaction({ transaction: transactionRef })
+    paystackRefundId = String(refund.id)
+  } catch (err) {
+    return {
+      success: false,
+      error: `Paystack refund failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+    }
+  }
+
+  // Update DB atomically
+  await db.$transaction(async (tx) => {
+    await tx.payment.update({
+      where: { id: slot.payment!.id },
+      data: { status: PaymentStatus.REFUNDED },
+    })
+
+    if (slot.ticket) {
+      await tx.ticket.update({
+        where: { id: slot.ticket.id },
+        data: { status: TicketStatus.REFUNDED },
+      })
+    }
+
+    await tx.groupOrderSlot.update({
+      where: { id: slotId },
+      data: { status: 'RELEASED' },
+    })
+  })
+
+  console.info(
+    `[admin] group slot ${slotId} refunded — paystackRefundId: ${paystackRefundId}`
+  )
+
+  revalidatePath('/dashboard/admin/groups')
   return { success: true, data: undefined }
 }

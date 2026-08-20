@@ -8,6 +8,7 @@ export async function getAdminOverviewStats() {
     pendingKyc,
     pendingPayouts,
     openRefunds,
+    expiredGroupsWithPaidSlots,
     totalUsers,
     totalOrganizers,
     totalEvents,
@@ -17,6 +18,18 @@ export async function getAdminOverviewStats() {
     db.organizerApplication.count({ where: { kycStatus: { in: ['PENDING', 'UNDER_REVIEW'] } } }),
     db.payoutRequest.count({ where: { status: 'PENDING' } }),
     db.refundRequest.count({ where: { status: { in: ['OPEN', 'UNDER_REVIEW'] } } }),
+    // Count EXPIRED group orders that still have at least one unrefunded PAID slot
+    db.groupOrder.count({
+      where: {
+        status: 'EXPIRED',
+        slots: {
+          some: {
+            status: 'PAID',
+            payment: { status: { not: 'REFUNDED' } },
+          },
+        },
+      },
+    }),
     db.user.count(),
     db.organizer.count({ where: { status: 'ACTIVE' } }),
     db.event.count({ where: { status: 'PUBLISHED' } }),
@@ -31,6 +44,7 @@ export async function getAdminOverviewStats() {
     pendingKyc,
     pendingPayouts,
     openRefunds,
+    expiredGroupsWithPaidSlots,
     totalUsers,
     totalOrganizers,
     totalEvents,
@@ -141,3 +155,61 @@ export async function getAdminRefundRequests(status?: string) {
 }
 
 export type AdminRefundRequest = Awaited<ReturnType<typeof getAdminRefundRequests>>[number]
+
+// ─── Expired group orders with paid slots ────────────────────────────────────
+
+/**
+ * Returns EXPIRED group orders that have at least one PAID slot.
+ * These are all-or-nothing orders that ended with partial payment — the paid
+ * members need to be refunded manually by an admin.
+ */
+export async function getExpiredGroupOrdersWithPaidSlots() {
+  return db.groupOrder.findMany({
+    where: {
+      status: 'EXPIRED',
+      slots: { some: { status: 'PAID' } },
+    },
+    select: {
+      id: true,
+      code: true,
+      requireFullPayment: true,
+      expiresAt: true,
+      createdAt: true,
+      event: { select: { id: true, title: true, slug: true, startsAt: true, imageUrl: true } },
+      initiator: { select: { id: true, name: true, email: true } },
+      slots: {
+        where: { status: 'PAID' },
+        select: {
+          id: true,
+          price: true,
+          currency: true,
+          label: true,
+          status: true,
+          claimedAt: true,
+          claimer: { select: { id: true, name: true, email: true } },
+          payment: {
+            select: {
+              id: true,
+              amount: true,
+              currency: true,
+              status: true,
+              paystackReference: true,
+              paystackTransactionId: true,
+            },
+          },
+          ticket: { select: { id: true, ticketNumber: true, status: true } },
+          ticketType: { select: { name: true } },
+          eventSeat: {
+            select: {
+              seat: { select: { label: true, row: { select: { label: true } } } },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { expiresAt: 'desc' },
+  })
+}
+
+export type ExpiredGroupOrder = Awaited<ReturnType<typeof getExpiredGroupOrdersWithPaidSlots>>[number]
+export type ExpiredGroupSlot = ExpiredGroupOrder['slots'][number]
