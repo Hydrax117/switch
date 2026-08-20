@@ -11,7 +11,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { updateCalendarEvent, deleteCalendarEvent } from '../actions'
 import type { CalendarEventItem } from '../types'
 
@@ -33,12 +32,21 @@ export function EditEventDialog({ event, open, onClose }: EditEventDialogProps) 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+
+    if (!startsAt) {
+      setError('Start date is required')
+      return
+    }
+
     const formData = new FormData(e.currentTarget)
     formData.set('eventId', event.id)
     formData.set('calendarId', event.calendarId)
-    if (startsAt) formData.set('startsAt', new Date(startsAt).toISOString())
-    if (endsAt) formData.set('endsAt', new Date(endsAt).toISOString())
-    else formData.set('endsAt', '')
+    formData.set('startsAt', new Date(startsAt).toISOString())
+    if (endsAt) {
+      formData.set('endsAt', new Date(endsAt).toISOString())
+    } else {
+      formData.set('endsAt', '')
+    }
 
     startTransition(async () => {
       const result = await updateCalendarEvent(formData)
@@ -88,7 +96,8 @@ export function EditEventDialog({ event, open, onClose }: EditEventDialogProps) 
 
           <div>
             <label className="mb-1.5 block text-[13px] font-medium" htmlFor="edit-ev-desc">
-              Description <span className="text-muted-foreground font-normal">(optional)</span>
+              Description{' '}
+              <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
             <Input
               id="edit-ev-desc"
@@ -100,7 +109,8 @@ export function EditEventDialog({ event, open, onClose }: EditEventDialogProps) 
 
           <div>
             <label className="mb-1.5 block text-[13px] font-medium" htmlFor="edit-ev-loc">
-              Location <span className="text-muted-foreground font-normal">(optional)</span>
+              Location{' '}
+              <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
             <Input
               id="edit-ev-loc"
@@ -110,20 +120,33 @@ export function EditEventDialog({ event, open, onClose }: EditEventDialogProps) 
             />
           </div>
 
+          {/* Dates — native datetime-local inputs avoid Popover-in-Dialog z-index issues */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium">Start</label>
-              <DateTimePicker value={startsAt} onChange={setStartsAt} placeholder="Start" />
+              <label className="mb-1.5 block text-[13px] font-medium" htmlFor="edit-ev-starts">
+                Start
+              </label>
+              <input
+                id="edit-ev-starts"
+                type="datetime-local"
+                value={startsAt}
+                onChange={(e) => setStartsAt(e.target.value)}
+                required
+                className="border-border bg-surface text-foreground w-full rounded-xl border px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-500/30 [color-scheme:dark]"
+              />
             </div>
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium">
-                End <span className="text-muted-foreground font-normal">(opt.)</span>
+              <label className="mb-1.5 block text-[13px] font-medium" htmlFor="edit-ev-ends">
+                End{' '}
+                <span className="text-muted-foreground font-normal">(optional)</span>
               </label>
-              <DateTimePicker
+              <input
+                id="edit-ev-ends"
+                type="datetime-local"
                 value={endsAt}
-                onChange={setEndsAt}
-                placeholder="End"
-                fromDate={startsAt ? new Date(startsAt) : undefined}
+                min={startsAt}
+                onChange={(e) => setEndsAt(e.target.value)}
+                className="border-border bg-surface text-foreground w-full rounded-xl border px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-500/30 [color-scheme:dark]"
               />
             </div>
           </div>

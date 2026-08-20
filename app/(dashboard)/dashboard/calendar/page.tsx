@@ -266,7 +266,6 @@ function ExportCalendarButton({ calendarId, title }: { calendarId: string; title
       download={`${title}.ics`}
       aria-label="Export calendar"
       className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      onClick={(e) => e.stopPropagation()}
     >
       <Download className="h-3.5 w-3.5" />
     </a>

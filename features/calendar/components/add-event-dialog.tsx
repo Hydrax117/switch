@@ -11,7 +11,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { format } from 'date-fns'
 import { addCalendarEvent } from '../actions'
 import type { CalendarWithCount } from '../types'
@@ -38,6 +37,13 @@ export function AddEventDialog({
   const [internalOpen, setInternalOpen] = useState(false)
   const open = isControlled ? controlledOpen : internalOpen
 
+  const [startsAt, setStartsAt] = useState(
+    defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : ''
+  )
+  const [endsAt, setEndsAt] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
   function handleOpenChange(v: boolean) {
     if (!v) {
       if (isControlled) onClose?.()
@@ -46,12 +52,6 @@ export function AddEventDialog({
       if (!isControlled) setInternalOpen(true)
     }
   }
-  const [startsAt, setStartsAt] = useState(
-    defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : ''
-  )
-  const [endsAt, setEndsAt] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -63,10 +63,13 @@ export function AddEventDialog({
     }
 
     const formData = new FormData(e.currentTarget)
-    // Override datetime fields with ISO strings (datetime-local → full ISO)
+    // Convert datetime-local values ("YYYY-MM-DDTHH:mm") to full ISO strings
     formData.set('startsAt', new Date(startsAt).toISOString())
-    if (endsAt) formData.set('endsAt', new Date(endsAt).toISOString())
-    else formData.delete('endsAt')
+    if (endsAt) {
+      formData.set('endsAt', new Date(endsAt).toISOString())
+    } else {
+      formData.delete('endsAt')
+    }
 
     startTransition(async () => {
       const result = await addCalendarEvent(formData)
@@ -141,7 +144,8 @@ export function AddEventDialog({
           {/* Description */}
           <div>
             <label className="mb-1.5 block text-[13px] font-medium" htmlFor="event-desc">
-              Description <span className="text-muted-foreground font-normal">(optional)</span>
+              Description{' '}
+              <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
             <Input
               id="event-desc"
@@ -154,7 +158,8 @@ export function AddEventDialog({
           {/* Location */}
           <div>
             <label className="mb-1.5 block text-[13px] font-medium" htmlFor="event-location">
-              Location <span className="text-muted-foreground font-normal">(optional)</span>
+              Location{' '}
+              <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
             <Input
               id="event-location"
@@ -164,25 +169,33 @@ export function AddEventDialog({
             />
           </div>
 
-          {/* Dates */}
+          {/* Dates — native datetime-local inputs avoid Popover-in-Dialog z-index issues */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium">Start</label>
-              <DateTimePicker
+              <label className="mb-1.5 block text-[13px] font-medium" htmlFor="event-starts">
+                Start
+              </label>
+              <input
+                id="event-starts"
+                type="datetime-local"
                 value={startsAt}
-                onChange={setStartsAt}
-                placeholder="Start date & time"
+                onChange={(e) => setStartsAt(e.target.value)}
+                required
+                className="border-border bg-surface text-foreground w-full rounded-xl border px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-500/30 [color-scheme:dark]"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium">
-                End <span className="text-muted-foreground font-normal">(optional)</span>
+              <label className="mb-1.5 block text-[13px] font-medium" htmlFor="event-ends">
+                End{' '}
+                <span className="text-muted-foreground font-normal">(optional)</span>
               </label>
-              <DateTimePicker
+              <input
+                id="event-ends"
+                type="datetime-local"
                 value={endsAt}
-                onChange={setEndsAt}
-                placeholder="End date & time"
-                fromDate={startsAt ? new Date(startsAt) : undefined}
+                min={startsAt}
+                onChange={(e) => setEndsAt(e.target.value)}
+                className="border-border bg-surface text-foreground w-full rounded-xl border px-3 py-2.5 text-[13px] focus:outline-none focus:ring-2 focus:ring-violet-500/30 [color-scheme:dark]"
               />
             </div>
           </div>
@@ -190,7 +203,12 @@ export function AddEventDialog({
           {error && <p className="text-[13px] text-red-400">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="ghost" size="sm" onClick={() => handleOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" size="sm" disabled={isPending}>
