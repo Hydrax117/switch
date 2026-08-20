@@ -156,6 +156,8 @@ model User {
   refundRequests RefundRequest[]
   initiatedGroups GroupOrder[]       @relation("GroupOrderInitiator")
   claimedSlots    GroupOrderSlot[]   @relation("GroupSlotClaimer")
+  calendars       UserCalendar[]
+  sharedCalendars CalendarShare[]    @relation("CalendarSharedWith")
 
   @@map("users")
 }
@@ -466,6 +468,7 @@ model Event {
   refundRequests RefundRequest[]
   groupOrders  GroupOrder[]
   promoCodes   PromoCode[]
+  calendarEvents CalendarEvent[] @relation("CalendarLinkedEvent")
   @@index([status, startsAt])
   @@index([organizerId])
   @@index([categoryId])
@@ -837,6 +840,68 @@ model GroupOrderSlot {
 
   @@index([groupOrderId, status])
   @@map("group_order_slots")
+}
+
+// ─── User Calendar ────────────────────────────────────────────────────────────
+
+model UserCalendar {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?  @db.Text
+  /// Hex color for display, e.g. "#7c3aed"
+  color       String   @default("#7c3aed")
+  /// Opaque token used for public share links / ICS export
+  shareToken  String   @unique @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events      CalendarEvent[]
+  shares      CalendarShare[]
+
+  @@index([userId])
+  @@map("user_calendars")
+}
+
+model CalendarEvent {
+  id           String    @id @default(cuid())
+  calendarId   String
+  title        String
+  description  String?   @db.Text
+  location     String?
+  startsAt     DateTime
+  endsAt       DateTime?
+  /// true = all-day event (time portion is ignored in display)
+  allDay       Boolean   @default(false)
+  /// Optional link to a SWITCH platform Event
+  linkedEventId String?
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  calendar     UserCalendar  @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  linkedEvent  Event?        @relation("CalendarLinkedEvent", fields: [linkedEventId], references: [id], onDelete: SetNull)
+
+  @@index([calendarId, startsAt])
+  @@map("calendar_events")
+}
+
+model CalendarShare {
+  id           String   @id @default(cuid())
+  calendarId   String
+  /// The user this calendar is shared with
+  sharedWithId String
+  /// Whether the recipient can add events to their own calendar from this share
+  canCopy      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  calendar     UserCalendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  sharedWith   User         @relation("CalendarSharedWith", fields: [sharedWithId], references: [id], onDelete: Cascade)
+
+  @@unique([calendarId, sharedWithId])
+  @@index([sharedWithId])
+  @@map("calendar_shares")
 }
 
 // ─── Promo Code ───────────────────────────────────────────────────────────────

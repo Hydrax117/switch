@@ -422,6 +422,9 @@ export const ModelName = {
   RefundRequest: 'RefundRequest',
   GroupOrder: 'GroupOrder',
   GroupOrderSlot: 'GroupOrderSlot',
+  UserCalendar: 'UserCalendar',
+  CalendarEvent: 'CalendarEvent',
+  CalendarShare: 'CalendarShare',
   PromoCode: 'PromoCode'
 } as const
 
@@ -438,7 +441,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "account" | "session" | "verificationToken" | "organizer" | "organizerApplication" | "category" | "venue" | "seatMap" | "section" | "row" | "seat" | "event" | "eventSpeaker" | "eventImage" | "ticketType" | "eventSeat" | "reservation" | "ticket" | "payment" | "payoutRequest" | "eventReview" | "refundRequest" | "groupOrder" | "groupOrderSlot" | "promoCode"
+    modelProps: "user" | "account" | "session" | "verificationToken" | "organizer" | "organizerApplication" | "category" | "venue" | "seatMap" | "section" | "row" | "seat" | "event" | "eventSpeaker" | "eventImage" | "ticketType" | "eventSeat" | "reservation" | "ticket" | "payment" | "payoutRequest" | "eventReview" | "refundRequest" | "groupOrder" | "groupOrderSlot" | "userCalendar" | "calendarEvent" | "calendarShare" | "promoCode"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2292,6 +2295,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UserCalendar: {
+      payload: Prisma.$UserCalendarPayload<ExtArgs>
+      fields: Prisma.UserCalendarFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserCalendarFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserCalendarFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>
+        }
+        findFirst: {
+          args: Prisma.UserCalendarFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserCalendarFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>
+        }
+        findMany: {
+          args: Prisma.UserCalendarFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>[]
+        }
+        create: {
+          args: Prisma.UserCalendarCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>
+        }
+        createMany: {
+          args: Prisma.UserCalendarCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserCalendarCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>[]
+        }
+        delete: {
+          args: Prisma.UserCalendarDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>
+        }
+        update: {
+          args: Prisma.UserCalendarUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserCalendarDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserCalendarUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserCalendarUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserCalendarUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserCalendarPayload>
+        }
+        aggregate: {
+          args: Prisma.UserCalendarAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserCalendar>
+        }
+        groupBy: {
+          args: Prisma.UserCalendarGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserCalendarGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserCalendarCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserCalendarCountAggregateOutputType> | number
+        }
+      }
+    }
+    CalendarEvent: {
+      payload: Prisma.$CalendarEventPayload<ExtArgs>
+      fields: Prisma.CalendarEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CalendarEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CalendarEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        findFirst: {
+          args: Prisma.CalendarEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CalendarEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        findMany: {
+          args: Prisma.CalendarEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>[]
+        }
+        create: {
+          args: Prisma.CalendarEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        createMany: {
+          args: Prisma.CalendarEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CalendarEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>[]
+        }
+        delete: {
+          args: Prisma.CalendarEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        update: {
+          args: Prisma.CalendarEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.CalendarEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CalendarEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CalendarEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.CalendarEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        aggregate: {
+          args: Prisma.CalendarEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCalendarEvent>
+        }
+        groupBy: {
+          args: Prisma.CalendarEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CalendarEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    CalendarShare: {
+      payload: Prisma.$CalendarSharePayload<ExtArgs>
+      fields: Prisma.CalendarShareFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CalendarShareFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CalendarShareFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>
+        }
+        findFirst: {
+          args: Prisma.CalendarShareFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CalendarShareFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>
+        }
+        findMany: {
+          args: Prisma.CalendarShareFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>[]
+        }
+        create: {
+          args: Prisma.CalendarShareCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>
+        }
+        createMany: {
+          args: Prisma.CalendarShareCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CalendarShareCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>[]
+        }
+        delete: {
+          args: Prisma.CalendarShareDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>
+        }
+        update: {
+          args: Prisma.CalendarShareUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>
+        }
+        deleteMany: {
+          args: Prisma.CalendarShareDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CalendarShareUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CalendarShareUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>[]
+        }
+        upsert: {
+          args: Prisma.CalendarShareUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarSharePayload>
+        }
+        aggregate: {
+          args: Prisma.CalendarShareAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCalendarShare>
+        }
+        groupBy: {
+          args: Prisma.CalendarShareGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarShareGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CalendarShareCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarShareCountAggregateOutputType> | number
+        }
+      }
+    }
     PromoCode: {
       payload: Prisma.$PromoCodePayload<ExtArgs>
       fields: Prisma.PromoCodeFieldRefs
@@ -2821,6 +3046,48 @@ export const GroupOrderSlotScalarFieldEnum = {
 } as const
 
 export type GroupOrderSlotScalarFieldEnum = (typeof GroupOrderSlotScalarFieldEnum)[keyof typeof GroupOrderSlotScalarFieldEnum]
+
+
+export const UserCalendarScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  description: 'description',
+  color: 'color',
+  shareToken: 'shareToken',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserCalendarScalarFieldEnum = (typeof UserCalendarScalarFieldEnum)[keyof typeof UserCalendarScalarFieldEnum]
+
+
+export const CalendarEventScalarFieldEnum = {
+  id: 'id',
+  calendarId: 'calendarId',
+  title: 'title',
+  description: 'description',
+  location: 'location',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  allDay: 'allDay',
+  linkedEventId: 'linkedEventId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
+
+
+export const CalendarShareScalarFieldEnum = {
+  id: 'id',
+  calendarId: 'calendarId',
+  sharedWithId: 'sharedWithId',
+  canCopy: 'canCopy',
+  createdAt: 'createdAt'
+} as const
+
+export type CalendarShareScalarFieldEnum = (typeof CalendarShareScalarFieldEnum)[keyof typeof CalendarShareScalarFieldEnum]
 
 
 export const PromoCodeScalarFieldEnum = {
@@ -3362,6 +3629,9 @@ export type GlobalOmitConfig = {
   refundRequest?: Prisma.RefundRequestOmit
   groupOrder?: Prisma.GroupOrderOmit
   groupOrderSlot?: Prisma.GroupOrderSlotOmit
+  userCalendar?: Prisma.UserCalendarOmit
+  calendarEvent?: Prisma.CalendarEventOmit
+  calendarShare?: Prisma.CalendarShareOmit
   promoCode?: Prisma.PromoCodeOmit
 }
 

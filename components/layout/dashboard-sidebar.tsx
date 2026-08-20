@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   CalendarDays,
+  CalendarRange,
   Ticket,
   Users,
   BarChart3,
@@ -26,6 +27,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/tickets', label: 'My Tickets', icon: Ticket },
+  { href: '/dashboard/calendar', label: 'Calendar', icon: CalendarRange },
   {
     href: '/dashboard/events',
     label: 'My Events',

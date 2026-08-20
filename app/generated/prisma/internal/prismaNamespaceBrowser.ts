@@ -76,6 +76,9 @@ export const ModelName = {
   RefundRequest: 'RefundRequest',
   GroupOrder: 'GroupOrder',
   GroupOrderSlot: 'GroupOrderSlot',
+  UserCalendar: 'UserCalendar',
+  CalendarEvent: 'CalendarEvent',
+  CalendarShare: 'CalendarShare',
   PromoCode: 'PromoCode'
 } as const
 
@@ -511,6 +514,48 @@ export const GroupOrderSlotScalarFieldEnum = {
 } as const
 
 export type GroupOrderSlotScalarFieldEnum = (typeof GroupOrderSlotScalarFieldEnum)[keyof typeof GroupOrderSlotScalarFieldEnum]
+
+
+export const UserCalendarScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  description: 'description',
+  color: 'color',
+  shareToken: 'shareToken',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserCalendarScalarFieldEnum = (typeof UserCalendarScalarFieldEnum)[keyof typeof UserCalendarScalarFieldEnum]
+
+
+export const CalendarEventScalarFieldEnum = {
+  id: 'id',
+  calendarId: 'calendarId',
+  title: 'title',
+  description: 'description',
+  location: 'location',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  allDay: 'allDay',
+  linkedEventId: 'linkedEventId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
+
+
+export const CalendarShareScalarFieldEnum = {
+  id: 'id',
+  calendarId: 'calendarId',
+  sharedWithId: 'sharedWithId',
+  canCopy: 'canCopy',
+  createdAt: 'createdAt'
+} as const
+
+export type CalendarShareScalarFieldEnum = (typeof CalendarShareScalarFieldEnum)[keyof typeof CalendarShareScalarFieldEnum]
 
 
 export const PromoCodeScalarFieldEnum = {

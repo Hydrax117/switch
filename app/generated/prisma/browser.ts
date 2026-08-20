@@ -143,6 +143,21 @@ export type GroupOrder = Prisma.GroupOrderModel
  */
 export type GroupOrderSlot = Prisma.GroupOrderSlotModel
 /**
+ * Model UserCalendar
+ * 
+ */
+export type UserCalendar = Prisma.UserCalendarModel
+/**
+ * Model CalendarEvent
+ * 
+ */
+export type CalendarEvent = Prisma.CalendarEventModel
+/**
+ * Model CalendarShare
+ * 
+ */
+export type CalendarShare = Prisma.CalendarShareModel
+/**
  * Model PromoCode
  * 
  */
