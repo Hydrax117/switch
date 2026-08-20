@@ -7,6 +7,19 @@ import { acceptShareByToken } from '@/features/calendar/actions'
 
 export const metadata: Metadata = { title: 'Join Calendar' }
 
+// ─── Server action (module-level — required by Next.js 16) ───────────────────
+
+async function acceptShare(formData: FormData) {
+  'use server'
+  const token = formData.get('token') as string
+  const session = await getSession()
+  if (!session) redirect(`/login?redirect=/dashboard/calendar/join/${token}`)
+  await acceptShareByToken(token)
+  redirect('/dashboard/calendar')
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default async function JoinCalendarPage({
   params,
 }: {
@@ -75,37 +88,17 @@ export default async function JoinCalendarPage({
           {calendar._count.events} event{calendar._count.events !== 1 ? 's' : ''}
         </p>
 
-        <AcceptShareForm token={token} />
+        <form action={acceptShare} className="mt-5">
+          <input type="hidden" name="token" value={token} />
+          <button
+            type="submit"
+            className="from-brand-600 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 px-4 py-2.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            <CheckCircle className="h-4.5 w-4.5" />
+            Add to my calendars
+          </button>
+        </form>
       </div>
     </div>
-  )
-}
-
-// ─── Form submits server action ───────────────────────────────────────────────
-
-function AcceptShareForm({ token }: { token: string }) {
-  return (
-    <form
-      className="mt-5"
-      action={async () => {
-        'use server'
-        const session = await (await import('@/lib/session')).getSession()
-        if (!session) redirect('/login')
-        const result = await acceptShareByToken(token)
-        if (result.success) {
-          redirect('/dashboard/calendar')
-        } else {
-          redirect('/dashboard/calendar')
-        }
-      }}
-    >
-      <button
-        type="submit"
-        className="from-brand-600 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 px-4 py-2.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
-      >
-        <CheckCircle className="h-4.5 w-4.5" />
-        Add to my calendars
-      </button>
-    </form>
   )
 }

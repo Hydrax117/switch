@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CalendarDays, Share2, Download, Trash2 } from 'lucide-react'
+import { CalendarDays, Download } from 'lucide-react'
 import { getSession } from '@/lib/session'
 import {
   getUserCalendars,
@@ -9,13 +9,13 @@ import {
   getSharedCalendars,
   getCalendarById,
 } from '@/features/calendar/queries'
-import { deleteCalendar } from '@/features/calendar/actions'
 import { CreateCalendarDialog } from '@/features/calendar/components/create-calendar-dialog'
 import { EditCalendarDialog } from '@/features/calendar/components/edit-calendar-dialog'
 import { ShareCalendarDialog } from '@/features/calendar/components/share-calendar-dialog'
 import { AddEventDialog } from '@/features/calendar/components/add-event-dialog'
 import { CalendarView } from '@/features/calendar/components/calendar-view'
 import { CopyEventsDialog } from '@/features/calendar/components/copy-events-dialog'
+import { DeleteCalendarButton } from '@/features/calendar/components/delete-calendar-button'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 
@@ -257,31 +257,7 @@ export default async function CalendarPage({
   )
 }
 
-// ─── Delete calendar button (server action via form) ──────────────────────────
-
-function DeleteCalendarButton({ calendarId }: { calendarId: string }) {
-  return (
-    <form
-      action={async () => {
-        'use server'
-        await deleteCalendar(calendarId)
-      }}
-    >
-      <button
-        type="submit"
-        aria-label="Delete calendar"
-        className="flex h-7 w-7 items-center justify-center rounded-md text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
-        onClick={(e) => {
-          if (!confirm('Delete this calendar and all its events?')) e.preventDefault()
-        }}
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
-    </form>
-  )
-}
-
-// ─── Export calendar button ───────────────────────────────────────────────────
+// ─── Export calendar button (plain anchor, no server action needed) ───────────
 
 function ExportCalendarButton({ calendarId, title }: { calendarId: string; title: string }) {
   return (
