@@ -437,8 +437,9 @@ export async function approveRefund(refundRequestId: string): Promise<ActionResu
       data: { status: PaymentStatus.REFUNDED },
     })
 
-    await tx.ticket.update({
-      where: { id: rr.payment.paystackReference ?? '' },
+    // Mark the linked ticket as refunded (Payment has a 1:1 with Ticket via ticketId FK)
+    await tx.ticket.updateMany({
+      where: { payment: { id: rr.paymentId } },
       data: { status: 'REFUNDED' },
     })
   })
