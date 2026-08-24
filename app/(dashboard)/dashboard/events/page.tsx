@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { Plus, CalendarDays, Eye, Settings, ScanLine } from 'lucide-react'
+import { Plus, CalendarDays, Eye, Settings, ScanLine, TrendingUp, Users, DollarSign, AlertCircle } from 'lucide-react'
 import { getSession } from '@/lib/session'
 import { getOrganizerByUserId, getOrganizerEvents } from '@/features/organizer/queries'
 import { format } from 'date-fns'
@@ -16,7 +16,11 @@ const STATUS_STYLES: Record<string, string> = {
   COMPLETED: 'bg-blue-500/10 text-blue-400',
 }
 
-export default async function OrganizerEventsPage() {
+interface EventsPageProps {
+  searchParams: Record<string, string | string[] | undefined>
+}
+
+export default async function OrganizerEventsPage({ searchParams }: EventsPageProps) {
   const session = await getSession()
   if (!session) redirect('/login')
   if (session.role !== 'ORGANIZER' && session.role !== 'ADMIN') {
@@ -26,16 +30,49 @@ export default async function OrganizerEventsPage() {
   const organizer = await getOrganizerByUserId(session.userId)
   if (!organizer) redirect('/dashboard')
 
-  const events = await getOrganizerEvents(organizer.id)
+  let events = await getOrganizerEvents(organizer.id)
+
+  // Apply filters
+  const statusFilter = typeof searchParams.status === 'string' ? searchParams.status : ''
+  const searchQuery = typeof searchParams.search === 'string' ? searchParams.search.toLowerCase() : ''
+
+  if (statusFilter && statusFilter !== 'ALL') {
+    events = events.filter((e) => e.status === statusFilter)
+  }
+
+  if (searchQuery) {
+    events = events.filter(
+      (e) =>
+        e.title.toLowerCase().includes(searchQuery) ||
+        e.venue?.name.toLowerCase().includes(searchQuery) ||
+        e.category?.name.toLowerCase().includes(searchQuery)
+    )
+  }
+
+  // Calculate statistics
+  const publishedEvents = events.filter((e) => e.status === 'PUBLISHED').length
+  const draftEvents = events.filter((e) => e.status === 'DRAFT').length
+  const totalRevenue = events.reduce((sum, event) => {
+    return sum + event.ticketTypes.reduce((tt_sum, tt) => tt_sum + tt.price * tt.sold, 0)
+  }, 0)
+  const totalTicketsSold = events.reduce((sum, event) => {
+    return sum + event.ticketTypes.reduce((tt_sum, tt) => tt_sum + tt.sold, 0)
+  }, 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-[22px] font-semibold tracking-tight">My Events</h1>
           <p className="text-muted-foreground mt-1 text-[14px]">
-            {events.length} event{events.length !== 1 ? 's' : ''} total
+            {events.length} event{events.length !== 1 ? 's' : ''}
+            {events.length > 0 && (
+              <>
+                {' '}
+                • {publishedEvents} published • {draftEvents} draft
+              </>
+            )}
           </p>
         </div>
         <Link
@@ -47,23 +84,98 @@ export default async function OrganizerEventsPage() {
         </Link>
       </div>
 
+      {/* ── Quick Stats ── */}
+      {events.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-brand-400" />
+              <span className="text-xs text-zinc-400">Total Events</span>
+            </div>
+            <div className="mt-1.5 text-2xl font-bold">{events.length}</div>
+          </div>
+          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-emerald-400" />
+              <span className="text-xs text-zinc-400">Published</span>
+            </div>
+            <div className="mt-1.5 text-2xl font-bold text-emerald-400">{publishedEvents}</div>
+          </div>
+          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-blue-400" />
+              <span className="text-xs text-zinc-400">Tickets Sold</span>
+            </div>
+            <div className="mt-1.5 text-2xl font-bold text-blue-400">{totalTicketsSold}</div>
+          </div>
+          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-amber-400" />
+              <span className="text-xs text-zinc-400">Revenue</span>
+            </div>
+            <div className="mt-1.5 text-2xl font-bold text-amber-400">
+              ₦{(totalRevenue / 100 / 1000000).toFixed(1)}M
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Filter & Search ── */}
+      {events.length > 0 && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <select
+              defaultValue={statusFilter || 'ALL'}
+              onChange={(e) => {
+                const params = new URLSearchParams()
+                if (e.target.value !== 'ALL') {
+                  params.set('status', e.target.value)
+                }
+                if (searchQuery) {
+                  params.set('search', searchQuery)
+                }
+                const queryString = params.toString()
+                window.location.href = `/dashboard/events${queryString ? '?' + queryString : ''}`
+              }}
+              className="h-10 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 transition-colors hover:border-zinc-600 focus:border-brand-500 focus:outline-none"
+            >
+              <option value="ALL">All Events</option>
+              <option value="DRAFT">Drafts</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       {/* ── Events list ── */}
       {events.length === 0 ? (
         <div className="border-border bg-surface flex flex-col items-center justify-center rounded-2xl border py-20 text-center">
           <div className="bg-muted mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
-            <CalendarDays className="text-muted-foreground h-7 w-7" />
+            {searchQuery || statusFilter ? (
+              <AlertCircle className="text-muted-foreground h-7 w-7" />
+            ) : (
+              <CalendarDays className="text-muted-foreground h-7 w-7" />
+            )}
           </div>
-          <p className="text-[16px] font-semibold">No events yet</p>
-          <p className="text-muted-foreground mt-1.5 max-w-xs text-[14px]">
-            Create your first event and start selling tickets.
+          <p className="text-[16px] font-semibold">
+            {searchQuery || statusFilter ? 'No events match your filters' : 'No events yet'}
           </p>
-          <Link
-            href="/dashboard/events/new"
-            className="from-brand-600 mt-6 flex items-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 px-5 py-2.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
-          >
-            <Plus className="h-4 w-4" />
-            Create Event
-          </Link>
+          <p className="text-muted-foreground mt-1.5 max-w-xs text-[14px]">
+            {searchQuery || statusFilter
+              ? 'Try adjusting your search or filters.'
+              : 'Create your first event and start selling tickets.'}
+          </p>
+          {!searchQuery && !statusFilter && (
+            <Link
+              href="/dashboard/events/new"
+              className="from-brand-600 mt-6 flex items-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 px-5 py-2.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              <Plus className="h-4 w-4" />
+              Create Event
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
@@ -71,11 +183,13 @@ export default async function OrganizerEventsPage() {
             const totalRevenue = event.ticketTypes.reduce((sum, tt) => sum + tt.price * tt.sold, 0)
             const totalCapacity = event.ticketTypes.reduce((sum, tt) => sum + (tt.quantity ?? 0), 0)
             const totalSold = event.ticketTypes.reduce((sum, tt) => sum + tt.sold, 0)
+            const occupancyPercent =
+              totalCapacity > 0 ? Math.round((totalSold / totalCapacity) * 100) : 0
 
             return (
               <div
                 key={event.id}
-                className="border-border bg-surface rounded-2xl border p-4 sm:p-5"
+                className="border-border bg-surface rounded-2xl border p-4 sm:p-5 transition-all hover:border-brand-500/30"
               >
                 <div className="flex items-start gap-3">
                   {/* Info — takes all space */}
@@ -101,22 +215,35 @@ export default async function OrganizerEventsPage() {
                     <h3 className="mt-2 text-[14.5px] font-semibold leading-snug">{event.title}</h3>
                     <p className="text-muted-foreground mt-0.5 text-[12px]">
                       {format(event.startsAt, 'EEE, MMM d, yyyy · h:mm a')}
-                      {event.venue ? ` · ${event.venue.name}` : ''}
+                      {event.venue ? ` · ${event.venue.name}, ${event.venue.city}` : ''}
                     </p>
 
-                    {/* Stats row — inline on mobile */}
-                    <div className="mt-3 flex items-center gap-4 text-[12.5px]">
-                      <div>
-                        <span className="font-bold">{totalSold}</span>
-                        {totalCapacity > 0 && (
-                          <span className="text-muted-foreground"> / {totalCapacity}</span>
-                        )}
-                        <span className="text-muted-foreground ml-1">sold</span>
+                    {/* Stats row with progress bar */}
+                    <div className="mt-3 space-y-2">
+                      <div className="flex flex-wrap items-center gap-4 text-[12.5px]">
+                        <div>
+                          <span className="font-bold">{totalSold}</span>
+                          {totalCapacity > 0 && (
+                            <span className="text-muted-foreground"> / {totalCapacity}</span>
+                          )}
+                          <span className="text-muted-foreground ml-1">sold</span>
+                          {occupancyPercent > 0 && (
+                            <span className="text-muted-foreground ml-1">({occupancyPercent}%)</span>
+                          )}
+                        </div>
+                        <div>
+                          <span className="font-bold">₦{(totalRevenue / 100).toLocaleString()}</span>
+                          <span className="text-muted-foreground ml-1">revenue</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-bold">₦{(totalRevenue / 100).toLocaleString()}</span>
-                        <span className="text-muted-foreground ml-1">revenue</span>
-                      </div>
+                      {totalCapacity > 0 && (
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+                          <div
+                            className="h-full bg-gradient-to-r from-brand-500 to-violet-600 transition-all"
+                            style={{ width: `${occupancyPercent}%` }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -126,6 +253,7 @@ export default async function OrganizerEventsPage() {
                       href={`/dashboard/events/${event.id}`}
                       aria-label="Manage event"
                       className="text-muted-foreground hover:text-foreground border-border hover:bg-muted flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
+                      title="Edit"
                     >
                       <Settings className="h-4 w-4" />
                     </Link>
@@ -134,6 +262,7 @@ export default async function OrganizerEventsPage() {
                       target="_blank"
                       aria-label="View public page"
                       className="text-muted-foreground hover:text-foreground border-border hover:bg-muted flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
+                      title="View"
                     >
                       <Eye className="h-4 w-4" />
                     </Link>
@@ -141,6 +270,7 @@ export default async function OrganizerEventsPage() {
                       href={`/dashboard/events/${event.id}/scan`}
                       aria-label="Check-in scanner"
                       className="text-muted-foreground hover:text-foreground border-border hover:bg-muted flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
+                      title="Scan"
                     >
                       <ScanLine className="h-4 w-4" />
                     </Link>

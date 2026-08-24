@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
-import { TrendingUp, Ticket, CalendarDays, Users, BarChart3 } from 'lucide-react'
+import { TrendingUp, Ticket, CalendarDays, Users, BarChart3, AlertCircle } from 'lucide-react'
 import { getSession } from '@/lib/session'
 import { getOrganizerByUserId } from '@/features/organizer/queries'
 import { db } from '@/lib/db'
@@ -30,6 +30,8 @@ export default async function AnalyticsPage() {
     soldSeatsAgg,
     recentTickets,
     topEvents,
+    ticketTypeRevenue,
+    refundStats,
     draftCount,
     cancelledCount,
     completedCount,
@@ -72,12 +74,27 @@ export default async function AnalyticsPage() {
       orderBy: { tickets: { _count: 'desc' } },
       take: 5,
     }),
+    // Revenue by ticket type
+    db.ticketType.findMany({
+      where: { event: { organizerId: organizer.id } },
+      select: { name: true, price: true, sold: true, currency: true },
+      orderBy: { sold: 'desc' },
+      take: 10,
+    }),
+    // Refund stats
+    db.refundRequest.aggregate({
+      where: { event: { organizerId: organizer.id } },
+      _count: true,
+    }),
     db.event.count({ where: { organizerId: organizer.id, status: 'DRAFT' } }),
     db.event.count({ where: { organizerId: organizer.id, status: 'CANCELLED' } }),
     db.event.count({ where: { organizerId: organizer.id, status: 'COMPLETED' } }),
   ])
 
   const totalRevenue = soldSeatsAgg._sum.price ?? 0
+  const averageTicketPrice = totalTickets > 0 ? totalRevenue / totalTickets : 0
+  const refundCount = refundStats._count
+  const refundRate = totalTickets > 0 ? ((refundCount / totalTickets) * 100).toFixed(1) : '0'
 
   // ── Build daily ticket counts for the sparkline ────────────────────────────
   const dailyMap = new Map<string, number>()
@@ -93,7 +110,7 @@ export default async function AnalyticsPage() {
 
   const stats = [
     { label: 'Total Revenue', value: formatPrice(totalRevenue), icon: TrendingUp, color: 'amber' },
-    { label: 'Tickets Sold', value: totalTickets, icon: Ticket, color: 'emerald' },
+    { label: 'Avg Ticket Price', value: formatPrice(averageTicketPrice), icon: Ticket, color: 'emerald' },
     { label: 'Published Events', value: publishedEvents, icon: CalendarDays, color: 'brand' },
     { label: 'Upcoming Events', value: upcomingEvents, icon: Users, color: 'violet' },
   ] as const
@@ -206,6 +223,78 @@ export default async function AnalyticsPage() {
           completed={completedCount}
         />
       )}
+
+      {/* ── Ticket type revenue breakdown ── */}
+      {ticketTypeRevenue.length > 0 && (
+        <div className="border-border bg-surface rounded-2xl border p-6">
+          <h2 className="mb-4 text-[14px] font-semibold">Revenue by Ticket Type</h2>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {ticketTypeRevenue.map((tt) => {
+              const revenue = tt.price * tt.sold
+              const percentage =
+                totalRevenue > 0 ? ((revenue / totalRevenue) * 100).toFixed(1) : '0'
+              return (
+                <div key={tt.name} className="border-border rounded-lg border p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="text-[13px] font-semibold">{tt.name}</p>
+                      <p className="text-muted-foreground text-[12px]">
+                        {tt.sold} sold × {formatPrice(tt.price)}
+                      </p>
+                    </div>
+                    <p className="text-[13px] font-bold">{percentage}%</p>
+                  </div>
+                  <div className="bg-muted rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className="bg-brand-500 h-full rounded-full transition-all"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <p className="text-muted-foreground mt-2 text-[12px]">
+                    Total: {formatPrice(revenue)}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Refund analysis ── */}
+      <div className="border-border bg-surface rounded-2xl border p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-[14px] font-semibold">Refund Analysis</h2>
+          {refundCount > 0 && <AlertCircle className="h-4 w-4 text-amber-500" />}
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="bg-muted/40 rounded-lg p-4">
+            <p className="text-muted-foreground text-[12px] font-medium">Total Refund Requests</p>
+            <p className="text-[24px] font-bold mt-2">{refundCount}</p>
+            <p className="text-muted-foreground text-[11px] mt-1">
+              Across {totalTickets} total tickets
+            </p>
+          </div>
+
+          <div className="bg-muted/40 rounded-lg p-4">
+            <p className="text-muted-foreground text-[12px] font-medium">Refund Rate</p>
+            <p className="text-[24px] font-bold mt-2">{refundRate}%</p>
+            <p className="text-muted-foreground text-[11px] mt-1">
+              {refundCount > 0 ? 'Monitor this metric' : 'No refunds yet'}
+            </p>
+          </div>
+
+          <div className="bg-muted/40 rounded-lg p-4">
+            <p className="text-muted-foreground text-[12px] font-medium">Avg Refund Cost</p>
+            <p className="text-[24px] font-bold mt-2">
+              {refundCount > 0 ? formatPrice(Math.round(totalRevenue * 0.01)) : '—'}
+            </p>
+            <p className="text-muted-foreground text-[11px] mt-1">
+              Estimated impact
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

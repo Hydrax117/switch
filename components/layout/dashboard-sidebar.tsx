@@ -27,6 +27,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/tickets', label: 'My Tickets', icon: Ticket },
+  { href: '/dashboard/bookings', label: 'My Bookings', icon: Users },
   { href: '/dashboard/calendar', label: 'Calendar', icon: CalendarRange },
   {
     href: '/dashboard/events',

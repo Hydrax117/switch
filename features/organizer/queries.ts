@@ -1,6 +1,6 @@
 import 'server-only'
 import { db } from '@/lib/db'
-import { EventStatus } from '@/app/generated/prisma/client'
+import { EventStatus, TicketStatus } from '@/app/generated/prisma/client'
 
 // ─── Get organizer profile for a user ────────────────────────────────────────
 
@@ -115,15 +115,60 @@ export async function getEventSpeakers(eventId: string) {
 
 // ─── User ticket history ──────────────────────────────────────────────────────
 
-export async function getUserTickets(userId: string) {
+export async function getUserTickets(userId: string, filters?: { status?: string | TicketStatus }): Promise<Array<{
+  id: string
+  ticketNumber: string
+  qrCode: string
+  status: TicketStatus
+  issuedAt: Date
+  createdAt: Date
+  updatedAt: Date
+  eventId: string
+  ticketTypeId: string
+  userId: string
+  eventSeatId: string | null
+  event: {
+    id: string
+    title: string
+    slug: string
+    imageUrl: string | null
+    startsAt: Date
+    venue: { id: string; name: string; city: string } | null
+  }
+  ticketType: {
+    id: string
+    name: string
+    price: number
+    currency: string
+  }
+  eventSeat: {
+    id: string
+    seat: { id: string; label: string; number: number | null }
+  } | null
+}>> {
+  // Validate status is a valid TicketStatus if provided
+  const validStatuses = ['ACTIVE', 'USED', 'REFUNDED', 'CANCELLED', 'EXPIRED']
+  const status = filters?.status && validStatuses.includes(filters.status) 
+    ? (filters.status as TicketStatus)
+    : undefined
+
   return db.ticket.findMany({
-    where: { userId },
+    where: {
+      userId,
+      ...(status ? { status } : {}),
+    },
     select: {
       id: true,
       ticketNumber: true,
       qrCode: true,
       status: true,
       issuedAt: true,
+      createdAt: true,
+      updatedAt: true,
+      eventId: true,
+      ticketTypeId: true,
+      userId: true,
+      eventSeatId: true,
       event: {
         select: {
           id: true,
@@ -131,16 +176,18 @@ export async function getUserTickets(userId: string) {
           slug: true,
           imageUrl: true,
           startsAt: true,
-          venue: { select: { name: true, city: true } },
+          venue: { select: { id: true, name: true, city: true } },
         },
       },
-      ticketType: { select: { name: true, currency: true } },
+      ticketType: { select: { id: true, name: true, price: true, currency: true } },
       eventSeat: {
         select: {
-          seat: { select: { label: true } },
+          id: true,
+          seat: { select: { id: true, label: true, number: true } },
         },
       },
     },
     orderBy: { issuedAt: 'desc' },
   })
 }
+
