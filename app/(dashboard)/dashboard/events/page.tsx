@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { Plus, CalendarDays, Eye, Settings, ScanLine, TrendingUp, Users, DollarSign, AlertCircle } from 'lucide-react'
 import { getSession } from '@/lib/session'
 import { getOrganizerByUserId, getOrganizerEvents } from '@/features/organizer/queries'
+import { EventStatusFilter } from '@/features/events/components/event-status-filter'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 
@@ -149,31 +150,7 @@ export default async function OrganizerEventsPage({ searchParams }: EventsPagePr
 
         {/* ── Filter & Search ── */}
         {events.length > 0 && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <select
-                defaultValue={statusFilter || 'ALL'}
-                onChange={(e) => {
-                  const params = new URLSearchParams()
-                  if (e.target.value !== 'ALL') {
-                    params.set('status', e.target.value)
-                  }
-                  if (searchQuery) {
-                    params.set('search', searchQuery)
-                  }
-                  const queryString = params.toString()
-                  window.location.href = `/dashboard/events${queryString ? '?' + queryString : ''}`
-                }}
-                className="h-10 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 transition-colors hover:border-zinc-600 focus:border-brand-500 focus:outline-none"
-              >
-                <option value="ALL">All Events</option>
-                <option value="DRAFT">Drafts</option>
-                <option value="PUBLISHED">Published</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="CANCELLED">Cancelled</option>
-              </select>
-            </div>
-          </div>
+          <EventStatusFilter statusFilter={statusFilter} searchQuery={searchQuery} />
         )}
 
         {/* ── Events list ── */}
