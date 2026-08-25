@@ -338,4 +338,3 @@ export default async function OrganizerEventsPage({ searchParams }: EventsPagePr
     )
   }
 }
-}
