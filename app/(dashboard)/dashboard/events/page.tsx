@@ -28,7 +28,33 @@ export default async function OrganizerEventsPage({ searchParams }: EventsPagePr
   }
 
   const organizer = await getOrganizerByUserId(session.userId)
-  if (!organizer) redirect('/dashboard')
+  if (!organizer) {
+    // User is marked as organizer but has no organizer profile
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-[22px] font-semibold tracking-tight">My Events</h1>
+          <p className="text-muted-foreground mt-1 text-[14px]">Manage your events</p>
+        </div>
+
+        <div className="border-border bg-surface flex flex-col items-center justify-center rounded-2xl border py-20 text-center">
+          <div className="bg-muted mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
+            <AlertCircle className="text-muted-foreground h-7 w-7" />
+          </div>
+          <p className="text-[16px] font-semibold">Organizer profile not found</p>
+          <p className="text-muted-foreground mt-1.5 max-w-xs text-[14px]">
+            Your organizer profile needs to be set up. Please contact support if this persists.
+          </p>
+          <Link
+            href="/dashboard"
+            className="from-brand-600 mt-6 flex items-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 px-5 py-2.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   let events = await getOrganizerEvents(organizer.id)
 

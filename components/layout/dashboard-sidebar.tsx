@@ -24,11 +24,15 @@ interface NavItem {
   roles?: string[]
 }
 
-const NAV: NavItem[] = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+// GUEST section items
+const GUEST_NAV: NavItem[] = [
   { href: '/dashboard/tickets', label: 'My Tickets', icon: Ticket },
   { href: '/dashboard/bookings', label: 'My Bookings', icon: Users },
   { href: '/dashboard/calendar', label: 'Calendar', icon: CalendarRange },
+]
+
+// ORGANIZER section items
+const ORGANIZER_NAV: NavItem[] = [
   {
     href: '/dashboard/events',
     label: 'My Events',
@@ -43,6 +47,11 @@ const NAV: NavItem[] = [
     roles: ['ORGANIZER', 'ADMIN'],
   },
   { href: '/dashboard/admin', label: 'Admin', icon: ShieldCheck, roles: ['ADMIN'] },
+]
+
+// Always available
+const BASE_NAV: NavItem[] = [
+  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -53,7 +62,11 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ role }: DashboardSidebarProps) {
   const pathname = usePathname()
 
-  const visible = NAV.filter((item) => !item.roles || item.roles.includes(role))
+  const isOrganizer = role === 'ORGANIZER' || role === 'ADMIN'
+
+  // Filter nav items based on role
+  const guestItems = GUEST_NAV
+  const organizerItems = isOrganizer ? ORGANIZER_NAV.filter((item) => !item.roles || item.roles.includes(role)) : []
 
   return (
     <aside className="border-border bg-surface hidden w-[220px] shrink-0 border-r lg:flex lg:flex-col">
@@ -78,12 +91,9 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Dashboard navigation">
         <ul className="space-y-0.5" role="list">
-          {visible.map((item) => {
-            const isActive =
-              item.href === '/dashboard'
-                ? pathname === '/dashboard'
-                : pathname.startsWith(item.href)
-
+          {/* Base nav (Overview) */}
+          {BASE_NAV.map((item) => {
+            const isActive = item.href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(item.href)
             return (
               <li key={item.href}>
                 <Link
@@ -104,6 +114,70 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
             )
           })}
         </ul>
+
+        {/* GUEST section */}
+        {guestItems.length > 0 && (
+          <div className="mt-6">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Guest
+            </p>
+            <ul className="mt-2 space-y-0.5" role="list">
+              {guestItems.map((item) => {
+                const isActive = pathname.startsWith(item.href)
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors',
+                        isActive
+                          ? 'bg-brand-500/10 text-brand-400'
+                          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                      )}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {item.label}
+                      {isActive && <ChevronRight className="text-brand-400/60 ml-auto h-3 w-3" />}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )}
+
+        {/* ORGANIZER section */}
+        {organizerItems.length > 0 && (
+          <div className="mt-6">
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Organizer
+            </p>
+            <ul className="mt-2 space-y-0.5" role="list">
+              {organizerItems.map((item) => {
+                const isActive = pathname.startsWith(item.href)
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors',
+                        isActive
+                          ? 'bg-brand-500/10 text-brand-400'
+                          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                      )}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {item.label}
+                      {isActive && <ChevronRight className="text-brand-400/60 ml-auto h-3 w-3" />}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )}
       </nav>
 
       {/* Footer */}
