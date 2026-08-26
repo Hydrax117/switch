@@ -142,10 +142,10 @@ export function CreateEventForm({ categories }: CreateEventFormProps) {
         </Field>
       )}
 
-      {/* Venue — Google Places Autocomplete */}
+      {/* Venue — Manual entry */}
       {!isVirtual && (
         <>
-          <Field label="Venue Name" hint="Search on Google Maps or type a name">
+          <Field label="Venue Name" hint="Enter the venue or location name">
             <VenuePicker onSelect={setVenue} />
           </Field>
           <Field label="State & City / LGA" hint="Select the event location">

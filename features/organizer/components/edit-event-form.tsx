@@ -186,10 +186,10 @@ export function EditEventForm({ event, categories }: EditEventFormProps) {
           </Field>
         )}
 
-        {/* Venue — only when not virtual */}
+        {/* Venue — Manual entry */}
         {!isVirtual && (
           <>
-            <Field label="Venue Name" hint="Search on Google Maps or type a name">
+            <Field label="Venue Name" hint="Enter the venue or location name">
               <VenuePicker defaultValue={event.venue?.name} onSelect={setVenue} />
             </Field>
             <Field label="State & City / LGA" hint="Select the event location">

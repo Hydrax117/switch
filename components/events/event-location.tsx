@@ -11,12 +11,8 @@ export function EventLocation({ venue }: EventLocationProps) {
   if (!venue) return null
 
   const address = [venue.name, venue.city, venue.state, venue.country].filter(Boolean).join(', ')
-
   const mapsQuery = encodeURIComponent(address)
   const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`
-
-  // Static map image via a public embed-friendly API
-  const mapImageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${mapsQuery}&zoom=14&size=800x280&scale=2&style=element:geometry%7Ccolor:0x1a1a1a&style=element:labels.text.fill%7Ccolor:0x757575&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU3Kro`
 
   return (
     <section aria-labelledby="location-heading">

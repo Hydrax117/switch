@@ -50,7 +50,6 @@ const serverSchema = z.object({
 const clientSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
   NEXT_PUBLIC_APP_NAME: z.string().default('SWITCH'),
-  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().optional(),
   NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: z.string().startsWith('pk_').optional(),
 })
 
@@ -78,7 +77,6 @@ function validateEnv() {
   const parsed = clientSchema.safeParse({
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
   })
 
   return parsed.data ?? {}

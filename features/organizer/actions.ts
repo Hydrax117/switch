@@ -88,27 +88,17 @@ async function uniqueSlug(base: string): Promise<string> {
 }
 
 /**
- * Find or create a Venue from a Google Places selection.
- * Uses place_id as the stable dedup key when available;
- * falls back to exact name+city match.
+ * Find or create a Venue from manual venue input.
+ * Falls back to exact name+city match to avoid duplicates.
  */
 async function resolveVenueId(
   input: z.infer<typeof venueInputSchema>
 ): Promise<string | undefined> {
-  const { venue_name, venue_address, venue_city, venue_state, venue_country, venue_place_id } =
-    input
+  const { venue_name, venue_address, venue_city, venue_state, venue_country } = input
 
   if (!venue_name) return undefined
 
-  // Try to find existing venue by place_id first (most stable), then name+city
-  if (venue_place_id) {
-    const existing = await db.venue.findFirst({
-      where: { address: { contains: venue_place_id } },
-      select: { id: true },
-    })
-    if (existing) return existing.id
-  }
-
+  // Try to find existing venue by name+city first
   if (venue_city) {
     const existing = await db.venue.findFirst({
       where: {
@@ -124,10 +114,7 @@ async function resolveVenueId(
   const venue = await db.venue.create({
     data: {
       name: venue_name,
-      // Store full formatted address; append place_id for future dedup
-      address: venue_place_id
-        ? `${venue_address ?? ''}||place_id:${venue_place_id}`
-        : (venue_address ?? undefined),
+      address: venue_address ?? undefined,
       city: venue_city ?? 'Unknown',
       state: venue_state ?? undefined,
       country: venue_country ?? 'Nigeria',
