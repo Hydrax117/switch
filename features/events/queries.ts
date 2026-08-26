@@ -21,7 +21,7 @@ const eventListSelect = {
     select: { name: true, slug: true },
   },
   venue: {
-    select: { name: true, city: true, state: true },
+    select: { id: true, name: true, address: true, city: true, state: true },
   },
   category: {
     select: { name: true, slug: true, color: true },
@@ -102,7 +102,7 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
         select: { id: true, name: true, slug: true, logoUrl: true },
       },
       venue: {
-        select: { id: true, name: true, city: true, state: true, country: true },
+        select: { id: true, name: true, address: true, city: true, state: true, country: true },
       },
       category: {
         select: { id: true, name: true, slug: true, color: true },
@@ -163,7 +163,7 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
         select: { id: true, name: true, slug: true, logoUrl: true },
       },
       venue: {
-        select: { id: true, name: true, city: true, state: true, country: true },
+        select: { id: true, name: true, address: true, city: true, state: true, country: true },
       },
       category: {
         select: { id: true, name: true, slug: true, color: true },

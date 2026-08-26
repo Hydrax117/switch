@@ -14,7 +14,7 @@ import type {
 
 export type EventWithRelations = Event & {
   organizer: Pick<Organizer, 'id' | 'name' | 'slug' | 'logoUrl'>
-  venue: Pick<Venue, 'id' | 'name' | 'city' | 'state' | 'country'> | null
+  venue: Pick<Venue, 'id' | 'name' | 'address' | 'city' | 'state' | 'country'> | null
   category: Pick<Category, 'id' | 'name' | 'slug' | 'color'> | null
   ticketTypes: TicketType[]
   _count: {
@@ -36,7 +36,7 @@ export type EventListItem = Pick<
   | 'capacity'
 > & {
   organizer: Pick<Organizer, 'name' | 'slug'>
-  venue: Pick<Venue, 'name' | 'city' | 'state'> | null
+  venue: Pick<Venue, 'id' | 'name' | 'address' | 'city' | 'state'> | null
   category: Pick<Category, 'name' | 'slug' | 'color'> | null
   ticketTypes: Pick<
     TicketType,

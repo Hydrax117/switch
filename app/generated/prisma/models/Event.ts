@@ -49,6 +49,11 @@ export type EventMinAggregateOutputType = {
   isFree: boolean | null
   isVirtual: boolean | null
   virtualLink: string | null
+  venueName: string | null
+  venueAddress: string | null
+  venueCity: string | null
+  venueState: string | null
+  venueCountry: string | null
   startsAt: Date | null
   endsAt: Date | null
   salesStart: Date | null
@@ -73,6 +78,11 @@ export type EventMaxAggregateOutputType = {
   isFree: boolean | null
   isVirtual: boolean | null
   virtualLink: string | null
+  venueName: string | null
+  venueAddress: string | null
+  venueCity: string | null
+  venueState: string | null
+  venueCountry: string | null
   startsAt: Date | null
   endsAt: Date | null
   salesStart: Date | null
@@ -97,6 +107,11 @@ export type EventCountAggregateOutputType = {
   isFree: number
   isVirtual: number
   virtualLink: number
+  venueName: number
+  venueAddress: number
+  venueCity: number
+  venueState: number
+  venueCountry: number
   startsAt: number
   endsAt: number
   salesStart: number
@@ -131,6 +146,11 @@ export type EventMinAggregateInputType = {
   isFree?: true
   isVirtual?: true
   virtualLink?: true
+  venueName?: true
+  venueAddress?: true
+  venueCity?: true
+  venueState?: true
+  venueCountry?: true
   startsAt?: true
   endsAt?: true
   salesStart?: true
@@ -155,6 +175,11 @@ export type EventMaxAggregateInputType = {
   isFree?: true
   isVirtual?: true
   virtualLink?: true
+  venueName?: true
+  venueAddress?: true
+  venueCity?: true
+  venueState?: true
+  venueCountry?: true
   startsAt?: true
   endsAt?: true
   salesStart?: true
@@ -179,6 +204,11 @@ export type EventCountAggregateInputType = {
   isFree?: true
   isVirtual?: true
   virtualLink?: true
+  venueName?: true
+  venueAddress?: true
+  venueCity?: true
+  venueState?: true
+  venueCountry?: true
   startsAt?: true
   endsAt?: true
   salesStart?: true
@@ -290,6 +320,11 @@ export type EventGroupByOutputType = {
   isFree: boolean
   isVirtual: boolean
   virtualLink: string | null
+  venueName: string | null
+  venueAddress: string | null
+  venueCity: string | null
+  venueState: string | null
+  venueCountry: string | null
   startsAt: Date
   endsAt: Date | null
   salesStart: Date | null
@@ -337,6 +372,11 @@ export type EventWhereInput = {
   isFree?: Prisma.BoolFilter<"Event"> | boolean
   isVirtual?: Prisma.BoolFilter<"Event"> | boolean
   virtualLink?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueName?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueAddress?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueCity?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueState?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueCountry?: Prisma.StringNullableFilter<"Event"> | string | null
   startsAt?: Prisma.DateTimeFilter<"Event"> | Date | string
   endsAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   salesStart?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -378,6 +418,11 @@ export type EventOrderByWithRelationInput = {
   isFree?: Prisma.SortOrder
   isVirtual?: Prisma.SortOrder
   virtualLink?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueName?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueCity?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueState?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueCountry?: Prisma.SortOrderInput | Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   salesStart?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -422,6 +467,11 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   isFree?: Prisma.BoolFilter<"Event"> | boolean
   isVirtual?: Prisma.BoolFilter<"Event"> | boolean
   virtualLink?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueName?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueAddress?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueCity?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueState?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueCountry?: Prisma.StringNullableFilter<"Event"> | string | null
   startsAt?: Prisma.DateTimeFilter<"Event"> | Date | string
   endsAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   salesStart?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -463,6 +513,11 @@ export type EventOrderByWithAggregationInput = {
   isFree?: Prisma.SortOrder
   isVirtual?: Prisma.SortOrder
   virtualLink?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueName?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueCity?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueState?: Prisma.SortOrderInput | Prisma.SortOrder
+  venueCountry?: Prisma.SortOrderInput | Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   salesStart?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -495,6 +550,11 @@ export type EventScalarWhereWithAggregatesInput = {
   isFree?: Prisma.BoolWithAggregatesFilter<"Event"> | boolean
   isVirtual?: Prisma.BoolWithAggregatesFilter<"Event"> | boolean
   virtualLink?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
+  venueName?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
+  venueAddress?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
+  venueCity?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
+  venueState?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
+  venueCountry?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
   startsAt?: Prisma.DateTimeWithAggregatesFilter<"Event"> | Date | string
   endsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
   salesStart?: Prisma.DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
@@ -515,6 +575,11 @@ export type EventCreateInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -556,6 +621,11 @@ export type EventUncheckedCreateInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -589,6 +659,11 @@ export type EventUpdateInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -630,6 +705,11 @@ export type EventUncheckedUpdateInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -667,6 +747,11 @@ export type EventCreateManyInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -687,6 +772,11 @@ export type EventUpdateManyMutationInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -711,6 +801,11 @@ export type EventUncheckedUpdateManyInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -745,6 +840,11 @@ export type EventCountOrderByAggregateInput = {
   isFree?: Prisma.SortOrder
   isVirtual?: Prisma.SortOrder
   virtualLink?: Prisma.SortOrder
+  venueName?: Prisma.SortOrder
+  venueAddress?: Prisma.SortOrder
+  venueCity?: Prisma.SortOrder
+  venueState?: Prisma.SortOrder
+  venueCountry?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   salesStart?: Prisma.SortOrder
@@ -773,6 +873,11 @@ export type EventMaxOrderByAggregateInput = {
   isFree?: Prisma.SortOrder
   isVirtual?: Prisma.SortOrder
   virtualLink?: Prisma.SortOrder
+  venueName?: Prisma.SortOrder
+  venueAddress?: Prisma.SortOrder
+  venueCity?: Prisma.SortOrder
+  venueState?: Prisma.SortOrder
+  venueCountry?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   salesStart?: Prisma.SortOrder
@@ -797,6 +902,11 @@ export type EventMinOrderByAggregateInput = {
   isFree?: Prisma.SortOrder
   isVirtual?: Prisma.SortOrder
   virtualLink?: Prisma.SortOrder
+  venueName?: Prisma.SortOrder
+  venueAddress?: Prisma.SortOrder
+  venueCity?: Prisma.SortOrder
+  venueState?: Prisma.SortOrder
+  venueCountry?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   salesStart?: Prisma.SortOrder
@@ -1197,6 +1307,11 @@ export type EventCreateWithoutOrganizerInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1236,6 +1351,11 @@ export type EventUncheckedCreateWithoutOrganizerInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1302,6 +1422,11 @@ export type EventScalarWhereInput = {
   isFree?: Prisma.BoolFilter<"Event"> | boolean
   isVirtual?: Prisma.BoolFilter<"Event"> | boolean
   virtualLink?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueName?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueAddress?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueCity?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueState?: Prisma.StringNullableFilter<"Event"> | string | null
+  venueCountry?: Prisma.StringNullableFilter<"Event"> | string | null
   startsAt?: Prisma.DateTimeFilter<"Event"> | Date | string
   endsAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   salesStart?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -1322,6 +1447,11 @@ export type EventCreateWithoutCategoryInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1361,6 +1491,11 @@ export type EventUncheckedCreateWithoutCategoryInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1420,6 +1555,11 @@ export type EventCreateWithoutVenueInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1459,6 +1599,11 @@ export type EventUncheckedCreateWithoutVenueInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1518,6 +1663,11 @@ export type EventCreateWithoutSeatMapInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1557,6 +1707,11 @@ export type EventUncheckedCreateWithoutSeatMapInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1616,6 +1771,11 @@ export type EventCreateWithoutSpeakersInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1656,6 +1816,11 @@ export type EventUncheckedCreateWithoutSpeakersInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1704,6 +1869,11 @@ export type EventUpdateWithoutSpeakersInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1744,6 +1914,11 @@ export type EventUncheckedUpdateWithoutSpeakersInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1776,6 +1951,11 @@ export type EventCreateWithoutImagesInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1816,6 +1996,11 @@ export type EventUncheckedCreateWithoutImagesInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1864,6 +2049,11 @@ export type EventUpdateWithoutImagesInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1904,6 +2094,11 @@ export type EventUncheckedUpdateWithoutImagesInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1936,6 +2131,11 @@ export type EventCreateWithoutTicketTypesInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -1976,6 +2176,11 @@ export type EventUncheckedCreateWithoutTicketTypesInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2024,6 +2229,11 @@ export type EventUpdateWithoutTicketTypesInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2064,6 +2274,11 @@ export type EventUncheckedUpdateWithoutTicketTypesInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2096,6 +2311,11 @@ export type EventCreateWithoutEventSeatsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2136,6 +2356,11 @@ export type EventUncheckedCreateWithoutEventSeatsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2184,6 +2409,11 @@ export type EventUpdateWithoutEventSeatsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2224,6 +2454,11 @@ export type EventUncheckedUpdateWithoutEventSeatsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2256,6 +2491,11 @@ export type EventCreateWithoutReservationsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2296,6 +2536,11 @@ export type EventUncheckedCreateWithoutReservationsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2344,6 +2589,11 @@ export type EventUpdateWithoutReservationsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2384,6 +2634,11 @@ export type EventUncheckedUpdateWithoutReservationsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2416,6 +2671,11 @@ export type EventCreateWithoutTicketsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2456,6 +2716,11 @@ export type EventUncheckedCreateWithoutTicketsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2504,6 +2769,11 @@ export type EventUpdateWithoutTicketsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2544,6 +2814,11 @@ export type EventUncheckedUpdateWithoutTicketsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2576,6 +2851,11 @@ export type EventCreateWithoutPaymentsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2616,6 +2896,11 @@ export type EventUncheckedCreateWithoutPaymentsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2664,6 +2949,11 @@ export type EventUpdateWithoutPaymentsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2704,6 +2994,11 @@ export type EventUncheckedUpdateWithoutPaymentsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2736,6 +3031,11 @@ export type EventCreateWithoutPayoutRequestsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2776,6 +3076,11 @@ export type EventUncheckedCreateWithoutPayoutRequestsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2824,6 +3129,11 @@ export type EventUpdateWithoutPayoutRequestsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2864,6 +3174,11 @@ export type EventUncheckedUpdateWithoutPayoutRequestsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2896,6 +3211,11 @@ export type EventCreateWithoutReviewsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2936,6 +3256,11 @@ export type EventUncheckedCreateWithoutReviewsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -2984,6 +3309,11 @@ export type EventUpdateWithoutReviewsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3024,6 +3354,11 @@ export type EventUncheckedUpdateWithoutReviewsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3056,6 +3391,11 @@ export type EventCreateWithoutRefundRequestsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3096,6 +3436,11 @@ export type EventUncheckedCreateWithoutRefundRequestsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3144,6 +3489,11 @@ export type EventUpdateWithoutRefundRequestsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3184,6 +3534,11 @@ export type EventUncheckedUpdateWithoutRefundRequestsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3216,6 +3571,11 @@ export type EventCreateWithoutGroupOrdersInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3256,6 +3616,11 @@ export type EventUncheckedCreateWithoutGroupOrdersInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3304,6 +3669,11 @@ export type EventUpdateWithoutGroupOrdersInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3344,6 +3714,11 @@ export type EventUncheckedUpdateWithoutGroupOrdersInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3376,6 +3751,11 @@ export type EventCreateWithoutCalendarEventsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3416,6 +3796,11 @@ export type EventUncheckedCreateWithoutCalendarEventsInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3464,6 +3849,11 @@ export type EventUpdateWithoutCalendarEventsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3504,6 +3894,11 @@ export type EventUncheckedUpdateWithoutCalendarEventsInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3536,6 +3931,11 @@ export type EventCreateWithoutPromoCodesInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3576,6 +3976,11 @@ export type EventUncheckedCreateWithoutPromoCodesInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3624,6 +4029,11 @@ export type EventUpdateWithoutPromoCodesInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3664,6 +4074,11 @@ export type EventUncheckedUpdateWithoutPromoCodesInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3699,6 +4114,11 @@ export type EventCreateManyOrganizerInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3719,6 +4139,11 @@ export type EventUpdateWithoutOrganizerInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3758,6 +4183,11 @@ export type EventUncheckedUpdateWithoutOrganizerInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3794,6 +4224,11 @@ export type EventUncheckedUpdateManyWithoutOrganizerInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3817,6 +4252,11 @@ export type EventCreateManyCategoryInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3837,6 +4277,11 @@ export type EventUpdateWithoutCategoryInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3876,6 +4321,11 @@ export type EventUncheckedUpdateWithoutCategoryInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3912,6 +4362,11 @@ export type EventUncheckedUpdateManyWithoutCategoryInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3935,6 +4390,11 @@ export type EventCreateManyVenueInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -3955,6 +4415,11 @@ export type EventUpdateWithoutVenueInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3994,6 +4459,11 @@ export type EventUncheckedUpdateWithoutVenueInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4030,6 +4500,11 @@ export type EventUncheckedUpdateManyWithoutVenueInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4053,6 +4528,11 @@ export type EventCreateManySeatMapInput = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
   startsAt: Date | string
   endsAt?: Date | string | null
   salesStart?: Date | string | null
@@ -4073,6 +4553,11 @@ export type EventUpdateWithoutSeatMapInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4112,6 +4597,11 @@ export type EventUncheckedUpdateWithoutSeatMapInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4148,6 +4638,11 @@ export type EventUncheckedUpdateManyWithoutSeatMapInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCountry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4311,6 +4806,11 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: boolean
+  venueName?: boolean
+  venueAddress?: boolean
+  venueCity?: boolean
+  venueState?: boolean
+  venueCountry?: boolean
   startsAt?: boolean
   endsAt?: boolean
   salesStart?: boolean
@@ -4353,6 +4853,11 @@ export type EventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: boolean
+  venueName?: boolean
+  venueAddress?: boolean
+  venueCity?: boolean
+  venueState?: boolean
+  venueCountry?: boolean
   startsAt?: boolean
   endsAt?: boolean
   salesStart?: boolean
@@ -4381,6 +4886,11 @@ export type EventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: boolean
+  venueName?: boolean
+  venueAddress?: boolean
+  venueCity?: boolean
+  venueState?: boolean
+  venueCountry?: boolean
   startsAt?: boolean
   endsAt?: boolean
   salesStart?: boolean
@@ -4409,6 +4919,11 @@ export type EventSelectScalar = {
   isFree?: boolean
   isVirtual?: boolean
   virtualLink?: boolean
+  venueName?: boolean
+  venueAddress?: boolean
+  venueCity?: boolean
+  venueState?: boolean
+  venueCountry?: boolean
   startsAt?: boolean
   endsAt?: boolean
   salesStart?: boolean
@@ -4418,7 +4933,7 @@ export type EventSelectScalar = {
   updatedAt?: boolean
 }
 
-export type EventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizerId" | "venueId" | "seatMapId" | "categoryId" | "title" | "slug" | "description" | "imageUrl" | "seatingType" | "status" | "isFree" | "isVirtual" | "virtualLink" | "startsAt" | "endsAt" | "salesStart" | "salesEnd" | "capacity" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
+export type EventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizerId" | "venueId" | "seatMapId" | "categoryId" | "title" | "slug" | "description" | "imageUrl" | "seatingType" | "status" | "isFree" | "isVirtual" | "virtualLink" | "venueName" | "venueAddress" | "venueCity" | "venueState" | "venueCountry" | "startsAt" | "endsAt" | "salesStart" | "salesEnd" | "capacity" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
 export type EventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organizer?: boolean | Prisma.OrganizerDefaultArgs<ExtArgs>
   venue?: boolean | Prisma.Event$venueArgs<ExtArgs>
@@ -4500,6 +5015,14 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
      * Stream/meeting URL — only set when isVirtual = true
      */
     virtualLink: string | null
+    /**
+     * Venue details stored directly (not saved to Venue table for now)
+     */
+    venueName: string | null
+    venueAddress: string | null
+    venueCity: string | null
+    venueState: string | null
+    venueCountry: string | null
     startsAt: Date
     endsAt: Date | null
     /**
@@ -4970,6 +5493,11 @@ export interface EventFieldRefs {
   readonly isFree: Prisma.FieldRef<"Event", 'Boolean'>
   readonly isVirtual: Prisma.FieldRef<"Event", 'Boolean'>
   readonly virtualLink: Prisma.FieldRef<"Event", 'String'>
+  readonly venueName: Prisma.FieldRef<"Event", 'String'>
+  readonly venueAddress: Prisma.FieldRef<"Event", 'String'>
+  readonly venueCity: Prisma.FieldRef<"Event", 'String'>
+  readonly venueState: Prisma.FieldRef<"Event", 'String'>
+  readonly venueCountry: Prisma.FieldRef<"Event", 'String'>
   readonly startsAt: Prisma.FieldRef<"Event", 'DateTime'>
   readonly endsAt: Prisma.FieldRef<"Event", 'DateTime'>
   readonly salesStart: Prisma.FieldRef<"Event", 'DateTime'>
