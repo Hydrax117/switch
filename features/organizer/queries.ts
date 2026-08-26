@@ -32,8 +32,6 @@ export async function getOrganizerEvents(organizerId: string) {
       startsAt: true,
       endsAt: true,
       capacity: true,
-      venueName: true,
-      venueCity: true,
       category: { select: { name: true, color: true } },
       venue: { select: { name: true, city: true } },
       _count: { select: { tickets: true, eventSeats: true } },
