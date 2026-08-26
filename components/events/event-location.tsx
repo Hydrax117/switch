@@ -1,41 +1,94 @@
 'use client'
 
-import { MiniMap } from '@/components/ui/mini-map'
-import type { EventDetail } from '@/features/events/types'
+import { ExternalLink } from 'lucide-react'
 
 interface EventLocationProps {
-  venue: EventDetail['venue'] | null
   venueName?: string | null
   venueAddress?: string | null
   venueCity?: string | null
   venueState?: string | null
-  venueCountry?: string | null
+  /** Fallback venue from FK relation (legacy) */
+  venue?: {
+    name: string
+    address?: string | null
+    city: string
+    state?: string | null
+    country: string
+  } | null
 }
 
 export function EventLocation({
-  venue,
   venueName,
   venueAddress,
   venueCity,
   venueState,
-  venueCountry,
+  venue,
 }: EventLocationProps) {
-  // Use direct venue fields if provided, otherwise fall back to venue object
+  // Prefer inline fields, fall back to FK venue
   const name = venueName || venue?.name
-  const address = (venueAddress || venue?.address) ?? undefined
+  const address = venueAddress || venue?.address
   const city = venueCity || venue?.city
-  const state = (venueState || venue?.state) ?? undefined
-  const country = venueCountry || venue?.country
+  const state = venueState || venue?.state
+  const country = venue?.country ?? 'Nigeria'
 
   if (!name) return null
 
+  // Build a search query for Google Maps embed
+  const parts = [name, address, city, state, country].filter(Boolean)
+  const query = encodeURIComponent(parts.join(', '))
+
+  // Directions link — opens Google Maps in a new tab
+  const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${query}`
+
+  // Google Maps embed URL (no API key required for basic embeds)
+  const embedUrl = `https://maps.google.com/maps?q=${query}&z=15&output=embed`
+
   return (
-    <MiniMap
-      venueName={name}
-      venueAddress={address}
-      venueCity={city}
-      venueState={state}
-      venueCountry={country}
-    />
+    <section aria-labelledby="location-heading">
+      <h2
+        id="location-heading"
+        className="mb-5 text-[11px] font-semibold tracking-[0.12em] uppercase text-white/40"
+      >
+        Location
+      </h2>
+
+      <div className="overflow-hidden rounded-2xl border border-white/8">
+        {/* Google Maps iframe */}
+        <div className="relative h-[200px] w-full">
+          <iframe
+            title={`Map of ${name}`}
+            src={embedUrl}
+            width="100%"
+            height="200"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="absolute inset-0 h-full w-full"
+          />
+        </div>
+
+        {/* Venue info bar */}
+        <div className="flex items-start justify-between gap-4 bg-white/[0.03] px-5 py-4">
+          <div>
+            <p className="text-[14px] font-semibold text-white">{name}</p>
+            <p className="mt-0.5 text-[13px] text-white/50">
+              {[address, city, state].filter(Boolean).join(', ')}
+            </p>
+          </div>
+
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-[12.5px] font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
+            aria-label={`Get directions to ${name}`}
+          >
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+            Directions
+          </a>
+        </div>
+      </div>
+    </section>
   )
 }

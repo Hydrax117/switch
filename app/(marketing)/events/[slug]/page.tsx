@@ -133,9 +133,15 @@ export default async function EventDetailPage({ params }: PageProps) {
               )}
 
               {/* Location */}
-              {event.venue && (
+              {(event.venueName || event.venue) && (
                 <SectionReveal>
-                  <EventLocation venue={event.venue} />
+                  <EventLocation
+                    venueName={event.venueName}
+                    venueAddress={event.venueAddress}
+                    venueCity={event.venueCity}
+                    venueState={event.venueState}
+                    venue={event.venue}
+                  />
                 </SectionReveal>
               )}
 

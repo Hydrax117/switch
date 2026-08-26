@@ -439,6 +439,12 @@ model Event {
   /// Stream/meeting URL — only set when isVirtual = true
   virtualLink String?
 
+  /// Venue details stored inline — no FK to venues table needed for now
+  venueName    String?
+  venueAddress String?
+  venueCity    String?
+  venueState   String?
+
   startsAt    DateTime
   endsAt      DateTime?
   /// When tickets go on sale

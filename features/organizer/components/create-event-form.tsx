@@ -6,8 +6,7 @@ import Link from 'next/link'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
-import { VenuePicker, type VenuePlace } from '@/components/ui/venue-picker'
-import { LocationPicker } from '@/components/ui/location-picker'
+import { VenuePicker } from '@/components/ui/venue-picker'
 import { EventImageUploader } from '@/components/ui/event-image-uploader'
 import { createEvent } from '../actions'
 interface CreateEventFormProps {
@@ -18,7 +17,6 @@ export function CreateEventForm({ categories }: CreateEventFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [venue, setVenue] = useState<VenuePlace | null>(null)
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [isFree, setIsFree] = useState(false)
   const [isVirtual, setIsVirtual] = useState(false)
@@ -144,20 +142,9 @@ export function CreateEventForm({ categories }: CreateEventFormProps) {
 
       {/* Venue — Manual entry */}
       {!isVirtual && (
-        <>
-          <Field label="Venue Name" hint="Enter the venue or location name">
-            <VenuePicker onSelect={setVenue} />
-          </Field>
-          <Field label="State & City / LGA" hint="Select the event location">
-            <LocationPicker
-              defaultState={venue?.state}
-              defaultCity={venue?.city}
-              onChange={(loc) => {
-                if (venue) setVenue({ ...venue, state: loc.state, city: loc.city })
-              }}
-            />
-          </Field>
-        </>
+        <Field label="Venue">
+          <VenuePicker />
+        </Field>
       )}
 
       {/* Event dates */}

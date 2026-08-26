@@ -34,6 +34,10 @@ export type EventListItem = Pick<
   | 'status'
   | 'seatingType'
   | 'capacity'
+  | 'venueName'
+  | 'venueAddress'
+  | 'venueCity'
+  | 'venueState'
 > & {
   organizer: Pick<Organizer, 'name' | 'slug'>
   venue: Pick<Venue, 'id' | 'name' | 'address' | 'city' | 'state'> | null

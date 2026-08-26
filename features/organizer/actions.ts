@@ -32,12 +32,10 @@ const createEventSchema = z.object({
 })
 
 const venueInputSchema = z.object({
-  venue_name: z.string().min(1).max(200).optional(),
+  venue_name: z.string().max(200).optional(),
   venue_address: z.string().max(500).optional(),
   venue_city: z.string().max(100).optional(),
   venue_state: z.string().max(100).optional(),
-  venue_country: z.string().max(100).optional(),
-  venue_place_id: z.string().max(500).optional(),
 })
 
 const updateEventSchema = createEventSchema.partial().extend({
@@ -88,40 +86,15 @@ async function uniqueSlug(base: string): Promise<string> {
 }
 
 /**
- * Find or create a Venue from manual venue input.
- * Falls back to exact name+city match to avoid duplicates.
+ * Inline venue data extracted from form — stored directly on Event row.
  */
-async function resolveVenueId(
-  input: z.infer<typeof venueInputSchema>
-): Promise<string | undefined> {
-  const { venue_name, venue_address, venue_city, venue_state, venue_country } = input
-
-  if (!venue_name) return undefined
-
-  // Try to find existing venue by name+city first
-  if (venue_city) {
-    const existing = await db.venue.findFirst({
-      where: {
-        name: { equals: venue_name, mode: 'insensitive' },
-        city: { equals: venue_city, mode: 'insensitive' },
-      },
-      select: { id: true },
-    })
-    if (existing) return existing.id
+function extractVenueData(input: z.infer<typeof venueInputSchema>) {
+  return {
+    venueName: input.venue_name || null,
+    venueAddress: input.venue_address || null,
+    venueCity: input.venue_city || null,
+    venueState: input.venue_state || null,
   }
-
-  // Create a new venue row
-  const venue = await db.venue.create({
-    data: {
-      name: venue_name,
-      address: venue_address ?? undefined,
-      city: venue_city ?? 'Unknown',
-      state: venue_state ?? undefined,
-      country: venue_country ?? 'Nigeria',
-    },
-    select: { id: true },
-  })
-  return venue.id
 }
 
 type ActionResult<T = void> = { success: true; data: T } | { success: false; error: string }
@@ -151,15 +124,13 @@ export async function createEvent(
     return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
-  // Resolve venue from manual input
+  // Extract inline venue data — stored directly on the event row
   const venueInput = venueInputSchema.parse(raw)
-  const venueId = await resolveVenueId(venueInput)
+  const venueData = extractVenueData(venueInput)
 
   const { title, ...rest } = parsed.data
   const slug = await uniqueSlug(slugify(title))
 
-  // Extract image URLs passed from the client (uploaded before form submission)
-  // They arrive as repeated fields: imageUrls[0], imageUrls[1], …
   const imageUrls = formData.getAll('imageUrls').map(String).filter(Boolean)
 
   const event = await db.event.create({
@@ -169,8 +140,7 @@ export async function createEvent(
       slug,
       status: EventStatus.DRAFT,
       ...rest,
-      venueId,
-      // Primary image = first uploaded URL (kept in sync with EventImage)
+      ...venueData,
       imageUrl: imageUrls[0] ?? rest.imageUrl,
       startsAt: new Date(rest.startsAt),
       endsAt: rest.endsAt ? new Date(rest.endsAt) : undefined,
@@ -218,23 +188,21 @@ export async function updateEvent(formData: FormData): Promise<ActionResult> {
   const event = organizer
     ? await db.event.findUnique({
         where: { id: eventId, organizerId: organizer.id },
-        select: { id: true, venueId: true },
+        select: { id: true },
       })
     : null
 
   if (!event) return { success: false, error: 'Event not found' }
 
-  // Resolve venue: only update if new venue fields were submitted
+  // Extract inline venue data — always overwrite with whatever the form sends
   const venueInput = venueInputSchema.parse(raw)
-  const newVenueId = venueInput.venue_name ? await resolveVenueId(venueInput) : undefined
-  // If no new venue was selected, keep the existing venueId (don't overwrite with undefined)
-  const venueId = newVenueId ?? event.venueId ?? undefined
+  const venueData = extractVenueData(venueInput)
 
   await db.event.update({
     where: { id: eventId },
     data: {
       ...updates,
-      venueId,
+      ...venueData,
       startsAt: updates.startsAt ? new Date(updates.startsAt) : undefined,
       endsAt: updates.endsAt ? new Date(updates.endsAt) : undefined,
       salesStart: updates.salesStart ? new Date(updates.salesStart) : undefined,

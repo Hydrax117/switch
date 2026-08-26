@@ -17,6 +17,10 @@ const eventListSelect = {
   status: true,
   seatingType: true,
   capacity: true,
+  venueName: true,
+  venueAddress: true,
+  venueCity: true,
+  venueState: true,
   organizer: {
     select: { name: true, slug: true },
   },
