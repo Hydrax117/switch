@@ -5,11 +5,11 @@ import type { EventDetail } from '@/features/events/types'
 
 interface EventLocationProps {
   venue: EventDetail['venue'] | null
-  venueName?: string
-  venueAddress?: string
-  venueCity?: string
-  venueState?: string
-  venueCountry?: string
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  venueCountry?: string | null
 }
 
 export function EventLocation({
@@ -22,9 +22,9 @@ export function EventLocation({
 }: EventLocationProps) {
   // Use direct venue fields if provided, otherwise fall back to venue object
   const name = venueName || venue?.name
-  const address = venueAddress || venue?.address
+  const address = (venueAddress || venue?.address) ?? undefined
   const city = venueCity || venue?.city
-  const state = venueState || venue?.state
+  const state = (venueState || venue?.state) ?? undefined
   const country = venueCountry || venue?.country
 
   if (!name) return null
