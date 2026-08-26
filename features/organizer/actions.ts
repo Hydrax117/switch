@@ -151,9 +151,8 @@ export async function createEvent(
     return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
 
-  // Resolve venue from Google Places fields
+  // Resolve venue: store venue details directly without creating Venue record
   const venueInput = venueInputSchema.parse(raw)
-  const venueId = await resolveVenueId(venueInput)
 
   const { title, ...rest } = parsed.data
   const slug = await uniqueSlug(slugify(title))
@@ -169,7 +168,12 @@ export async function createEvent(
       slug,
       status: EventStatus.DRAFT,
       ...rest,
-      venueId,
+      // Store venue details directly
+      venueName: venueInput.venue_name ?? undefined,
+      venueAddress: venueInput.venue_address ?? undefined,
+      venueCity: venueInput.venue_city ?? undefined,
+      venueState: venueInput.venue_state ?? undefined,
+      venueCountry: venueInput.venue_country ?? 'Nigeria',
       // Primary image = first uploaded URL (kept in sync with EventImage)
       imageUrl: imageUrls[0] ?? rest.imageUrl,
       startsAt: new Date(rest.startsAt),
@@ -224,17 +228,23 @@ export async function updateEvent(formData: FormData): Promise<ActionResult> {
 
   if (!event) return { success: false, error: 'Event not found' }
 
-  // Resolve venue: only update if new venue fields were submitted
+  // Resolve venue: store venue details directly (only update if new venue fields were submitted)
   const venueInput = venueInputSchema.parse(raw)
-  const newVenueId = venueInput.venue_name ? await resolveVenueId(venueInput) : undefined
-  // If no new venue was selected, keep the existing venueId (don't overwrite with undefined)
-  const venueId = newVenueId ?? event.venueId ?? undefined
+  const venueData = venueInput.venue_name
+    ? {
+        venueName: venueInput.venue_name,
+        venueAddress: venueInput.venue_address ?? undefined,
+        venueCity: venueInput.venue_city ?? undefined,
+        venueState: venueInput.venue_state ?? undefined,
+        venueCountry: venueInput.venue_country ?? 'Nigeria',
+      }
+    : {}
 
   await db.event.update({
     where: { id: eventId },
     data: {
       ...updates,
-      venueId,
+      ...venueData,
       startsAt: updates.startsAt ? new Date(updates.startsAt) : undefined,
       endsAt: updates.endsAt ? new Date(updates.endsAt) : undefined,
       salesStart: updates.salesStart ? new Date(updates.salesStart) : undefined,
