@@ -439,13 +439,6 @@ model Event {
   /// Stream/meeting URL — only set when isVirtual = true
   virtualLink String?
 
-  /// Venue details stored directly (not saved to Venue table for now)
-  venueName   String?
-  venueAddress String?
-  venueCity   String?
-  venueState  String?
-  venueCountry String? @default("Nigeria")
-
   startsAt    DateTime
   endsAt      DateTime?
   /// When tickets go on sale
