@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { SiteHeader } from '@/components/layout/site-header'
+import { Suspense } from 'react'
+import { HeaderWithSession } from '@/components/layout/header-with-session'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { getSession } from '@/lib/session'
 import { getEventBySlug, getRelatedEvents, isSoldOut, getMinPrice } from '@/features/events'
@@ -70,7 +71,9 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[#0a0a0a]">
-      <SiteHeader userEmail={session?.email} />
+      <Suspense>
+        <HeaderWithSession />
+      </Suspense>
 
       <main className="flex-1">
         {/* ── Cinematic Hero ─────────────────────────────────────────── */}
