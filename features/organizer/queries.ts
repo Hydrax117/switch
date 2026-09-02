@@ -191,3 +191,105 @@ export async function getUserTickets(userId: string, filters?: { status?: string
   })
 }
 
+
+// ─── Seat configuration ───────────────────────────────────────────────────────
+
+export type SeatConfigSection = {
+  id: string
+  name: string
+  code: string
+  type: string
+  rows: Array<{
+    id: string
+    label: string
+    seatCount: number
+    seats: Array<{ id: string; label: string }>
+  }>
+  eventSeatCount: number
+  ticketTypeId: string | null
+  price: number | null
+}
+
+export type SeatConfig = {
+  seatMapId: string
+  sections: SeatConfigSection[]
+}
+
+export async function getEventSeatConfig(eventId: string): Promise<SeatConfig | null> {
+  const event = await db.event.findUnique({
+    where: { id: eventId },
+    select: {
+      seatMapId: true,
+      seatMap: {
+        select: {
+          id: true,
+          sections: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              type: true,
+              rows: {
+                select: {
+                  id: true,
+                  label: true,
+                  seatsCount: true,
+                  seats: {
+                    select: { id: true, label: true },
+                    orderBy: { number: 'asc' },
+                  },
+                },
+                orderBy: { position: 'asc' },
+              },
+            },
+            orderBy: { createdAt: 'asc' },
+          },
+        },
+      },
+      eventSeats: {
+        select: {
+          seatId: true,
+          ticketTypeId: true,
+          price: true,
+          status: true,
+          seat: { select: { sectionId: true } },
+        },
+      },
+    },
+  })
+
+  if (!event?.seatMap) return null
+
+  // Build a lookup: sectionId → first matching EventSeat (for ticketTypeId + price)
+  const sectionEventSeatMap = new Map<string, { ticketTypeId: string | null; price: number }>()
+  const sectionAvailableCount = new Map<string, number>()
+
+  for (const es of event.eventSeats) {
+    const sectionId = es.seat.sectionId
+    if (!sectionEventSeatMap.has(sectionId)) {
+      sectionEventSeatMap.set(sectionId, { ticketTypeId: es.ticketTypeId, price: es.price })
+    }
+    sectionAvailableCount.set(sectionId, (sectionAvailableCount.get(sectionId) ?? 0) + 1)
+  }
+
+  const sections: SeatConfigSection[] = event.seatMap.sections.map((sec) => ({
+    id: sec.id,
+    name: sec.name,
+    code: sec.code,
+    type: sec.type,
+    rows: sec.rows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      seatCount: row.seatsCount ?? row.seats.length,
+      seats: row.seats,
+    })),
+    eventSeatCount: sectionAvailableCount.get(sec.id) ?? 0,
+    ticketTypeId: sectionEventSeatMap.get(sec.id)?.ticketTypeId ?? null,
+    price: sectionEventSeatMap.get(sec.id)?.price ?? null,
+  }))
+
+  return {
+    seatMapId: event.seatMap.id,
+    sections,
+  }
+}

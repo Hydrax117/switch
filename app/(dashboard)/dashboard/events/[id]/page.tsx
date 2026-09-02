@@ -16,7 +16,9 @@ import { EditEventForm } from '@/features/organizer/components/edit-event-form'
 import { SpeakersManager } from '@/features/organizer/components/speakers-manager'
 import { PromoCodesManager } from '@/features/promo-codes/components/promo-codes-manager'
 import { ScanPinManager } from '@/features/organizer/components/scan-pin-manager'
+import { SeatingManager } from '@/features/organizer/components/seating-manager'
 import { getPromoCodesForEvent } from '@/features/promo-codes/queries'
+import { getEventSeatConfig } from '@/features/organizer/queries'
 import { db } from '@/lib/db'
 import { format } from 'date-fns'
 import { formatPrice } from '@/features/events/utils'
@@ -39,12 +41,13 @@ export default async function ManageEventPage({ params }: PageProps) {
   const organizer = await getOrganizerByUserId(session.userId)
   if (!organizer) redirect('/dashboard')
 
-  const [event, eventImages, eventSpeakers, categories, promoCodes] = await Promise.all([
+  const [event, eventImages, eventSpeakers, categories, promoCodes, seatConfig] = await Promise.all([
     getOrganizerEvent(id, organizer.id),
     getEventImages(id),
     getEventSpeakers(id),
     db.category.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
     getPromoCodesForEvent(id, organizer.id),
+    getEventSeatConfig(id),
   ])
 
   if (!event) notFound()
@@ -136,6 +139,21 @@ export default async function ManageEventPage({ params }: PageProps) {
 
       {/* ── Ticket types ── */}
       <TicketTypesManager eventId={event.id} ticketTypes={event.ticketTypes} />
+
+      {/* ── Seat configuration (RESERVED / MIXED only) ── */}
+      {event.seatingType !== 'GENERAL_ADMISSION' && (
+        <SeatingManager
+          eventId={event.id}
+          seatingType={event.seatingType}
+          ticketTypes={event.ticketTypes.map((tt) => ({
+            id: tt.id,
+            name: tt.name,
+            price: tt.price,
+            currency: tt.currency,
+          }))}
+          initialConfig={seatConfig}
+        />
+      )}
 
       {/* ── Promo codes ── */}
       <PromoCodesManager

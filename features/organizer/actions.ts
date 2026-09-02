@@ -542,3 +542,192 @@ export async function updateTicketType(formData: FormData): Promise<ActionResult
   revalidatePath(`/dashboard/events/${tt.eventId}`)
   return { success: true, data: undefined }
 }
+
+// ─── Seat configuration ───────────────────────────────────────────────────────
+
+const seatSectionSchema = z.object({
+  name: z.string().min(1).max(120),
+  code: z.string().min(1).max(20),
+  type: z.enum(['RESERVED', 'GENERAL_ADMISSION']),
+  ticketTypeId: z.string().min(1),
+  priceOverride: z.coerce.number().int().min(0).optional(),
+  rows: z
+    .array(
+      z.object({
+        label: z.string().min(1).max(20),
+        seatCount: z.coerce.number().int().min(1).max(500),
+      })
+    )
+    .min(1),
+})
+
+const saveSeatConfigSchema = z.object({
+  eventId: z.string().min(1),
+  sections: z.array(seatSectionSchema).min(1),
+})
+
+export async function saveSeatConfiguration(input: {
+  eventId: string
+  sections: Array<{
+    name: string
+    code: string
+    type: 'RESERVED' | 'GENERAL_ADMISSION'
+    ticketTypeId: string
+    priceOverride?: number
+    rows: Array<{ label: string; seatCount: number }>
+  }>
+}): Promise<ActionResult<{ totalSeats: number }>> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const parsed = saveSeatConfigSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
+  }
+
+  const { eventId, sections } = parsed.data
+
+  // ── Ownership check ───────────────────────────────────────────────────────
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: {
+      id: true,
+      title: true,
+      venueCity: true,
+      venueId: true,
+      seatMapId: true,
+      ticketTypes: { select: { id: true, price: true } },
+    },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  // ── Guard: cannot reconfigure if any seats are SOLD/HELD ─────────────────
+  const blockedCount = await db.eventSeat.count({
+    where: { eventId, status: { in: ['SOLD', 'HELD', 'RESERVED'] } },
+  })
+  if (blockedCount > 0) {
+    return {
+      success: false,
+      error: `Cannot reconfigure seats: ${blockedCount} seat(s) are already sold, held, or reserved.`,
+    }
+  }
+
+  // ── Validate all ticketTypeIds belong to this event ───────────────────────
+  const eventTTIds = new Set(event.ticketTypes.map((tt) => tt.id))
+  for (const sec of sections) {
+    if (!eventTTIds.has(sec.ticketTypeId)) {
+      return { success: false, error: `Ticket type not found on this event` }
+    }
+  }
+
+  const ttPriceMap = new Map(event.ticketTypes.map((tt) => [tt.id, tt.price]))
+
+  // ── Transaction ───────────────────────────────────────────────────────────
+  const totalSeats = await db.$transaction(async (tx) => {
+    // 1. Find or create a Venue (required FK for SeatMap)
+    let venueId = event.venueId
+    if (!venueId) {
+      const venue = await tx.venue.create({
+        data: { name: event.title, city: event.venueCity ?? 'Lagos', country: 'Nigeria' },
+        select: { id: true },
+      })
+      venueId = venue.id
+      await tx.event.update({ where: { id: eventId }, data: { venueId } })
+    }
+
+    // 2. Find or create a SeatMap for this event
+    let seatMapId = event.seatMapId
+    if (!seatMapId) {
+      const seatMap = await tx.seatMap.create({
+        data: { venueId, name: event.title },
+        select: { id: true },
+      })
+      seatMapId = seatMap.id
+    }
+
+    // 3. Delete AVAILABLE EventSeats so we can recreate cleanly
+    await tx.eventSeat.deleteMany({ where: { eventId, status: 'AVAILABLE' } })
+
+    // 4. Build seat layout and collect EventSeat records
+    let count = 0
+    const eventSeatData: {
+      eventId: string
+      seatId: string
+      ticketTypeId: string
+      price: number
+      status: 'AVAILABLE'
+    }[] = []
+
+    for (const sec of sections) {
+      // Section has no unique constraint on (seatMapId, code) — findFirst then upsert manually
+      let section = await tx.section.findFirst({
+        where: { seatMapId, code: sec.code },
+        select: { id: true },
+      })
+      if (section) {
+        await tx.section.update({
+          where: { id: section.id },
+          data: { name: sec.name, type: sec.type },
+        })
+      } else {
+        section = await tx.section.create({
+          data: { seatMapId, name: sec.name, code: sec.code, type: sec.type },
+          select: { id: true },
+        })
+      }
+
+      const sectionId = section.id
+      const price = sec.priceOverride ?? ttPriceMap.get(sec.ticketTypeId) ?? 0
+
+      for (let rowIdx = 0; rowIdx < sec.rows.length; rowIdx++) {
+        const rowDef = sec.rows[rowIdx]!
+
+        // Row: @@unique([sectionId, label])
+        const row = await tx.row.upsert({
+          where: { sectionId_label: { sectionId, label: rowDef.label } },
+          update: { position: rowIdx, seatsCount: rowDef.seatCount },
+          create: { sectionId, label: rowDef.label, position: rowIdx, seatsCount: rowDef.seatCount },
+          select: { id: true },
+        })
+
+        for (let seatNum = 1; seatNum <= rowDef.seatCount; seatNum++) {
+          const seatLabel = `${rowDef.label}${seatNum}`
+
+          // Seat: @@unique([rowId, label])
+          const seat = await tx.seat.upsert({
+            where: { rowId_label: { rowId: row.id, label: seatLabel } },
+            update: { number: seatNum, sectionId },
+            create: { rowId: row.id, sectionId, label: seatLabel, number: seatNum },
+            select: { id: true },
+          })
+
+          eventSeatData.push({
+            eventId,
+            seatId: seat.id,
+            ticketTypeId: sec.ticketTypeId,
+            price,
+            status: 'AVAILABLE',
+          })
+          count++
+        }
+      }
+    }
+
+    // Batch-insert EventSeats (skipDuplicates handles any edge-case overlaps)
+    await tx.eventSeat.createMany({ data: eventSeatData, skipDuplicates: true })
+
+    // 5. Link SeatMap to event
+    await tx.event.update({ where: { id: eventId }, data: { seatMapId } })
+
+    return count
+  })
+
+  revalidatePath(`/dashboard/events/${eventId}`)
+  return { success: true, data: { totalSeats } }
+}
