@@ -186,3 +186,38 @@ export type CalendarShare = Prisma.CalendarShareModel
  * 
  */
 export type PromoCode = Prisma.PromoCodeModel
+/**
+ * Model WaitlistEntry
+ * 
+ */
+export type WaitlistEntry = Prisma.WaitlistEntryModel
+/**
+ * Model TimeSlot
+ * 
+ */
+export type TimeSlot = Prisma.TimeSlotModel
+/**
+ * Model TimeSlotTicket
+ * 
+ */
+export type TimeSlotTicket = Prisma.TimeSlotTicketModel
+/**
+ * Model EventSession
+ * 
+ */
+export type EventSession = Prisma.EventSessionModel
+/**
+ * Model SessionEnrolment
+ * 
+ */
+export type SessionEnrolment = Prisma.SessionEnrolmentModel
+/**
+ * Model TableSeatAssignment
+ * Per-seat name assignments for table reservations where requiresAssignedSeating = true
+ */
+export type TableSeatAssignment = Prisma.TableSeatAssignmentModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel

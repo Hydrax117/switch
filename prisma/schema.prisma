@@ -133,6 +133,45 @@ enum DiscountType {
   FLAT
 }
 
+enum WaitlistStatus {
+  PENDING
+  OFFERED
+  FULFILLED
+  EXPIRED
+  CANCELLED
+}
+
+enum SessionInclusionMode {
+  INCLUDED
+  OPTIONAL_FREE
+  OPTIONAL_PAID
+  CAPACITY_LIMITED
+}
+
+enum TicketVisibility {
+  PUBLIC
+  HIDDEN
+  PASSWORD_PROTECTED
+}
+
+enum AuditEntityType {
+  RESERVATION
+  TICKET
+  WAITLIST_ENTRY
+  EVENT_SEAT
+}
+
+enum AuditAction {
+  CREATED
+  STATUS_CHANGED
+  CANCELLED
+  REFUNDED
+  ISSUED
+  EXPIRED
+  OFFERED
+  FULFILLED
+}
+
 // ─── User & Auth ──────────────────────────────────────────────────────────────
 
 model User {
@@ -158,6 +197,7 @@ model User {
   claimedSlots    GroupOrderSlot[]   @relation("GroupSlotClaimer")
   calendars       UserCalendar[]
   sharedCalendars CalendarShare[]    @relation("CalendarSharedWith")
+  waitlistEntries WaitlistEntry[]
 
   @@map("users")
 }
@@ -475,6 +515,9 @@ model Event {
   groupOrders  GroupOrder[]
   promoCodes   PromoCode[]
   calendarEvents CalendarEvent[] @relation("CalendarLinkedEvent")
+  timeSlots       TimeSlot[]
+  sessions        EventSession[]
+  waitlistEntries WaitlistEntry[]
   @@index([status, startsAt])
   @@index([organizerId])
   @@index([categoryId])
@@ -539,11 +582,30 @@ model TicketType {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Purchase limits
+  minPerOrder  Int?
+  maxPerOrder  Int?
+  maxPerUser   Int?
+
+  // Visibility control
+  visibility         TicketVisibility @default(PUBLIC)
+  /// bcrypt hash of the access password (only set when visibility = PASSWORD_PROTECTED)
+  accessPasswordHash String?
+  /// Opaque token for direct-link unlock (only set when visibility = HIDDEN)
+  directLinkToken    String?          @unique
+
+  // Table reservation metadata
+  isTableType             Boolean @default(false)
+  tableCapacity           Int?
+  requiresAssignedSeating Boolean @default(false)
+
   event      Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventSeats EventSeat[]
   tickets    Ticket[]
   groupSlots GroupOrderSlot[]
   promoCodes PromoCode[]
+  waitlistEntries  WaitlistEntry[]
+  tableAssignments TableSeatAssignment[]
 
   @@index([eventId])
   @@map("ticket_types")
@@ -591,12 +653,18 @@ model Reservation {
   status    ReservationStatus @default(ACTIVE)
   expiresAt DateTime
 
+  /// GA quantity holds: { ticketTypeId: quantity }
+  gaHolds         Json?
+  /// FK to waitlist entry that triggered this reservation (nullable)
+  waitlistEntryId String? @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  event      Event       @relation(fields: [eventId], references: [id])
-  user       User        @relation(fields: [userId], references: [id])
-  eventSeats EventSeat[]
+  event         Event          @relation(fields: [eventId], references: [id])
+  user          User           @relation(fields: [userId], references: [id])
+  eventSeats    EventSeat[]
+  waitlistEntry WaitlistEntry? @relation(fields: [waitlistEntryId], references: [id])
 
   @@index([eventId, status])
   @@index([userId])
@@ -630,6 +698,10 @@ model Ticket {
   payment    Payment?
   review     EventReview?
   groupSlot  GroupOrderSlot?
+  isComplimentary   Boolean            @default(false)
+  sessionEnrolments SessionEnrolment[]
+  timeSlotTickets   TimeSlotTicket[]
+  tableAssignments  TableSeatAssignment[]
 
   @@index([eventId])
   @@index([userId])
@@ -945,4 +1017,152 @@ model PromoCode {
   @@index([organizerId])
   @@index([eventId])
   @@map("promo_codes")
+}
+
+// ─── Waitlist Entry ───────────────────────────────────────────────────────────
+
+model WaitlistEntry {
+  id           String         @id @default(cuid())
+  eventId      String
+  userId       String
+  ticketTypeId String
+  requestedQty Int            @default(1)
+  position     Int
+  status       WaitlistStatus @default(PENDING)
+  /// Set when status transitions to OFFERED
+  offerExpiresAt DateTime?
+  /// FK to the Reservation created when the offer is made
+  reservationId  String?      @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event       Event        @relation(fields: [eventId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  ticketType  TicketType   @relation(fields: [ticketTypeId], references: [id])
+  reservation Reservation? // back-relation via Reservation.waitlistEntryId
+
+  @@unique([userId, ticketTypeId])
+  @@index([ticketTypeId, status, position])
+  @@index([eventId])
+  @@map("waitlist_entries")
+}
+
+// ─── Time Slot ────────────────────────────────────────────────────────────────
+
+model TimeSlot {
+  id       String           @id @default(cuid())
+  eventId  String
+  label    String
+  startsAt DateTime
+  endsAt   DateTime
+  capacity Int
+  price    Int
+  currency String           @default("NGN")
+  status   TicketTypeStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event   Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets TimeSlotTicket[]
+
+  @@index([eventId, status])
+  @@map("time_slots")
+}
+
+// ─── Time Slot Ticket (join) ──────────────────────────────────────────────────
+
+model TimeSlotTicket {
+  id         String   @id @default(cuid())
+  ticketId   String
+  timeSlotId String
+  createdAt  DateTime @default(now())
+
+  ticket   Ticket   @relation(fields: [ticketId], references: [id])
+  timeSlot TimeSlot @relation(fields: [timeSlotId], references: [id])
+
+  @@unique([ticketId, timeSlotId])
+  @@map("time_slot_tickets")
+}
+
+// ─── Event Session ────────────────────────────────────────────────────────────
+
+model EventSession {
+  id            String               @id @default(cuid())
+  eventId       String
+  title         String
+  description   String?              @db.Text
+  facilitator   String?
+  startsAt      DateTime
+  endsAt        DateTime
+  capacity      Int?
+  price         Int                  @default(0)
+  currency      String               @default("NGN")
+  inclusionMode SessionInclusionMode @default(INCLUDED)
+  status        TicketTypeStatus     @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event      Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  enrolments SessionEnrolment[]
+
+  @@index([eventId])
+  @@map("event_sessions")
+}
+
+// ─── Session Enrolment ────────────────────────────────────────────────────────
+
+model SessionEnrolment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  sessionId String
+  createdAt DateTime @default(now())
+
+  ticket  Ticket       @relation(fields: [ticketId], references: [id])
+  session EventSession @relation(fields: [sessionId], references: [id])
+
+  @@unique([ticketId, sessionId])
+  @@index([sessionId])
+  @@map("session_enrolments")
+}
+
+// ─── Table Seat Assignment ────────────────────────────────────────────────────
+
+/// Per-seat name assignments for table reservations where requiresAssignedSeating = true
+model TableSeatAssignment {
+  id           String   @id @default(cuid())
+  ticketId     String
+  ticketTypeId String
+  seatNumber   Int
+  attendeeName String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ticket     Ticket     @relation(fields: [ticketId], references: [id])
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
+
+  @@unique([ticketId, seatNumber])
+  @@map("table_seat_assignments")
+}
+
+// ─── Audit Log ────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String          @id @default(cuid())
+  entityType AuditEntityType
+  entityId   String
+  action     AuditAction
+  oldStatus  String?
+  newStatus  String?
+  /// userId or "system" for background jobs
+  actor      String
+  metadata   Json?
+  createdAt  DateTime        @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actor])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

@@ -79,7 +79,14 @@ export const ModelName = {
   UserCalendar: 'UserCalendar',
   CalendarEvent: 'CalendarEvent',
   CalendarShare: 'CalendarShare',
-  PromoCode: 'PromoCode'
+  PromoCode: 'PromoCode',
+  WaitlistEntry: 'WaitlistEntry',
+  TimeSlot: 'TimeSlot',
+  TimeSlotTicket: 'TimeSlotTicket',
+  EventSession: 'EventSession',
+  SessionEnrolment: 'SessionEnrolment',
+  TableSeatAssignment: 'TableSeatAssignment',
+  AuditLog: 'AuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -303,7 +310,6 @@ export const EventScalarFieldEnum = {
   venueAddress: 'venueAddress',
   venueCity: 'venueCity',
   venueState: 'venueState',
-  venueCountry: 'venueCountry',
   startsAt: 'startsAt',
   endsAt: 'endsAt',
   salesStart: 'salesStart',
@@ -354,7 +360,16 @@ export const TicketTypeScalarFieldEnum = {
   salesEnd: 'salesEnd',
   status: 'status',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  minPerOrder: 'minPerOrder',
+  maxPerOrder: 'maxPerOrder',
+  maxPerUser: 'maxPerUser',
+  visibility: 'visibility',
+  accessPasswordHash: 'accessPasswordHash',
+  directLinkToken: 'directLinkToken',
+  isTableType: 'isTableType',
+  tableCapacity: 'tableCapacity',
+  requiresAssignedSeating: 'requiresAssignedSeating'
 } as const
 
 export type TicketTypeScalarFieldEnum = (typeof TicketTypeScalarFieldEnum)[keyof typeof TicketTypeScalarFieldEnum]
@@ -382,6 +397,8 @@ export const ReservationScalarFieldEnum = {
   userId: 'userId',
   status: 'status',
   expiresAt: 'expiresAt',
+  gaHolds: 'gaHolds',
+  waitlistEntryId: 'waitlistEntryId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -400,7 +417,8 @@ export const TicketScalarFieldEnum = {
   status: 'status',
   issuedAt: 'issuedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  isComplimentary: 'isComplimentary'
 } as const
 
 export type TicketScalarFieldEnum = (typeof TicketScalarFieldEnum)[keyof typeof TicketScalarFieldEnum]
@@ -582,12 +600,122 @@ export const PromoCodeScalarFieldEnum = {
 export type PromoCodeScalarFieldEnum = (typeof PromoCodeScalarFieldEnum)[keyof typeof PromoCodeScalarFieldEnum]
 
 
+export const WaitlistEntryScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  userId: 'userId',
+  ticketTypeId: 'ticketTypeId',
+  requestedQty: 'requestedQty',
+  position: 'position',
+  status: 'status',
+  offerExpiresAt: 'offerExpiresAt',
+  reservationId: 'reservationId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WaitlistEntryScalarFieldEnum = (typeof WaitlistEntryScalarFieldEnum)[keyof typeof WaitlistEntryScalarFieldEnum]
+
+
+export const TimeSlotScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  label: 'label',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  capacity: 'capacity',
+  price: 'price',
+  currency: 'currency',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimeSlotScalarFieldEnum = (typeof TimeSlotScalarFieldEnum)[keyof typeof TimeSlotScalarFieldEnum]
+
+
+export const TimeSlotTicketScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  timeSlotId: 'timeSlotId',
+  createdAt: 'createdAt'
+} as const
+
+export type TimeSlotTicketScalarFieldEnum = (typeof TimeSlotTicketScalarFieldEnum)[keyof typeof TimeSlotTicketScalarFieldEnum]
+
+
+export const EventSessionScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  title: 'title',
+  description: 'description',
+  facilitator: 'facilitator',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  capacity: 'capacity',
+  price: 'price',
+  currency: 'currency',
+  inclusionMode: 'inclusionMode',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventSessionScalarFieldEnum = (typeof EventSessionScalarFieldEnum)[keyof typeof EventSessionScalarFieldEnum]
+
+
+export const SessionEnrolmentScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  sessionId: 'sessionId',
+  createdAt: 'createdAt'
+} as const
+
+export type SessionEnrolmentScalarFieldEnum = (typeof SessionEnrolmentScalarFieldEnum)[keyof typeof SessionEnrolmentScalarFieldEnum]
+
+
+export const TableSeatAssignmentScalarFieldEnum = {
+  id: 'id',
+  ticketId: 'ticketId',
+  ticketTypeId: 'ticketTypeId',
+  seatNumber: 'seatNumber',
+  attendeeName: 'attendeeName',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TableSeatAssignmentScalarFieldEnum = (typeof TableSeatAssignmentScalarFieldEnum)[keyof typeof TableSeatAssignmentScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  action: 'action',
+  oldStatus: 'oldStatus',
+  newStatus: 'newStatus',
+  actor: 'actor',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -604,4 +732,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
