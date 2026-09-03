@@ -1682,11 +1682,11 @@ const upsertScheduleItemSchema = z.object({
   eventId: z.string().min(1),
   scheduleItemId: z.string().optional(),
   title: z.string().min(1, 'Title is required').max(200).trim(),
-  description: z.string().max(1000).optional(),
-  hostName: z.string().max(120).optional(),
-  speakerId: z.string().optional(),
-  startsAt: z.string().datetime().optional(),
-  endsAt: z.string().datetime().optional(),
+  description: z.string().max(1000).optional().nullable(),
+  hostName: z.string().max(120).optional().nullable(),
+  speakerId: z.string().optional().nullable(),
+  startsAt: z.string().datetime().optional().nullable(),
+  endsAt: z.string().datetime().optional().nullable(),
   position: z.coerce.number().int().min(0).default(0),
 })
 
