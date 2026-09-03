@@ -6,7 +6,7 @@ import { getSession } from '@/lib/session'
 import { paystack } from '@/lib/paystack'
 import { PaymentStatus, PayoutStatus, RefundStatus } from '@/app/generated/prisma/client'
 import { z } from 'zod'
-import { randomBytes } from 'crypto'
+import { randomBytes } from 'node:crypto'
 
 type ActionResult<T = void> = { success: true; data: T } | { success: false; error: string }
 

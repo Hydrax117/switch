@@ -10,7 +10,7 @@ import {
 } from '@/lib/redis'
 import { scheduleGroupExpiry } from '@/lib/queues'
 import { sendGroupCompleteEmail } from '@/lib/email'
-import { randomBytes } from 'crypto'
+import { randomBytes } from 'node:crypto'
 import {
   createGroupOrderSchema,
   claimSlotSchema,
