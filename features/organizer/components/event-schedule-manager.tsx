@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Pencil, Trash2, Loader2, X, GripVertical, Clock, User } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, X, Clock, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { upsertScheduleItem, deleteScheduleItem } from '../actions'
 import { format } from 'date-fns'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -294,21 +295,20 @@ export function EventScheduleManager({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Start time</label>
-              <input
-                type="datetime-local"
-                className={inputCls}
+              <DateTimePicker
                 value={form.startsAt}
-                onChange={(e) => setField('startsAt', e.target.value)}
+                onChange={(v) => setField('startsAt', v)}
+                placeholder="Pick start time"
                 disabled={isPending}
               />
             </div>
             <div>
               <label className={labelCls}>End time</label>
-              <input
-                type="datetime-local"
-                className={inputCls}
+              <DateTimePicker
                 value={form.endsAt}
-                onChange={(e) => setField('endsAt', e.target.value)}
+                onChange={(v) => setField('endsAt', v)}
+                placeholder="Pick end time"
+                fromDate={form.startsAt ? new Date(form.startsAt) : undefined}
                 disabled={isPending}
               />
             </div>
