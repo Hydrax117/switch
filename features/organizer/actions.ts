@@ -9,6 +9,7 @@ import { writeAuditLog } from '@/lib/audit'
 import { advanceWaitlist } from '@/features/waitlist/actions'
 import { sendTicketCancelled, sendTicketConfirmationEmail } from '@/lib/email'
 import { hashPassword, comparePassword, generateToken, generateTicketNumber, generateQrCode } from '@/lib/crypto-utils'
+import { deleteStorageFiles } from '@/lib/supabase'
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -356,6 +357,15 @@ export async function saveEventImages(eventId: string, imageUrls: string[]): Pro
   })
   if (!event) return { success: false, error: 'Event not found' }
 
+  // Find URLs that are being removed so we can delete them from storage
+  const existing = await db.eventImage.findMany({
+    where: { eventId },
+    select: { url: true },
+  })
+  const existingUrls = existing.map((img) => img.url)
+  const newUrlSet = new Set(imageUrls)
+  const removedUrls = existingUrls.filter((url) => !newUrlSet.has(url))
+
   await db.$transaction(async (tx) => {
     // Replace all existing images
     await tx.eventImage.deleteMany({ where: { eventId } })
@@ -372,6 +382,11 @@ export async function saveEventImages(eventId: string, imageUrls: string[]): Pro
       data: { imageUrl: imageUrls[0] ?? null },
     })
   })
+
+  // Delete removed files from storage (non-blocking, best-effort)
+  if (removedUrls.length > 0) {
+    deleteStorageFiles(removedUrls).catch(console.error)
+  }
 
   revalidatePath(`/dashboard/events/${eventId}`)
   return { success: true, data: undefined }
@@ -419,11 +434,25 @@ export async function saveSpeaker(formData: FormData): Promise<ActionResult<{ id
   }
 
   if (speakerId) {
-    // Update existing
+    // Fetch old avatar URL before overwriting — delete from storage if replaced
+    const existing = await db.eventSpeaker.findUnique({
+      where: { id: speakerId, eventId },
+      select: { avatarUrl: true },
+    })
+    const oldAvatar = existing?.avatarUrl ?? null
+    const newAvatar = avatarUrl || null
+    const avatarReplaced = oldAvatar && oldAvatar !== newAvatar
+
     await db.eventSpeaker.update({
       where: { id: speakerId, eventId },
       data,
     })
+
+    // Delete old avatar from storage if it was replaced or removed (non-blocking)
+    if (avatarReplaced) {
+      deleteStorageFiles([oldAvatar]).catch(console.error)
+    }
+
     revalidatePath(`/dashboard/events/${eventId}`)
     return { success: true, data: { id: speakerId } }
   } else {
@@ -454,7 +483,18 @@ export async function deleteSpeaker(speakerId: string, eventId: string): Promise
     : null
   if (!event) return { success: false, error: 'Event not found' }
 
+  // Fetch avatar URL before deleting so we can remove it from storage
+  const speaker = await db.eventSpeaker.findUnique({
+    where: { id: speakerId, eventId },
+    select: { avatarUrl: true },
+  })
+
   await db.eventSpeaker.delete({ where: { id: speakerId, eventId } })
+
+  // Delete avatar from storage (non-blocking, best-effort)
+  if (speaker?.avatarUrl) {
+    deleteStorageFiles([speaker.avatarUrl]).catch(console.error)
+  }
 
   // Re-order remaining speakers
   const remaining = await db.eventSpeaker.findMany({
@@ -498,6 +538,52 @@ export async function cancelEvent(eventId: string): Promise<ActionResult> {
 
   revalidatePath('/dashboard/events')
   revalidatePath(`/dashboard/events/${eventId}`)
+  revalidatePath(`/events/${event.slug}`)
+  return { success: true, data: undefined }
+}
+
+// ─── Delete event (hard delete — cleans up storage) ───────────────────────────
+
+export async function deleteEvent(eventId: string): Promise<ActionResult> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: {
+      id: true,
+      slug: true,
+      images: { select: { url: true } },
+      speakers: { select: { avatarUrl: true } },
+      _count: { select: { tickets: true } },
+    },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+  if (event._count.tickets > 0) {
+    return { success: false, error: 'Cannot delete an event with confirmed tickets. Cancel it instead.' }
+  }
+
+  // Collect all storage URLs before deleting the DB records
+  const storageUrls: string[] = [
+    ...event.images.map((img) => img.url),
+    ...event.speakers.map((s) => s.avatarUrl).filter((u): u is string => Boolean(u)),
+  ]
+
+  // Hard delete — cascades to images, speakers, ticket types, etc.
+  await db.event.delete({ where: { id: eventId } })
+
+  // Clean up storage files (non-blocking, best-effort)
+  if (storageUrls.length > 0) {
+    deleteStorageFiles(storageUrls).catch(console.error)
+  }
+
+  revalidatePath('/dashboard/events')
   revalidatePath(`/events/${event.slug}`)
   return { success: true, data: undefined }
 }
