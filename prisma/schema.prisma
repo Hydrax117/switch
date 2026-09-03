@@ -515,6 +515,7 @@ model Event {
   groupOrders  GroupOrder[]
   promoCodes   PromoCode[]
   calendarEvents CalendarEvent[] @relation("CalendarLinkedEvent")
+  scheduleItems   EventScheduleItem[]
   timeSlots       TimeSlot[]
   sessions        EventSession[]
   waitlistEntries WaitlistEntry[]
@@ -538,13 +539,40 @@ model EventSpeaker {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event          Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  scheduleItems  EventScheduleItem[]
 
   @@index([eventId, position])
   @@map("event_speakers")
 }
 
-// ─── Event Image ──────────────────────────────────────────────────────────────
+// ─── Event Schedule Item ──────────────────────────────────────────────────────
+
+model EventScheduleItem {
+  id          String   @id @default(cuid())
+  eventId     String
+  /// e.g. "Opening Prayer", "Keynote Address", "Lunch Break"
+  title       String
+  /// Optional extra detail shown on the programme
+  description String?  @db.Text
+  /// Free-text name of the host/lead for this item
+  hostName    String?
+  /// Optional FK to an EventSpeaker already added to this event
+  speakerId   String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  /// Display order within the programme
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event   Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  speaker EventSpeaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+
+  @@index([eventId, position])
+  @@map("event_schedule_items")
+}
+
 
 model EventImage {
   id        String   @id @default(cuid())

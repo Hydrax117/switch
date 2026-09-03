@@ -681,3 +681,22 @@ export async function getEventInventory(
     seatSections: seatSectionInventory,
   }
 }
+
+// ─── Get event schedule items ─────────────────────────────────────────────────
+
+export async function getEventScheduleItems(eventId: string) {
+  return db.eventScheduleItem.findMany({
+    where: { eventId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      hostName: true,
+      speakerId: true,
+      startsAt: true,
+      endsAt: true,
+      position: true,
+    },
+    orderBy: { position: 'asc' },
+  })
+}

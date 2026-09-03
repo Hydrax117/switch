@@ -112,6 +112,11 @@ export type Event = Prisma.EventModel
  */
 export type EventSpeaker = Prisma.EventSpeakerModel
 /**
+ * Model EventScheduleItem
+ * 
+ */
+export type EventScheduleItem = Prisma.EventScheduleItemModel
+/**
  * Model EventImage
  * 
  */

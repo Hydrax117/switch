@@ -411,6 +411,7 @@ export const ModelName = {
   Seat: 'Seat',
   Event: 'Event',
   EventSpeaker: 'EventSpeaker',
+  EventScheduleItem: 'EventScheduleItem',
   EventImage: 'EventImage',
   TicketType: 'TicketType',
   EventSeat: 'EventSeat',
@@ -448,7 +449,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "account" | "session" | "verificationToken" | "organizer" | "organizerApplication" | "category" | "venue" | "seatMap" | "section" | "row" | "seat" | "event" | "eventSpeaker" | "eventImage" | "ticketType" | "eventSeat" | "reservation" | "ticket" | "payment" | "payoutRequest" | "eventReview" | "refundRequest" | "groupOrder" | "groupOrderSlot" | "userCalendar" | "calendarEvent" | "calendarShare" | "promoCode" | "waitlistEntry" | "timeSlot" | "timeSlotTicket" | "eventSession" | "sessionEnrolment" | "tableSeatAssignment" | "auditLog"
+    modelProps: "user" | "account" | "session" | "verificationToken" | "organizer" | "organizerApplication" | "category" | "venue" | "seatMap" | "section" | "row" | "seat" | "event" | "eventSpeaker" | "eventScheduleItem" | "eventImage" | "ticketType" | "eventSeat" | "reservation" | "ticket" | "payment" | "payoutRequest" | "eventReview" | "refundRequest" | "groupOrder" | "groupOrderSlot" | "userCalendar" | "calendarEvent" | "calendarShare" | "promoCode" | "waitlistEntry" | "timeSlot" | "timeSlotTicket" | "eventSession" | "sessionEnrolment" | "tableSeatAssignment" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1485,6 +1486,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.EventSpeakerCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.EventSpeakerCountAggregateOutputType> | number
+        }
+      }
+    }
+    EventScheduleItem: {
+      payload: Prisma.$EventScheduleItemPayload<ExtArgs>
+      fields: Prisma.EventScheduleItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EventScheduleItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EventScheduleItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>
+        }
+        findFirst: {
+          args: Prisma.EventScheduleItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EventScheduleItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>
+        }
+        findMany: {
+          args: Prisma.EventScheduleItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>[]
+        }
+        create: {
+          args: Prisma.EventScheduleItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>
+        }
+        createMany: {
+          args: Prisma.EventScheduleItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EventScheduleItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>[]
+        }
+        delete: {
+          args: Prisma.EventScheduleItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>
+        }
+        update: {
+          args: Prisma.EventScheduleItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.EventScheduleItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EventScheduleItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EventScheduleItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.EventScheduleItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventScheduleItemPayload>
+        }
+        aggregate: {
+          args: Prisma.EventScheduleItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventScheduleItem>
+        }
+        groupBy: {
+          args: Prisma.EventScheduleItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventScheduleItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EventScheduleItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventScheduleItemCountAggregateOutputType> | number
         }
       }
     }
@@ -3386,6 +3461,23 @@ export const EventSpeakerScalarFieldEnum = {
 export type EventSpeakerScalarFieldEnum = (typeof EventSpeakerScalarFieldEnum)[keyof typeof EventSpeakerScalarFieldEnum]
 
 
+export const EventScheduleItemScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  title: 'title',
+  description: 'description',
+  hostName: 'hostName',
+  speakerId: 'speakerId',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  position: 'position',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventScheduleItemScalarFieldEnum = (typeof EventScheduleItemScalarFieldEnum)[keyof typeof EventScheduleItemScalarFieldEnum]
+
+
 export const EventImageScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
@@ -4362,6 +4454,7 @@ export type GlobalOmitConfig = {
   seat?: Prisma.SeatOmit
   event?: Prisma.EventOmit
   eventSpeaker?: Prisma.EventSpeakerOmit
+  eventScheduleItem?: Prisma.EventScheduleItemOmit
   eventImage?: Prisma.EventImageOmit
   ticketType?: Prisma.TicketTypeOmit
   eventSeat?: Prisma.EventSeatOmit

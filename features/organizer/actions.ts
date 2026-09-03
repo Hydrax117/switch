@@ -1589,3 +1589,104 @@ export async function deleteEventSession(
 }
 
 // ─── (End of file — upsert/delete actions defined above) ──────────────────────
+
+// ─── Event Schedule Items ─────────────────────────────────────────────────────
+
+const upsertScheduleItemSchema = z.object({
+  eventId: z.string().min(1),
+  scheduleItemId: z.string().optional(),
+  title: z.string().min(1, 'Title is required').max(200).trim(),
+  description: z.string().max(1000).optional(),
+  hostName: z.string().max(120).optional(),
+  speakerId: z.string().optional(),
+  startsAt: z.string().datetime().optional(),
+  endsAt: z.string().datetime().optional(),
+  position: z.coerce.number().int().min(0).default(0),
+})
+
+export async function upsertScheduleItem(input: {
+  eventId: string
+  scheduleItemId?: string
+  title: string
+  description?: string
+  hostName?: string
+  speakerId?: string | null
+  startsAt?: string | null
+  endsAt?: string | null
+  position?: number
+}): Promise<{ success: true; scheduleItemId: string } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const parsed = upsertScheduleItemSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
+  }
+
+  const { eventId, scheduleItemId, title, description, hostName, speakerId, startsAt, endsAt, position } =
+    parsed.data
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  const data = {
+    title,
+    description: description ?? null,
+    hostName: hostName ?? null,
+    speakerId: speakerId ?? null,
+    startsAt: startsAt ? new Date(startsAt) : null,
+    endsAt: endsAt ? new Date(endsAt) : null,
+    position,
+  }
+
+  let id: string
+  if (scheduleItemId) {
+    await db.eventScheduleItem.update({
+      where: { id: scheduleItemId, eventId },
+      data,
+    })
+    id = scheduleItemId
+  } else {
+    const item = await db.eventScheduleItem.create({
+      data: { eventId, ...data },
+      select: { id: true },
+    })
+    id = item.id
+  }
+
+  revalidatePath(`/dashboard/events/${eventId}`)
+  return { success: true, scheduleItemId: id }
+}
+
+export async function deleteScheduleItem(
+  scheduleItemId: string,
+  eventId: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  await db.eventScheduleItem.delete({ where: { id: scheduleItemId, eventId } })
+  revalidatePath(`/dashboard/events/${eventId}`)
+  return { success: true }
+}
