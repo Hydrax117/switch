@@ -7,7 +7,7 @@ import { sendTicketConfirmationEmail } from '@/lib/email'
 import { scheduleReservationExpiry, scheduleEventReminder } from '@/lib/queues'
 import { writeAuditLog } from '@/lib/audit'
 import { enforcePurchaseLimits, parseLimitError } from '@/lib/purchase-limits'
-import bcrypt from 'bcryptjs'
+import { hashPassword, comparePassword, generateToken } from '@/lib/crypto-utils'
 import {
   reserveSeatsSchema,
   reserveGASchema,
@@ -36,7 +36,7 @@ import {
   TicketVisibility,
 } from '@/app/generated/prisma/client'
 import type { PrismaTransactionClient } from '@/lib/audit'
-import { randomBytes } from 'crypto'
+import { randomBytes } from 'node:crypto'
 
 // ─── Reservation TTL ─────────────────────────────────────────────────────────
 
@@ -803,14 +803,14 @@ export async function unlockPasswordProtectedTicket(
     return { success: false, error: 'INVALID_PASSWORD' }
   }
 
-  const isMatch = await bcrypt.compare(password, ticketType.accessPasswordHash)
+  const isMatch = await comparePassword(password, ticketType.accessPasswordHash)
 
   if (!isMatch) {
     return { success: false, error: 'INVALID_PASSWORD' }
   }
 
   // Generate a secure random session token and store in Redis with 1-hour TTL
-  const sessionToken = randomBytes(32).toString('hex')
+  const sessionToken = generateToken(32)
   await redis.set(ticketUnlockKey(ticketTypeId, sessionToken), '1', 'EX', 3600)
 
   return { success: true, sessionToken }

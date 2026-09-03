@@ -8,8 +8,7 @@ import { EventStatus, SeatingType, TicketTypeStatus, AuditAction, AuditEntityTyp
 import { writeAuditLog } from '@/lib/audit'
 import { advanceWaitlist } from '@/features/waitlist/actions'
 import { sendTicketCancelled, sendTicketConfirmationEmail } from '@/lib/email'
-import bcrypt from 'bcryptjs'
-import { randomBytes } from 'crypto'
+import { hashPassword, comparePassword, generateToken, generateTicketNumber, generateQrCode } from '@/lib/crypto-utils'
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -890,9 +889,8 @@ export async function issueComplimentaryTicket(input: {
     })
 
     // Generate unique ticket number and QR code
-    const year = new Date().getFullYear()
-    const ticketNumber = `SWT-${year}-${randomBytes(3).toString('hex').toUpperCase()}`
-    const qrCode = randomBytes(32).toString('hex')
+    const ticketNumber = generateTicketNumber()
+    const qrCode = generateQrCode()
 
     const ticket = await db.$transaction(async (tx) => {
       const newTicket = await tx.ticket.create({
@@ -1273,12 +1271,12 @@ export async function upsertTicketType(input: {
         fieldErrors: { accessPassword: 'Password is required' },
       }
     }
-    accessPasswordHash = await bcrypt.hash(accessPassword, 10)
+    accessPasswordHash = await hashPassword(accessPassword, 10)
     directLinkToken = null // clear any previous token
   } else if (visibility === TicketVisibility.HIDDEN) {
     // Only generate a new token if creating or if the type is being changed to HIDDEN
     if (!ticketTypeId) {
-      directLinkToken = randomBytes(20).toString('hex')
+      directLinkToken = generateToken(20)
     } else {
       // Check if it already has a token; if not, generate one
       const existing = await db.ticketType.findUnique({
@@ -1286,7 +1284,7 @@ export async function upsertTicketType(input: {
         select: { directLinkToken: true, visibility: true },
       })
       if (!existing?.directLinkToken) {
-        directLinkToken = randomBytes(20).toString('hex')
+        directLinkToken = generateToken(20)
       }
       // else keep existing token (don't rotate on re-save)
     }
