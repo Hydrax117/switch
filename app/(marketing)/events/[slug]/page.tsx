@@ -19,6 +19,7 @@ import { EventOrganizer } from '@/components/events/event-organizer'
 import { RelatedEvents } from '@/components/events/related-events'
 import { MobileTicketBar } from '@/components/events/mobile-ticket-bar'
 import { SectionReveal } from '@/components/events/section-reveal'
+import { EventProgramme } from '@/components/events/event-programme'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -127,6 +128,13 @@ export default async function EventDetailPage({ params }: PageProps) {
               {event.description && (
                 <SectionReveal>
                   <EventAbout description={event.description} />
+                </SectionReveal>
+              )}
+
+              {/* Programme / Agenda */}
+              {event.scheduleItems && event.scheduleItems.length > 0 && (
+                <SectionReveal>
+                  <EventProgramme items={event.scheduleItems} />
                 </SectionReveal>
               )}
 

@@ -214,6 +214,19 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
       _count: {
         select: { tickets: true, eventSeats: true },
       },
+      scheduleItems: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          hostName: true,
+          speakerId: true,
+          startsAt: true,
+          endsAt: true,
+          position: true,
+        },
+        orderBy: { position: 'asc' as const },
+      },
     },
   })
 

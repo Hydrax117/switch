@@ -8,6 +8,7 @@ import type {
   SeatMap,
   EventSpeaker,
   EventImage,
+  EventScheduleItem,
 } from '@/app/generated/prisma/client'
 
 // ─── Rich event type used in listings and detail pages ────────────────────────
@@ -85,6 +86,7 @@ export type EventDetail = EventWithRelations & {
   seatMap: SeatMapData | null
   speakers: Pick<EventSpeaker, 'id' | 'name' | 'role' | 'avatarUrl' | 'position'>[]
   images: Pick<EventImage, 'id' | 'url' | 'position'>[]
+  scheduleItems: Pick<EventScheduleItem, 'id' | 'title' | 'description' | 'hostName' | 'speakerId' | 'startsAt' | 'endsAt' | 'position'>[]
 }
 
 // ─── Seat selection state (used across seat map UI) ───────────────────────────
