@@ -4,10 +4,12 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
-import { EventStatus, SeatingType, TicketTypeStatus, AuditAction, AuditEntityType, TicketStatus } from '@/app/generated/prisma/client'
+import { EventStatus, SeatingType, TicketTypeStatus, AuditAction, AuditEntityType, TicketStatus, TicketVisibility, SessionInclusionMode } from '@/app/generated/prisma/client'
 import { writeAuditLog } from '@/lib/audit'
 import { advanceWaitlist } from '@/features/waitlist/actions'
 import { sendTicketCancelled, sendTicketConfirmationEmail } from '@/lib/email'
+import bcrypt from 'bcryptjs'
+import { randomBytes } from 'crypto'
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -888,7 +890,6 @@ export async function issueComplimentaryTicket(input: {
     })
 
     // Generate unique ticket number and QR code
-    const { randomBytes } = await import('crypto')
     const year = new Date().getFullYear()
     const ticketNumber = `SWT-${year}-${randomBytes(3).toString('hex').toUpperCase()}`
     const qrCode = randomBytes(32).toString('hex')
@@ -1156,8 +1157,6 @@ export async function exportInventoryCSV(
 
 // ─── Upsert Ticket Type (extended) ────────────────────────────────────────────
 
-import { TicketVisibility, SessionInclusionMode, TicketTypeStatus as _TicketTypeStatus } from '@/app/generated/prisma/client'
-
 const upsertTicketTypeSchema = z.object({
   eventId: z.string().min(1),
   ticketTypeId: z.string().optional(),
@@ -1274,13 +1273,11 @@ export async function upsertTicketType(input: {
         fieldErrors: { accessPassword: 'Password is required' },
       }
     }
-    const bcrypt = await import('bcryptjs')
     accessPasswordHash = await bcrypt.hash(accessPassword, 10)
     directLinkToken = null // clear any previous token
   } else if (visibility === TicketVisibility.HIDDEN) {
     // Only generate a new token if creating or if the type is being changed to HIDDEN
     if (!ticketTypeId) {
-      const { randomBytes } = await import('crypto')
       directLinkToken = randomBytes(20).toString('hex')
     } else {
       // Check if it already has a token; if not, generate one
@@ -1289,7 +1286,6 @@ export async function upsertTicketType(input: {
         select: { directLinkToken: true, visibility: true },
       })
       if (!existing?.directLinkToken) {
-        const { randomBytes } = await import('crypto')
         directLinkToken = randomBytes(20).toString('hex')
       }
       // else keep existing token (don't rotate on re-save)
