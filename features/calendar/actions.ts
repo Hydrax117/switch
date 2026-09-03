@@ -355,7 +355,151 @@ export async function copySharedEvents(formData: FormData): Promise<ActionResult
   return { success: true, data: { count: sourceEvents.length } }
 }
 
-// ─── Accept share via token (adds a share record for the current user) ─────────
+// ─── Add a SWITCH platform event to a user calendar ──────────────────────────
+
+const addSwitchEventSchema = z.object({
+  calendarId: z.string().min(1),
+  switchEventId: z.string().min(1),
+})
+
+export async function addSwitchEventToCalendar(
+  calendarId: string,
+  switchEventId: string
+): Promise<ActionResult<{ id: string; alreadyExists: boolean }>> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  // Verify calendar belongs to this user
+  const cal = await db.userCalendar.findUnique({
+    where: { id: calendarId, userId: session.userId },
+    select: { id: true },
+  })
+  if (!cal) return { success: false, error: 'Calendar not found' }
+
+  // Fetch the SWITCH event
+  const switchEvent = await db.event.findUnique({
+    where: { id: switchEventId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      startsAt: true,
+      endsAt: true,
+      venueName: true,
+      venueAddress: true,
+      venueCity: true,
+      venueState: true,
+      isVirtual: true,
+      virtualLink: true,
+    },
+  })
+  if (!switchEvent) return { success: false, error: 'Event not found' }
+
+  // Check if already added to this calendar
+  const existing = await db.calendarEvent.findFirst({
+    where: { calendarId, linkedEventId: switchEventId },
+    select: { id: true },
+  })
+  if (existing) {
+    return { success: true, data: { id: existing.id, alreadyExists: true } }
+  }
+
+  const location = switchEvent.isVirtual
+    ? (switchEvent.virtualLink ?? '')
+    : [switchEvent.venueName, switchEvent.venueAddress, switchEvent.venueCity, switchEvent.venueState]
+        .filter(Boolean)
+        .join(', ')
+
+  const event = await db.calendarEvent.create({
+    data: {
+      calendarId,
+      title: switchEvent.title,
+      description: switchEvent.description
+        ? switchEvent.description.slice(0, 500)
+        : null,
+      location: location || null,
+      startsAt: switchEvent.startsAt,
+      endsAt: switchEvent.endsAt ?? null,
+      allDay: false,
+      linkedEventId: switchEventId,
+    },
+    select: { id: true },
+  })
+
+  revalidatePath('/dashboard/calendar')
+  return { success: true, data: { id: event.id, alreadyExists: false } }
+}
+
+// ─── Create a new calendar and immediately add a SWITCH event to it ───────────
+
+const createCalendarWithEventSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(80).trim(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Invalid color').default('#7c3aed'),
+  switchEventId: z.string().min(1),
+})
+
+export async function createCalendarAndAddEvent(
+  input: { title: string; color: string; switchEventId: string }
+): Promise<ActionResult<{ calendarId: string; eventId: string }>> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const parsed = createCalendarWithEventSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
+  }
+
+  const { title, color, switchEventId } = parsed.data
+
+  const switchEvent = await db.event.findUnique({
+    where: { id: switchEventId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      startsAt: true,
+      endsAt: true,
+      venueName: true,
+      venueAddress: true,
+      venueCity: true,
+      venueState: true,
+      isVirtual: true,
+      virtualLink: true,
+    },
+  })
+  if (!switchEvent) return { success: false, error: 'Event not found' }
+
+  const location = switchEvent.isVirtual
+    ? (switchEvent.virtualLink ?? '')
+    : [switchEvent.venueName, switchEvent.venueAddress, switchEvent.venueCity, switchEvent.venueState]
+        .filter(Boolean)
+        .join(', ')
+
+  const [calendar, calEvent] = await db.$transaction(async (tx) => {
+    const cal = await tx.userCalendar.create({
+      data: { userId: session.userId, title, color },
+      select: { id: true },
+    })
+    const ev = await tx.calendarEvent.create({
+      data: {
+        calendarId: cal.id,
+        title: switchEvent.title,
+        description: switchEvent.description ? switchEvent.description.slice(0, 500) : null,
+        location: location || null,
+        startsAt: switchEvent.startsAt,
+        endsAt: switchEvent.endsAt ?? null,
+        allDay: false,
+        linkedEventId: switchEventId,
+      },
+      select: { id: true },
+    })
+    return [cal, ev]
+  })
+
+  revalidatePath('/dashboard/calendar')
+  return { success: true, data: { calendarId: calendar.id, eventId: calEvent.id } }
+}
+
 
 export async function acceptShareByToken(shareToken: string): Promise<ActionResult<{ calendarId: string }>> {
   const session = await getSession()

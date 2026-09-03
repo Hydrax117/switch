@@ -5,6 +5,7 @@ import { HeaderWithSession } from '@/components/layout/header-with-session'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { getSession } from '@/lib/session'
 import { getEventBySlug, getRelatedEvents, isSoldOut, getMinPrice } from '@/features/events'
+import { getUserCalendars } from '@/features/calendar/queries'
 import { EventHero } from '@/components/events/event-hero'
 import { EventMeta } from '@/components/events/event-meta'
 import { EventAbout } from '@/components/events/event-about'
@@ -64,10 +65,11 @@ export default async function EventDetailPage({ params }: PageProps) {
   const isReserved = event.seatingType === 'RESERVED' || event.seatingType === 'MIXED'
   const isLoggedIn = Boolean(session)
 
-  // Fetch related events in parallel (non-blocking for page render)
-  const relatedEventsPromise = getRelatedEvents(event.id, event.category?.id ?? null, 6)
-
-  const relatedEvents = await relatedEventsPromise
+  // Fetch related events + user calendars in parallel
+  const [relatedEvents, userCalendars] = await Promise.all([
+    getRelatedEvents(event.id, event.category?.id ?? null, 6),
+    session ? getUserCalendars(session.userId) : Promise.resolve([]),
+  ])
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[#0a0a0a]">
@@ -98,7 +100,21 @@ export default async function EventDetailPage({ params }: PageProps) {
         {/* ── Meta strip ─────────────────────────────────────────────── */}
         <div className="border-b border-white/8 bg-[#0a0a0a]">
           <div className="mx-auto max-w-[1120px] px-5 py-8 sm:px-8">
-            <EventMeta event={event} />
+            <EventMeta
+              event={event}
+              calendarProps={
+                isLoggedIn
+                  ? {
+                      switchEventId: event.id,
+                      calendars: userCalendars.map((c) => ({
+                        id: c.id,
+                        title: c.title,
+                        color: c.color,
+                      })),
+                    }
+                  : undefined
+              }
+            />
           </div>
         </div>
 

@@ -17,8 +17,13 @@ import { SpeakersManager } from '@/features/organizer/components/speakers-manage
 import { PromoCodesManager } from '@/features/promo-codes/components/promo-codes-manager'
 import { ScanPinManager } from '@/features/organizer/components/scan-pin-manager'
 import { SeatingManager } from '@/features/organizer/components/seating-manager'
+import { TableConfigTab } from '@/features/organizer/components/table-config-tab'
+import { TimeSlotConfigTab } from '@/features/organizer/components/time-slot-config-tab'
+import { SessionConfigTab } from '@/features/organizer/components/session-config-tab'
 import { getPromoCodesForEvent } from '@/features/promo-codes/queries'
 import { getEventSeatConfig } from '@/features/organizer/queries'
+import { getEventTimeSlots } from '@/features/time-slots/queries'
+import { getEventSessions } from '@/features/sessions/queries'
 import { db } from '@/lib/db'
 import { format } from 'date-fns'
 import { formatPrice } from '@/features/events/utils'
@@ -41,13 +46,15 @@ export default async function ManageEventPage({ params }: PageProps) {
   const organizer = await getOrganizerByUserId(session.userId)
   if (!organizer) redirect('/dashboard')
 
-  const [event, eventImages, eventSpeakers, categories, promoCodes, seatConfig] = await Promise.all([
+  const [event, eventImages, eventSpeakers, categories, promoCodes, seatConfig, timeSlots, sessions] = await Promise.all([
     getOrganizerEvent(id, organizer.id),
     getEventImages(id),
     getEventSpeakers(id),
     db.category.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
     getPromoCodesForEvent(id, organizer.id),
     getEventSeatConfig(id),
+    getEventTimeSlots(id),
+    getEventSessions(id),
   ])
 
   if (!event) notFound()
@@ -139,6 +146,38 @@ export default async function ManageEventPage({ params }: PageProps) {
 
       {/* ── Ticket types ── */}
       <TicketTypesManager eventId={event.id} ticketTypes={event.ticketTypes} />
+
+      {/* ── Tables ── */}
+      <section className="border-border bg-surface rounded-2xl border p-5">
+        <h2 className="mb-5 text-[14px] font-semibold">Tables</h2>
+        <TableConfigTab
+          eventId={event.id}
+          tableTicketTypes={event.ticketTypes
+            .filter((tt) => tt.isTableType)
+            .map((tt) => ({
+              id: tt.id,
+              name: tt.name,
+              price: tt.price,
+              currency: tt.currency,
+              quantity: tt.quantity ?? null,
+              sold: tt.sold,
+              tableCapacity: tt.tableCapacity ?? null,
+              requiresAssignedSeating: tt.requiresAssignedSeating,
+            }))}
+        />
+      </section>
+
+      {/* ── Time Slots ── */}
+      <section className="border-border bg-surface rounded-2xl border p-5">
+        <h2 className="mb-5 text-[14px] font-semibold">Time Slots</h2>
+        <TimeSlotConfigTab eventId={event.id} timeSlots={timeSlots} />
+      </section>
+
+      {/* ── Sessions ── */}
+      <section className="border-border bg-surface rounded-2xl border p-5">
+        <h2 className="mb-5 text-[14px] font-semibold">Sessions</h2>
+        <SessionConfigTab eventId={event.id} sessions={sessions} />
+      </section>
 
       {/* ── Seat configuration (RESERVED / MIXED only) ── */}
       {event.seatingType !== 'GENERAL_ADMISSION' && (
