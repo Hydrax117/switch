@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
-import { EventStatus, SeatingType, TicketTypeStatus } from '@/app/generated/prisma/client'
+import { EventStatus, SeatingType, TicketTypeStatus, AuditAction, AuditEntityType, TicketStatus } from '@/app/generated/prisma/client'
+import { writeAuditLog } from '@/lib/audit'
+import { advanceWaitlist } from '@/features/waitlist/actions'
+import { sendTicketCancelled, sendTicketConfirmationEmail } from '@/lib/email'
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
@@ -731,3 +734,864 @@ export async function saveSeatConfiguration(input: {
   revalidatePath(`/dashboard/events/${eventId}`)
   return { success: true, data: { totalSeats } }
 }
+
+
+// ─── Cancel Ticket ────────────────────────────────────────────────────────────
+
+export async function cancelTicket(input: {
+  ticketId: string
+  eventId: string
+  reason?: string
+  force?: boolean
+}): Promise<{ success: true } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'UNAUTHENTICATED' }
+
+  // Verify organizer
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  // Verify event ownership
+  const event = await db.event.findUnique({
+    where: { id: input.eventId, organizerId: organizer.id },
+    select: { id: true, title: true, slug: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  // Load ticket
+  const ticket = await db.ticket.findUnique({
+    where: { id: input.ticketId, eventId: input.eventId },
+    select: {
+      id: true,
+      status: true,
+      ticketTypeId: true,
+      eventSeatId: true,
+      ticketNumber: true,
+      ticketType: { select: { sold: true } },
+      user: { select: { email: true, name: true } },
+    },
+  })
+  if (!ticket) return { success: false, error: 'Ticket not found' }
+
+  // Block if already in a terminal state
+  if (ticket.status === TicketStatus.CANCELLED || ticket.status === TicketStatus.REFUNDED) {
+    return { success: false, error: `Ticket is already ${ticket.status.toLowerCase()}` }
+  }
+
+  // If ticket is USED, require force flag
+  if (ticket.status === TicketStatus.USED && !input.force) {
+    return { success: false, error: 'CHECKED_IN_REQUIRES_FORCE' }
+  }
+
+  try {
+    await db.$transaction(async (tx) => {
+      // Set ticket CANCELLED
+      await tx.ticket.update({
+        where: { id: input.ticketId },
+        data: { status: TicketStatus.CANCELLED },
+      })
+
+      // Release EventSeat if reserved
+      if (ticket.eventSeatId) {
+        await tx.eventSeat.update({
+          where: { id: ticket.eventSeatId },
+          data: { status: 'AVAILABLE', reservationId: null },
+        })
+      } else {
+        // GA ticket: decrement sold
+        await tx.ticketType.update({
+          where: { id: ticket.ticketTypeId },
+          data: { sold: { decrement: 1 } },
+        })
+      }
+
+      // Write audit log
+      await writeAuditLog(tx, {
+        entityType: AuditEntityType.TICKET,
+        entityId: input.ticketId,
+        action: AuditAction.CANCELLED,
+        oldStatus: ticket.status,
+        newStatus: TicketStatus.CANCELLED,
+        actor: organizer.id,
+        metadata: { reason: input.reason, force: input.force },
+      })
+    })
+
+    // Advance waitlist non-blocking (for GA cancellation releasing a slot)
+    if (!ticket.eventSeatId) {
+      advanceWaitlist({
+        ticketTypeId: ticket.ticketTypeId,
+        releasedQty: 1,
+      }).catch(console.error)
+    }
+
+    // Send cancellation email non-blocking
+    sendTicketCancelled({
+      toEmail: ticket.user.email,
+      toName: ticket.user.name,
+      eventTitle: event.title,
+      eventSlug: event.slug,
+      ticketNumber: ticket.ticketNumber,
+      reason: input.reason,
+    }).catch(console.error)
+
+    revalidatePath(`/dashboard/events/${input.eventId}/reservations`)
+    return { success: true }
+  } catch (err) {
+    console.error('[cancelTicket] error:', err)
+    return { success: false, error: 'Failed to cancel ticket. Please try again.' }
+  }
+}
+
+// ─── Issue Complimentary Ticket ───────────────────────────────────────────────
+
+export async function issueComplimentaryTicket(input: {
+  eventId: string
+  ticketTypeId: string
+  recipientEmail: string
+  recipientName: string
+}): Promise<{ success: true; ticketId: string } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'UNAUTHENTICATED' }
+
+  // Verify organizer
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  // Verify event ownership
+  const event = await db.event.findUnique({
+    where: { id: input.eventId, organizerId: organizer.id },
+    select: { id: true, title: true, slug: true, startsAt: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  // Verify ticket type belongs to event
+  const ticketType = await db.ticketType.findUnique({
+    where: { id: input.ticketTypeId, eventId: input.eventId },
+    select: { id: true, name: true, price: true, currency: true },
+  })
+  if (!ticketType) return { success: false, error: 'Ticket type not found' }
+
+  try {
+    // Upsert user by email
+    const recipient = await db.user.upsert({
+      where: { email: input.recipientEmail },
+      create: { email: input.recipientEmail, name: input.recipientName },
+      update: {},
+      select: { id: true, email: true, name: true },
+    })
+
+    // Generate unique ticket number and QR code
+    const { randomBytes } = await import('crypto')
+    const year = new Date().getFullYear()
+    const ticketNumber = `SWT-${year}-${randomBytes(3).toString('hex').toUpperCase()}`
+    const qrCode = randomBytes(32).toString('hex')
+
+    const ticket = await db.$transaction(async (tx) => {
+      const newTicket = await tx.ticket.create({
+        data: {
+          eventId: input.eventId,
+          userId: recipient.id,
+          ticketTypeId: input.ticketTypeId,
+          ticketNumber,
+          qrCode,
+          status: TicketStatus.ACTIVE,
+          isComplimentary: true,
+          issuedAt: new Date(),
+        },
+        select: { id: true },
+      })
+
+      await writeAuditLog(tx, {
+        entityType: AuditEntityType.TICKET,
+        entityId: newTicket.id,
+        action: AuditAction.ISSUED,
+        newStatus: TicketStatus.ACTIVE,
+        actor: organizer.id,
+        metadata: {
+          isComplimentary: true,
+          recipientEmail: input.recipientEmail,
+          recipientName: input.recipientName,
+        },
+      })
+
+      return newTicket
+    })
+
+    // Send confirmation email non-blocking
+    sendTicketConfirmationEmail({
+      userId: recipient.id,
+      eventTitle: event.title,
+      eventDate: event.startsAt,
+      eventSlug: event.slug,
+      ticketCount: 1,
+      reservationId: ticket.id,
+      tickets: [
+        {
+          ticketNumber,
+          qrCode,
+          ticketTypeName: ticketType.name,
+          seatLabel: null,
+        },
+      ],
+    }).catch(console.error)
+
+    revalidatePath(`/dashboard/events/${input.eventId}/reservations`)
+    return { success: true, ticketId: ticket.id }
+  } catch (err) {
+    console.error('[issueComplimentaryTicket] error:', err)
+    return { success: false, error: 'Failed to issue complimentary ticket. Please try again.' }
+  }
+}
+
+// ─── Resend Confirmation Email ────────────────────────────────────────────────
+
+export async function resendConfirmationEmail(input: {
+  ticketId: string
+}): Promise<{ success: true } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'UNAUTHENTICATED' }
+
+  // Verify organizer
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  // Load ticket with event and user info
+  const ticket = await db.ticket.findUnique({
+    where: { id: input.ticketId },
+    select: {
+      id: true,
+      ticketNumber: true,
+      qrCode: true,
+      status: true,
+      eventId: true,
+      userId: true,
+      ticketType: { select: { name: true } },
+      eventSeat: { select: { seat: { select: { label: true } } } },
+      event: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          startsAt: true,
+          organizerId: true,
+        },
+      },
+    },
+  })
+
+  if (!ticket) return { success: false, error: 'Ticket not found' }
+  if (ticket.event.organizerId !== organizer.id) {
+    return { success: false, error: 'Ticket does not belong to your event' }
+  }
+
+  try {
+    await sendTicketConfirmationEmail({
+      userId: ticket.userId,
+      eventTitle: ticket.event.title,
+      eventDate: ticket.event.startsAt,
+      eventSlug: ticket.event.slug,
+      ticketCount: 1,
+      reservationId: ticket.eventId,
+      tickets: [
+        {
+          ticketNumber: ticket.ticketNumber,
+          qrCode: ticket.qrCode,
+          ticketTypeName: ticket.ticketType.name,
+          seatLabel: ticket.eventSeat?.seat.label ?? null,
+        },
+      ],
+    })
+    return { success: true }
+  } catch (err) {
+    console.error('[resendConfirmationEmail] error:', err)
+    return { success: false, error: 'Failed to send confirmation email. Please try again.' }
+  }
+}
+
+// ─── Export Reservations CSV ──────────────────────────────────────────────────
+
+export async function exportReservationsCSV(
+  eventId: string
+): Promise<{ success: true; csv: string } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'UNAUTHENTICATED' }
+
+  // Verify organizer
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  // Verify event ownership
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  try {
+    const tickets = await db.ticket.findMany({
+      where: {
+        eventId,
+        status: { in: [TicketStatus.ACTIVE, TicketStatus.USED] },
+      },
+      select: {
+        ticketNumber: true,
+        status: true,
+        issuedAt: true,
+        isComplimentary: true,
+        user: { select: { name: true, email: true } },
+        ticketType: { select: { name: true, currency: true } },
+        eventSeat: { select: { seat: { select: { label: true } } } },
+        payment: { select: { amount: true } },
+      },
+      orderBy: { issuedAt: 'asc' },
+    })
+
+    // Build CSV
+    const headers = [
+      'ticketNumber',
+      'status',
+      'attendeeName',
+      'email',
+      'ticketType',
+      'seatInfo',
+      'purchaseDate',
+      'amount',
+      'isComplimentary',
+    ]
+
+    const escapeCSV = (val: string | number | boolean | null | undefined): string => {
+      const str = val == null ? '' : String(val)
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`
+      }
+      return str
+    }
+
+    const rows = tickets.map((t) => [
+      t.ticketNumber,
+      t.status,
+      t.user.name ?? '',
+      t.user.email,
+      t.ticketType.name,
+      t.eventSeat?.seat.label ?? '',
+      t.issuedAt.toISOString(),
+      t.payment ? String(t.payment.amount) : '0',
+      t.isComplimentary ? 'true' : 'false',
+    ])
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map(escapeCSV).join(','))
+      .join('\n')
+
+    return { success: true, csv }
+  } catch (err) {
+    console.error('[exportReservationsCSV] error:', err)
+    return { success: false, error: 'Failed to export CSV. Please try again.' }
+  }
+}
+
+// ─── Export Inventory CSV ──────────────────────────────────────────────────────
+
+export async function exportInventoryCSV(
+  eventId: string
+): Promise<{ success: true; csv: string } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'UNAUTHENTICATED' }
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  // Reuse the inventory query
+  const { getEventInventory } = await import('@/features/organizer/queries')
+  const inventory = await getEventInventory(eventId, organizer.id)
+  if (!inventory) return { success: false, error: 'Could not load inventory' }
+
+  const escapeCSV = (val: string | number | boolean | null | undefined): string => {
+    const str = val == null ? '' : String(val)
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
+  const headers = ['ticketTypeName', 'total', 'sold', 'held', 'available', 'cancelled', 'waitlist']
+  const rows = inventory.ticketTypes.map((tt) => [
+    tt.name,
+    tt.total ?? 'unlimited',
+    tt.sold,
+    tt.held,
+    tt.available ?? 'unlimited',
+    tt.cancelled,
+    tt.waitlistCount,
+  ])
+
+  const csv = [headers, ...rows]
+    .map((row) => row.map(escapeCSV).join(','))
+    .join('\n')
+
+  return { success: true, csv }
+}
+
+// ─── Upsert Ticket Type (extended) ────────────────────────────────────────────
+
+import { TicketVisibility, SessionInclusionMode, TicketTypeStatus as _TicketTypeStatus } from '@/app/generated/prisma/client'
+
+const upsertTicketTypeSchema = z.object({
+  eventId: z.string().min(1),
+  ticketTypeId: z.string().optional(),
+  name: z.string().min(1, 'Name is required').max(80),
+  description: z.string().max(500).optional(),
+  price: z.coerce.number().int().min(0, 'Price must be ≥ 0'),
+  currency: z.string().default('NGN'),
+  quantity: z.coerce.number().int().positive().optional().nullable(),
+  salesStart: z.string().datetime().optional().nullable(),
+  salesEnd: z.string().datetime().optional().nullable(),
+  minPerOrder: z.coerce.number().int().positive().optional().nullable(),
+  maxPerOrder: z.coerce.number().int().positive().optional().nullable(),
+  maxPerUser: z.coerce.number().int().positive().optional().nullable(),
+  visibility: z.nativeEnum(TicketVisibility).default(TicketVisibility.PUBLIC),
+  accessPassword: z.string().optional(),
+  isTableType: z.coerce.boolean().default(false),
+  tableCapacity: z.coerce.number().int().positive().optional().nullable(),
+  requiresAssignedSeating: z.coerce.boolean().default(false),
+})
+
+export async function upsertTicketType(input: {
+  eventId: string
+  ticketTypeId?: string
+  name: string
+  description?: string
+  price: number
+  currency?: string
+  quantity?: number | null
+  salesStart?: string | null
+  salesEnd?: string | null
+  minPerOrder?: number | null
+  maxPerOrder?: number | null
+  maxPerUser?: number | null
+  visibility?: TicketVisibility
+  accessPassword?: string
+  isTableType?: boolean
+  tableCapacity?: number | null
+  requiresAssignedSeating?: boolean
+}): Promise<
+  | { success: true; ticketTypeId: string }
+  | { success: false; error: string; fieldErrors?: Record<string, string> }
+> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const parsed = upsertTicketTypeSchema.safeParse(input)
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0]?.toString() ?? 'unknown'
+      fieldErrors[field] = issue.message
+    }
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input', fieldErrors }
+  }
+
+  const {
+    eventId,
+    ticketTypeId,
+    name,
+    description,
+    price,
+    currency,
+    quantity,
+    salesStart,
+    salesEnd,
+    minPerOrder,
+    maxPerOrder,
+    maxPerUser,
+    visibility,
+    accessPassword,
+    isTableType,
+    tableCapacity,
+    requiresAssignedSeating,
+  } = parsed.data
+
+  // Verify organizer
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  // Verify event ownership
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true, status: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  // Guard: for updates on published events with confirmed tickets, reject quantity reductions below sold
+  if (ticketTypeId && quantity !== undefined && quantity !== null) {
+    const existing = await db.ticketType.findUnique({
+      where: { id: ticketTypeId },
+      select: { sold: true },
+    })
+    if (existing && event.status === 'PUBLISHED' && quantity < existing.sold) {
+      return {
+        success: false,
+        error: `Cannot reduce quantity below current sales (${existing.sold} tickets sold)`,
+        fieldErrors: { quantity: `Must be at least ${existing.sold} (tickets sold)` },
+      }
+    }
+  }
+
+  // Hash password if PASSWORD_PROTECTED
+  let accessPasswordHash: string | undefined | null = undefined
+  let directLinkToken: string | undefined | null = undefined
+
+  if (visibility === TicketVisibility.PASSWORD_PROTECTED) {
+    if (!accessPassword) {
+      return {
+        success: false,
+        error: 'Password is required for password-protected ticket types',
+        fieldErrors: { accessPassword: 'Password is required' },
+      }
+    }
+    const bcrypt = await import('bcryptjs')
+    accessPasswordHash = await bcrypt.hash(accessPassword, 10)
+    directLinkToken = null // clear any previous token
+  } else if (visibility === TicketVisibility.HIDDEN) {
+    // Only generate a new token if creating or if the type is being changed to HIDDEN
+    if (!ticketTypeId) {
+      const { randomBytes } = await import('crypto')
+      directLinkToken = randomBytes(20).toString('hex')
+    } else {
+      // Check if it already has a token; if not, generate one
+      const existing = await db.ticketType.findUnique({
+        where: { id: ticketTypeId },
+        select: { directLinkToken: true, visibility: true },
+      })
+      if (!existing?.directLinkToken) {
+        const { randomBytes } = await import('crypto')
+        directLinkToken = randomBytes(20).toString('hex')
+      }
+      // else keep existing token (don't rotate on re-save)
+    }
+    accessPasswordHash = null // clear any previous password hash
+  } else {
+    // PUBLIC — clear sensitive fields
+    accessPasswordHash = null
+    directLinkToken = null
+  }
+
+  try {
+    const data = {
+      name,
+      description: description ?? null,
+      price,
+      currency: currency ?? 'NGN',
+      quantity: quantity ?? null,
+      salesStart: salesStart ? new Date(salesStart) : null,
+      salesEnd: salesEnd ? new Date(salesEnd) : null,
+      minPerOrder: minPerOrder ?? null,
+      maxPerOrder: maxPerOrder ?? null,
+      maxPerUser: maxPerUser ?? null,
+      visibility,
+      ...(accessPasswordHash !== undefined ? { accessPasswordHash } : {}),
+      ...(directLinkToken !== undefined ? { directLinkToken } : {}),
+      isTableType: isTableType ?? false,
+      tableCapacity: tableCapacity ?? null,
+      requiresAssignedSeating: requiresAssignedSeating ?? false,
+    }
+
+    let ttId: string
+    if (ticketTypeId) {
+      await db.ticketType.update({
+        where: { id: ticketTypeId, eventId },
+        data,
+      })
+      ttId = ticketTypeId
+    } else {
+      const tt = await db.ticketType.create({
+        data: { eventId, ...data },
+        select: { id: true },
+      })
+      ttId = tt.id
+    }
+
+    revalidatePath(`/dashboard/events/${eventId}`)
+    return { success: true, ticketTypeId: ttId }
+  } catch (err) {
+    console.error('[upsertTicketType] error:', err)
+    return { success: false, error: 'Failed to save ticket type. Please try again.' }
+  }
+}
+
+// ─── Upsert Time Slot ─────────────────────────────────────────────────────────
+
+const upsertTimeSlotSchema = z.object({
+  eventId: z.string().min(1),
+  timeSlotId: z.string().optional(),
+  label: z.string().min(1, 'Label is required').max(120),
+  startsAt: z.string().datetime(),
+  endsAt: z.string().datetime(),
+  capacity: z.coerce.number().int().positive('Capacity must be > 0'),
+  price: z.coerce.number().int().min(0, 'Price must be ≥ 0'),
+  currency: z.string().default('NGN'),
+}).refine((d) => new Date(d.startsAt) < new Date(d.endsAt), {
+  message: 'Start time must be before end time',
+  path: ['endsAt'],
+})
+
+export async function upsertTimeSlot(input: {
+  eventId: string
+  timeSlotId?: string
+  label: string
+  startsAt: string
+  endsAt: string
+  capacity: number
+  price: number
+  currency?: string
+}): Promise<{ success: true; timeSlotId: string } | { success: false; error: string; fieldErrors?: Record<string, string> }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const parsed = upsertTimeSlotSchema.safeParse(input)
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0]?.toString() ?? 'unknown'
+      fieldErrors[field] = issue.message
+    }
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input', fieldErrors }
+  }
+
+  const { eventId, timeSlotId, label, startsAt, endsAt, capacity, price, currency } = parsed.data
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  try {
+    let slotId: string
+    if (timeSlotId) {
+      await db.timeSlot.update({
+        where: { id: timeSlotId, eventId },
+        data: { label, startsAt: new Date(startsAt), endsAt: new Date(endsAt), capacity, price, currency: currency ?? 'NGN' },
+      })
+      slotId = timeSlotId
+    } else {
+      const slot = await db.timeSlot.create({
+        data: { eventId, label, startsAt: new Date(startsAt), endsAt: new Date(endsAt), capacity, price, currency: currency ?? 'NGN' },
+        select: { id: true },
+      })
+      slotId = slot.id
+    }
+
+    revalidatePath(`/dashboard/events/${eventId}`)
+    return { success: true, timeSlotId: slotId }
+  } catch (err) {
+    console.error('[upsertTimeSlot] error:', err)
+    return { success: false, error: 'Failed to save time slot. Please try again.' }
+  }
+}
+
+// ─── Delete Time Slot ─────────────────────────────────────────────────────────
+
+export async function deleteTimeSlot(
+  timeSlotId: string,
+  eventId: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  // Guard: cannot delete if confirmed tickets exist for this slot
+  const confirmedCount = await db.timeSlotTicket.count({
+    where: {
+      timeSlotId,
+      ticket: { status: { in: [TicketStatus.ACTIVE, TicketStatus.USED] } },
+    },
+  })
+  if (confirmedCount > 0) {
+    return { success: false, error: `Cannot delete: ${confirmedCount} confirmed ticket(s) exist for this slot` }
+  }
+
+  await db.timeSlot.delete({ where: { id: timeSlotId, eventId } })
+  revalidatePath(`/dashboard/events/${eventId}`)
+  return { success: true }
+}
+
+// ─── Upsert Event Session ─────────────────────────────────────────────────────
+
+const upsertEventSessionSchema = z.object({
+  eventId: z.string().min(1),
+  sessionId: z.string().optional(),
+  title: z.string().min(1, 'Title is required').max(120),
+  description: z.string().max(2000).optional().nullable(),
+  facilitator: z.string().max(120).optional().nullable(),
+  startsAt: z.string().datetime(),
+  endsAt: z.string().datetime(),
+  capacity: z.coerce.number().int().positive().optional().nullable(),
+  price: z.coerce.number().int().min(0).default(0),
+  currency: z.string().default('NGN'),
+  inclusionMode: z.nativeEnum(SessionInclusionMode).default(SessionInclusionMode.INCLUDED),
+}).refine((d) => new Date(d.startsAt) < new Date(d.endsAt), {
+  message: 'Start time must be before end time',
+  path: ['endsAt'],
+})
+
+export async function upsertEventSession(input: {
+  eventId: string
+  sessionId?: string
+  title: string
+  description?: string | null
+  facilitator?: string | null
+  startsAt: string
+  endsAt: string
+  capacity?: number | null
+  price?: number
+  currency?: string
+  inclusionMode?: SessionInclusionMode
+}): Promise<{ success: true; sessionId: string } | { success: false; error: string; fieldErrors?: Record<string, string> }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const parsed = upsertEventSessionSchema.safeParse(input)
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0]?.toString() ?? 'unknown'
+      fieldErrors[field] = issue.message
+    }
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input', fieldErrors }
+  }
+
+  const { eventId, sessionId, title, description, facilitator, startsAt, endsAt, capacity, price, currency, inclusionMode } = parsed.data
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  try {
+    let sId: string
+    if (sessionId) {
+      await db.eventSession.update({
+        where: { id: sessionId, eventId },
+        data: {
+          title,
+          description: description ?? null,
+          facilitator: facilitator ?? null,
+          startsAt: new Date(startsAt),
+          endsAt: new Date(endsAt),
+          capacity: capacity ?? null,
+          price: price ?? 0,
+          currency: currency ?? 'NGN',
+          inclusionMode,
+        },
+      })
+      sId = sessionId
+    } else {
+      const s = await db.eventSession.create({
+        data: {
+          eventId,
+          title,
+          description: description ?? null,
+          facilitator: facilitator ?? null,
+          startsAt: new Date(startsAt),
+          endsAt: new Date(endsAt),
+          capacity: capacity ?? null,
+          price: price ?? 0,
+          currency: currency ?? 'NGN',
+          inclusionMode,
+        },
+        select: { id: true },
+      })
+      sId = s.id
+    }
+
+    revalidatePath(`/dashboard/events/${eventId}`)
+    return { success: true, sessionId: sId }
+  } catch (err) {
+    console.error('[upsertEventSession] error:', err)
+    return { success: false, error: 'Failed to save session. Please try again.' }
+  }
+}
+
+// ─── Delete Event Session ─────────────────────────────────────────────────────
+
+export async function deleteEventSession(
+  sessionId: string,
+  eventId: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'Not authenticated' }
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  // Guard: cannot delete if enrolments exist
+  const enrolmentCount = await db.sessionEnrolment.count({ where: { sessionId } })
+  if (enrolmentCount > 0) {
+    return { success: false, error: `Cannot delete: ${enrolmentCount} enrolment(s) exist for this session` }
+  }
+
+  await db.eventSession.delete({ where: { id: sessionId, eventId } })
+  revalidatePath(`/dashboard/events/${eventId}`)
+  return { success: true }
+}
+
+// ─── (End of file — upsert/delete actions defined above) ──────────────────────

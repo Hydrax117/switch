@@ -64,7 +64,7 @@ This plan covers all remaining reservation models and management capabilities fo
   - Implement `enforcePurchaseLimits(tx, userId, ticketTypeId, requestedQty)`: query TicketType inside the transaction; throw `Error('LIMIT_MIN:{value}')` if `requestedQty < minPerOrder`; throw `Error('LIMIT_MAX:{value}')` if `requestedQty > maxPerOrder`; count existing ACTIVE+USED tickets for userId+ticketTypeId and throw `Error('LIMIT_USER:{value}')` if `existing + requestedQty > maxPerUser`; null limits are no-ops
   - Export `parseLimitError(err: unknown)` returning `{ type: 'MIN'|'MAX'|'USER', limit: number } | null` for mapping to user-facing messages in Server Actions
 
-- [ ] 5. Free RSVP Server Action
+- [x] 5. Free RSVP Server Action
   - Add `submitRsvp(input: { eventId, ticketTypeId, quantity })` to `features/checkout/actions.ts`
   - Authenticate session; return `{ success: false, error: 'UNAUTHENTICATED' }` if no session
   - Add Zod schema in `features/checkout/schemas.ts`; validate TicketType `price === 0` and `status === ACTIVE`
@@ -76,14 +76,15 @@ This plan covers all remaining reservation models and management capabilities fo
   - Return `{ success: true, ticketIds: string[] }`
   - Create `features/checkout/components/rsvp-button.tsx` Client Component with loading state, success toast, and error display
 
-- [ ] 6. Ticket Visibility Control
+- [x] 6. Ticket Visibility Control
   - Add `unlockPasswordProtectedTicket(input: { ticketTypeId, password })` to `features/checkout/actions.ts`: load TicketType; verify `visibility === PASSWORD_PROTECTED`; bcrypt-compare password against `accessPasswordHash`; on match generate `crypto.randomBytes(32).toString('hex')` token; store `ticketUnlockKey(ticketTypeId, token) = "1"` in Redis TTL 3600; return `{ success: true, sessionToken }`; on mismatch return `{ success: false, error: 'INVALID_PASSWORD' }`
   - Add `validateDirectLinkToken(input: { ticketTypeId, token })`: verify `visibility === HIDDEN` and `directLinkToken === token`; return success or error
   - Create or extend `getPublicTicketTypes` query in `features/checkout/queries.ts`: exclude HIDDEN types (unless `?unlock=<token>` present and valid); include PASSWORD_PROTECTED types with `locked: true` flag; include PUBLIC types normally
   - Replace the Task 5 visibility stub: for PASSWORD_PROTECTED check `redis.get(ticketUnlockKey(ticketTypeId, sessionToken)) === "1"`; for HIDDEN validate directLinkToken; reject with `{ success: false, error: 'ACCESS_DENIED' }` if either check fails; apply this guard in all reservation Server Actions
   - Create `features/checkout/components/password-unlock-modal.tsx` Client Component: modal with password input; calls `unlockPasswordProtectedTicket`; stores sessionToken in `sessionStorage` keyed by ticketTypeId; signals parent to reveal unlocked ticket type on success
+  - Commit and push changes to github
 
-- [ ] 7. Waitlist Feature Module
+- [x] 7. Waitlist Feature Module
   - Create `features/waitlist/schemas.ts` with Zod schemas for `joinWaitlist` and `leaveWaitlist`
   - Create `features/waitlist/types.ts` exporting `WaitlistEntryWithDetails` type
   - Create `features/waitlist/queries.ts`: `getWaitlistEntry(userId, ticketTypeId)`, `getMyWaitlistEntries(userId)` with event+ticketType details, `getEventWaitlist(eventId, ticketTypeId?, opts?)` paginated for organizer
@@ -93,29 +94,33 @@ This plan covers all remaining reservation models and management capabilities fo
   - Create `features/waitlist/components/waitlist-button.tsx` — "Join Waitlist" CTA shown when `available === 0`; calls `joinWaitlist`; shows position number on success
   - Create `features/waitlist/components/waitlist-status-badge.tsx` — displays PENDING/OFFERED status, position, or offer expiry countdown
   - Create `app/(dashboard)/dashboard/waitlist/page.tsx` Server Component rendering `getMyWaitlistEntries` results with status badges and leave buttons
+    - Commit and push changes to github
 
-- [ ] 8. Time-Slot Reservation Module
+- [x] 8. Time-Slot Reservation Module
   - Create `features/time-slots/schemas.ts`, `features/time-slots/types.ts` (exporting `TimeSlotWithAvailability`)
   - Create `features/time-slots/queries.ts`: `getEventTimeSlots(eventId)` with ticket+held counts, `getTimeSlotAvailability(timeSlotId)` returning `{ capacity, booked, held, available }`
   - Implement `reserveTimeSlot(input: { eventId, timeSlotId, quantity })` in `features/time-slots/actions.ts`: authenticate; validate TimeSlot belongs to event and is ACTIVE; check overlap (query existing ACTIVE TimeSlotTickets for user+event; reject if any slot's time range overlaps the requested slot); compute booked count; check `capacity - booked >= quantity`; acquire Redis slot hold via `acquireSlotHold`; DB transaction: create Reservation with `gaHolds` JSON; call `writeAuditLog` CREATED; schedule reservation expiry job; return `{ success: true, reservationId, expiresAt }`
   - Create `features/time-slots/components/time-slot-selector.tsx` — grid of time slots showing label, time range, price, available count; sold-out slots visually disabled
+    - Commit and push changes to github
 
-- [ ] 9. BullMQ Background Workers
+- [x] 9. BullMQ Background Workers
   - Extend `lib/queues.ts`: add `scheduleReservationExpiry(reservationId, expiresAt)` with job ID `reservation-expiry-${reservationId}` and delay `expiresAt - now`; add `scheduleWaitlistExpiry(waitlistEntryId, offerExpiresAt)` with job ID `waitlist-expiry-${waitlistEntryId}`; add `scheduleEventReminder(eventId, userId, ticketId, eventStartsAt)` with job ID `event-reminder-${eventId}-${userId}` and delay 24h before event
   - Create `workers/reservation-expiry.worker.ts`: process `reservation-expiry` queue; load Reservation; skip if status not ACTIVE; DB transaction: set Reservation EXPIRED, set each held EventSeat to AVAILABLE, write AuditLog for each; release Redis locks; call `advanceWaitlist` for each ticketTypeId in `gaHolds`; send `reservation-expired` email non-blocking
   - Create `workers/waitlist-expiry.worker.ts`: process `waitlist-expiry` queue; skip if WaitlistEntry not OFFERED; DB transaction: set WaitlistEntry EXPIRED, set associated Reservation EXPIRED, write AuditLog; `redis.del(waitlistHoldKey(id))`; call `advanceWaitlist`; send `waitlist-offer-expired` email non-blocking
   - Create `workers/event-reminder.worker.ts`: process `event-reminder` queue; skip if Ticket not ACTIVE; send `event-reminder` email
   - Create `workers/index.ts` that starts all three workers and logs startup
   - Verify idempotency: each worker checks current status before acting — re-running a job for an already-EXPIRED reservation is a no-op
+    - Commit and push changes to github
 
-- [ ] 10. Workshop / Session Reservation Module
+- [x] 10. Workshop / Session Reservation Module
   - Create `features/sessions/schemas.ts`, `features/sessions/types.ts`
   - Create `features/sessions/queries.ts`: `getEventSessions(eventId)` with enrolment counts, `getTicketEnrolments(ticketId)`
   - Implement `enrolInSession(input: { ticketId, sessionIds })` in `features/sessions/actions.ts`: authenticate; verify ticket belongs to user and is ACTIVE; load sessions; validate inclusionMode allows selection; for OPTIONAL_PAID return `{ success: false, error: 'REQUIRES_PAYMENT', sessionIds }`; DB transaction for each free session: check capacity, create SessionEnrolment, write AuditLog; return `{ success: true }`
   - Add auto-enrolment for INCLUDED sessions inside `submitRsvp` (Task 5) and the existing `confirmOrder` path: after Ticket creation, query all INCLUDED sessions for the event and create SessionEnrolment records in the same transaction
   - Create `features/sessions/components/session-selector.tsx` — checklist of sessions with title, facilitator, time, price, capacity indicator; INCLUDED sessions pre-checked and non-interactive; full sessions show "Full" badge and are disabled
+    - Commit and push changes to github
 
-- [ ] 11. Organizer Reservation Management
+- [x] 11. Organizer Reservation Management
   - Extend `features/organizer/queries.ts` with `getEventReservations(eventId, organizerId, filters, pagination)`: filters for search (name, email, ticket number), ticketTypeId, status, dateFrom/dateTo; pagination; returns `{ tickets: TicketRow[], total: number }` where TicketRow includes id, ticketNumber, status, issuedAt, isComplimentary, attendee name+email, ticketType name, seat/table/slot info, payment amount
   - Add `cancelTicket(input: { ticketId, eventId, reason?, force? })` to `features/organizer/actions.ts`: authenticate organizer; verify ownership; if ticket USED and `force !== true` return `{ success: false, error: 'CHECKED_IN_REQUIRES_FORCE' }`; DB transaction: set Ticket CANCELLED, release EventSeat if reserved, decrement TicketType.sold if GA, write AuditLog with actor = organizerId; call `advanceWaitlist` non-blocking; send `ticket-cancelled` email non-blocking
   - Add `issueComplimentaryTicket(input: { eventId, ticketTypeId, recipientEmail, recipientName })`: authenticate organizer; upsert User by email; DB transaction: create Ticket with `isComplimentary: true` without incrementing sold, write AuditLog; send confirmation email non-blocking; return `{ success: true, ticketId }`
@@ -123,21 +128,24 @@ This plan covers all remaining reservation models and management capabilities fo
   - Add `exportReservationsCSV(eventId)`: authenticate organizer; query all confirmed tickets without pagination; build CSV string with headers (ticketNumber, status, attendeeName, email, ticketType, seatInfo, purchaseDate, amount, isComplimentary); return CSV string
   - Create `app/(dashboard)/dashboard/events/[id]/reservations/page.tsx` Server Component reading search params and rendering `<ReservationTable>`
   - Create `features/organizer/components/reservation-table.tsx` Client Component: debounced search input (500ms), filter dropdowns for TicketType and status, date range picker, action column with Cancel (force-confirm dialog for USED tickets) / Issue Comp / Resend Email buttons, Export CSV button
+  - Commit and push changes to github
 
-- [ ] 12. Organizer Inventory Management Dashboard
+- [x] 12. Organizer Inventory Management Dashboard
   - Extend `features/organizer/queries.ts` with `getEventInventory(eventId, organizerId)`: parallel queries for TicketType records + sold counts, active Reservation counts per ticketTypeId (expiresAt > now → held), WaitlistEntry counts (PENDING+OFFERED) per ticketTypeId, TimeSlot records + TimeSlotTicket counts, EventSession enrolment counts, EventSeat status aggregates by section; compute `available = (quantity ?? null) - sold - held`; return EventInventory shape from design doc
   - Add `exportInventoryCSV(eventId)` to `features/organizer/actions.ts`
   - Create `app/(dashboard)/dashboard/events/[id]/inventory/page.tsx` Server Component
   - Create `features/organizer/components/inventory-dashboard.tsx` Server Component: per-TicketType card showing total/sold/held/available/cancelled + waitlist count; TimeSlot section with per-slot capacity bars; Sessions section with enrolment counts; Seat section (RESERVED/MIXED only) with per-section status breakdown; Export CSV button
+    - Commit and push changes to github
 
-- [ ] 13. Checkout Confirmation Page
+- [x] 13. Checkout Confirmation Page
   - Create `app/(marketing)/events/[slug]/checkout/success/page.tsx` Server Component: read `?orderId=` or `?reservationId=` query param; server-verify ownership (userId === session.user.id, status COMPLETED); redirect to `/events/[slug]` if invalid; render event name/date/venue, total paid or "Free", ticket list with QR codes, session enrolment summary
   - Create or extend `features/checkout/queries.ts` with `getConfirmedOrderDetails(reservationId, userId)` returning event info, tickets with QR codes, payment amount
   - Add "View My Tickets" button → `/dashboard/tickets`
   - Create `app/(marketing)/events/[slug]/checkout/success/success-page-client.tsx` Client Component with "Add to Calendar" button that fetches `/api/events/[slug]/ical` and triggers file download
   - Create `app/api/events/[slug]/ical/route.ts` GET handler: load event by slug; generate ICS string with VCALENDAR/VEVENT, DTSTART/DTEND, SUMMARY, LOCATION, DESCRIPTION; return `Response` with `Content-Type: text/calendar` and `Content-Disposition: attachment; filename="event.ics"`
+    - Commit and push changes to github
 
-- [ ] 14. Organizer Reservation Configuration UI
+- [x] 14. Organizer Reservation Configuration UI
   - Extend `features/organizer/actions.ts` `upsertTicketType` to accept new fields: minPerOrder, maxPerOrder, maxPerUser, visibility, accessPassword (hashed with `bcrypt.hash(password, 10)` when PASSWORD_PROTECTED), isTableType, tableCapacity, requiresAssignedSeating; generate `directLinkToken` via `crypto.randomBytes(20).toString('hex')` when HIDDEN; guard: reject quantity reductions below `sold` for published events with confirmed tickets; server-side Zod validation with field-level errors
   - Add `upsertTimeSlot(input)` to `features/organizer/actions.ts`: Zod validation (startsAt < endsAt, capacity > 0, price >= 0); upsert; return `{ success: true, timeSlotId }`
   - Add `upsertEventSession(input)` to `features/organizer/actions.ts`: Zod validation; upsert; return `{ success: true, sessionId }`
@@ -147,8 +155,9 @@ This plan covers all remaining reservation models and management capabilities fo
   - Create `features/organizer/components/time-slot-config-tab.tsx`: chronological slot list; Add/Edit form (label, start/end datetime, capacity, price); Delete disabled if tickets sold
   - Create `features/organizer/components/session-config-tab.tsx`: session list with title, facilitator, time, mode, capacity, enrolment count; Add/Edit form; Delete disabled if enrolments exist
   - Integrate new tabs into the event editor: General | Tickets | Tables | Time Slots | Sessions
+  - Commit and push changes to github
 
-- [ ] 15. Email Notification Templates
+- [x] 15. Email Notification Templates
   - Create `emails/ticket-confirmation.tsx` React Email template: props for event (name, date, venue), tickets array (ticketNumber, qrCode as data URL, seatInfo), totalPaid or "Free", attendeeName
   - Create `emails/reservation-expired.tsx` — seats released notice with link back to event
   - Create `emails/ticket-cancelled.tsx` — cancellation notice with refund info if applicable
@@ -159,8 +168,9 @@ This plan covers all remaining reservation models and management capabilities fo
   - Create `emails/refund-confirmed.tsx` — refund amount and processing timeline
   - Create `emails/event-reminder.tsx` — 24h reminder with event details, QR code(s), venue info
   - Extend `lib/email.ts` with typed send functions for all 9 templates: `sendTicketConfirmation`, `sendReservationExpired`, `sendTicketCancelled`, `sendWaitlistJoined`, `sendWaitlistOffered`, `sendWaitlistOfferExpired`, `sendWaitlistClosed`, `sendRefundConfirmed`, `sendEventReminder`; each wraps the Resend call in try/catch, logs failures, and never throws
+    - Commit and push changes to github
 
-- [ ] 16. Property-Based Tests for Correctness Properties
+- [x] 16. Property-Based Tests for Correctness Properties
   - Set up `__tests__/reservation-system.property.test.ts` using the project's existing test framework
   - **P1 — Inventory Never Goes Negative:** for any sequence of concurrent `submitRsvp` calls on a TicketType with quantity N, assert total confirmed tickets never exceeds N
   - **P2 — Waitlist FIFO Ordering:** given N waitlist entries at positions 1..N, simulate cancellation releasing 1 slot; assert entry with lowest position is offered first

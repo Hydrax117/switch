@@ -1,6 +1,45 @@
 import 'server-only'
 import { db } from '@/lib/db'
-import { EventStatus, TicketStatus } from '@/app/generated/prisma/client'
+import { EventStatus, TicketStatus, WaitlistStatus, EventSeatStatus, Prisma } from '@/app/generated/prisma/client'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface TicketRow {
+  id: string
+  ticketNumber: string
+  status: TicketStatus
+  issuedAt: Date
+  isComplimentary: boolean
+  user: {
+    name: string | null
+    email: string
+  }
+  ticketType: {
+    name: string
+    price: number
+    currency: string
+  }
+  eventSeat: {
+    seat: { label: string }
+  } | null
+  payment: {
+    amount: number
+    currency: string
+  } | null
+}
+
+export interface ReservationFilters {
+  search?: string
+  ticketTypeId?: string
+  status?: TicketStatus
+  dateFrom?: Date
+  dateTo?: Date
+}
+
+export interface ReservationPagination {
+  page: number
+  pageSize: number
+}
 
 // ─── Get organizer profile for a user ────────────────────────────────────────
 
@@ -291,5 +330,354 @@ export async function getEventSeatConfig(eventId: string): Promise<SeatConfig | 
   return {
     seatMapId: event.seatMap.id,
     sections,
+  }
+}
+
+
+// ─── Reservation management ───────────────────────────────────────────────────
+
+export async function getEventReservations(
+  eventId: string,
+  organizerId: string,
+  filters: ReservationFilters,
+  pagination: ReservationPagination
+): Promise<{ tickets: TicketRow[]; total: number }> {
+  // Verify organizer owns the event
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId },
+    select: { id: true },
+  })
+  if (!event) return { tickets: [], total: 0 }
+
+  const { search, ticketTypeId, status, dateFrom, dateTo } = filters
+  const { page, pageSize } = pagination
+  const skip = (page - 1) * pageSize
+
+  // Build where clause
+  const where = {
+    eventId,
+    ...(ticketTypeId ? { ticketTypeId } : {}),
+    ...(status ? { status } : {}),
+    ...(dateFrom || dateTo
+      ? {
+          issuedAt: {
+            ...(dateFrom ? { gte: dateFrom } : {}),
+            ...(dateTo ? { lte: dateTo } : {}),
+          },
+        }
+      : {}),
+    ...(search
+      ? {
+          OR: [
+            { ticketNumber: { contains: search, mode: 'insensitive' as const } },
+            { user: { name: { contains: search, mode: 'insensitive' as const } } },
+            { user: { email: { contains: search, mode: 'insensitive' as const } } },
+          ],
+        }
+      : {}),
+  }
+
+  const [tickets, total] = await Promise.all([
+    db.ticket.findMany({
+      where,
+      skip,
+      take: pageSize,
+      orderBy: { issuedAt: 'desc' },
+      select: {
+        id: true,
+        ticketNumber: true,
+        status: true,
+        issuedAt: true,
+        isComplimentary: true,
+        user: {
+          select: { name: true, email: true },
+        },
+        ticketType: {
+          select: { name: true, price: true, currency: true },
+        },
+        eventSeat: {
+          select: { seat: { select: { label: true } } },
+        },
+        payment: {
+          select: { amount: true, currency: true },
+        },
+      },
+    }),
+    db.ticket.count({ where }),
+  ])
+
+  return { tickets: tickets as TicketRow[], total }
+}
+
+
+// ─── Inventory types ──────────────────────────────────────────────────────────
+
+export interface TicketTypeInventory {
+  ticketTypeId: string
+  name: string
+  total: number | null // null = unlimited
+  sold: number
+  held: number // active Reservations with expiresAt > now
+  available: number | null // null if total is null (unlimited)
+  cancelled: number
+  waitlistCount: number // PENDING + OFFERED entries
+}
+
+export interface TimeSlotInventory {
+  timeSlotId: string
+  label: string
+  startsAt: Date
+  endsAt: Date
+  capacity: number
+  booked: number
+  available: number
+}
+
+export interface SessionInventory {
+  sessionId: string
+  title: string
+  inclusionMode: string
+  capacity: number | null
+  enrolmentCount: number
+  remaining: number | null // null if capacity is null (unlimited)
+}
+
+export interface SeatSectionInventory {
+  sectionId: string
+  sectionName: string
+  counts: Record<EventSeatStatus, number>
+}
+
+export interface EventInventory {
+  eventId: string
+  ticketTypes: TicketTypeInventory[]
+  timeSlots: TimeSlotInventory[]
+  sessions: SessionInventory[]
+  seatSections: SeatSectionInventory[]
+}
+
+// ─── Inventory query ──────────────────────────────────────────────────────────
+
+export async function getEventInventory(
+  eventId: string,
+  organizerId: string
+): Promise<EventInventory | null> {
+  // Verify ownership
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId },
+    select: { id: true, seatingType: true },
+  })
+  if (!event) return null
+
+  const now = new Date()
+
+  // Run all parallel queries
+  const [
+    ticketTypes,
+    activeReservations,
+    waitlistCounts,
+    cancelledTickets,
+    timeSlots,
+    timeSlotBookings,
+    sessions,
+    seatSections,
+  ] = await Promise.all([
+    // 1. TicketType records
+    db.ticketType.findMany({
+      where: { eventId },
+      select: { id: true, name: true, quantity: true, sold: true },
+      orderBy: { name: 'asc' },
+    }),
+
+    // 2. Active reservations with gaHolds (held counts per ticketTypeId)
+    db.reservation.findMany({
+      where: {
+        eventId,
+        status: 'ACTIVE',
+        expiresAt: { gt: now },
+        gaHolds: { not: Prisma.JsonNull },
+      },
+      select: { gaHolds: true },
+    }),
+
+    // 3. WaitlistEntry counts (PENDING + OFFERED) per ticketTypeId
+    db.waitlistEntry.groupBy({
+      by: ['ticketTypeId'],
+      where: {
+        eventId,
+        status: { in: [WaitlistStatus.PENDING, WaitlistStatus.OFFERED] },
+      },
+      _count: { id: true },
+    }),
+
+    // 4. Cancelled ticket counts per ticketTypeId
+    db.ticket.groupBy({
+      by: ['ticketTypeId'],
+      where: {
+        eventId,
+        status: TicketStatus.CANCELLED,
+      },
+      _count: { id: true },
+    }),
+
+    // 5. TimeSlot records
+    db.timeSlot.findMany({
+      where: { eventId },
+      select: {
+        id: true,
+        label: true,
+        startsAt: true,
+        endsAt: true,
+        capacity: true,
+      },
+      orderBy: { startsAt: 'asc' },
+    }),
+
+    // 6. TimeSlotTicket counts per timeSlotId (only confirmed tickets)
+    db.timeSlotTicket.groupBy({
+      by: ['timeSlotId'],
+      where: {
+        ticket: { eventId, status: { in: [TicketStatus.ACTIVE, TicketStatus.USED] } },
+      },
+      _count: { id: true },
+    }),
+
+    // 7. EventSession records with enrolment counts
+    db.eventSession.findMany({
+      where: { eventId },
+      select: {
+        id: true,
+        title: true,
+        inclusionMode: true,
+        capacity: true,
+        _count: { select: { enrolments: true } },
+      },
+      orderBy: { startsAt: 'asc' },
+    }),
+
+    // 8. EventSeat status aggregates by section (for RESERVED/MIXED events)
+    event.seatingType === 'RESERVED' || event.seatingType === 'MIXED'
+      ? db.eventSeat.findMany({
+          where: { eventId },
+          select: {
+            status: true,
+            seat: {
+              select: {
+                sectionId: true,
+                row: { select: { section: { select: { id: true, name: true } } } },
+              },
+            },
+          },
+        })
+      : Promise.resolve([]),
+  ])
+
+  // ── Build held counts from gaHolds JSON ────────────────────────────────────
+  // gaHolds shape: { [ticketTypeId]: quantity }
+  const heldByTicketType = new Map<string, number>()
+  for (const reservation of activeReservations) {
+    if (!reservation.gaHolds || typeof reservation.gaHolds !== 'object') continue
+    const holds = reservation.gaHolds as Record<string, number>
+    for (const [ttId, qty] of Object.entries(holds)) {
+      heldByTicketType.set(ttId, (heldByTicketType.get(ttId) ?? 0) + (Number(qty) || 0))
+    }
+  }
+
+  // ── Build lookup maps ──────────────────────────────────────────────────────
+  const waitlistByTicketType = new Map<string, number>(
+    waitlistCounts.map((w) => [w.ticketTypeId, w._count.id])
+  )
+  const cancelledByTicketType = new Map<string, number>(
+    cancelledTickets.map((c) => [c.ticketTypeId, c._count.id])
+  )
+  const bookingsBySlot = new Map<string, number>(
+    timeSlotBookings.map((b) => [b.timeSlotId, b._count.id])
+  )
+
+  // ── Assemble TicketTypeInventory ──────────────────────────────────────────
+  const ticketTypeInventory: TicketTypeInventory[] = ticketTypes.map((tt) => {
+    const held = heldByTicketType.get(tt.id) ?? 0
+    const available = tt.quantity === null ? null : Math.max(0, tt.quantity - tt.sold - held)
+    return {
+      ticketTypeId: tt.id,
+      name: tt.name,
+      total: tt.quantity,
+      sold: tt.sold,
+      held,
+      available,
+      cancelled: cancelledByTicketType.get(tt.id) ?? 0,
+      waitlistCount: waitlistByTicketType.get(tt.id) ?? 0,
+    }
+  })
+
+  // ── Assemble TimeSlotInventory ────────────────────────────────────────────
+  const timeSlotInventory: TimeSlotInventory[] = timeSlots.map((slot) => {
+    const booked = bookingsBySlot.get(slot.id) ?? 0
+    return {
+      timeSlotId: slot.id,
+      label: slot.label,
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      capacity: slot.capacity,
+      booked,
+      available: Math.max(0, slot.capacity - booked),
+    }
+  })
+
+  // ── Assemble SessionInventory ─────────────────────────────────────────────
+  const sessionInventory: SessionInventory[] = sessions.map((s) => {
+    const enrolmentCount = s._count.enrolments
+    const remaining = s.capacity === null ? null : Math.max(0, s.capacity - enrolmentCount)
+    return {
+      sessionId: s.id,
+      title: s.title,
+      inclusionMode: s.inclusionMode,
+      capacity: s.capacity,
+      enrolmentCount,
+      remaining,
+    }
+  })
+
+  // ── Assemble SeatSectionInventory ─────────────────────────────────────────
+  const seatSectionMap = new Map<
+    string,
+    { sectionName: string; counts: Record<EventSeatStatus, number> }
+  >()
+
+  for (const seat of seatSections as Array<{
+    status: EventSeatStatus
+    seat: { sectionId: string; row: { section: { id: string; name: string } } }
+  }>) {
+    const section = seat.seat.row.section
+    if (!seatSectionMap.has(section.id)) {
+      seatSectionMap.set(section.id, {
+        sectionName: section.name,
+        counts: {
+          AVAILABLE: 0,
+          HELD: 0,
+          RESERVED: 0,
+          SOLD: 0,
+          BLOCKED: 0,
+        },
+      })
+    }
+    const entry = seatSectionMap.get(section.id)!
+    entry.counts[seat.status] = (entry.counts[seat.status] ?? 0) + 1
+  }
+
+  const seatSectionInventory: SeatSectionInventory[] = Array.from(seatSectionMap.entries()).map(
+    ([sectionId, data]) => ({
+      sectionId,
+      sectionName: data.sectionName,
+      counts: data.counts,
+    })
+  )
+
+  return {
+    eventId,
+    ticketTypes: ticketTypeInventory,
+    timeSlots: timeSlotInventory,
+    sessions: sessionInventory,
+    seatSections: seatSectionInventory,
   }
 }
