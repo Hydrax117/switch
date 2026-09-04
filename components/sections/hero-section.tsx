@@ -6,55 +6,42 @@ import { useReducedMotion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import type { EventListItem } from '@/features/events/types'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface HeroSectionProps {
   events: EventListItem[]
   categories: { id: string; name: string; slug: string }[]
 }
 
-// ─── Poster config — positional slots around the central copy ────────────────
-// Each slot defines: which event index to pull, size class, position, optional rotation
-// Positions are absolute within the full-bleed hero container
+// ─── Poster slot config ───────────────────────────────────────────────────────
+// Positions are absolute percentages within the hero container.
+// The central 40% width is left clear for the copy block.
 
 interface PosterSlot {
   eventIndex: number
-  /** CSS width in px */
   w: number
-  /** CSS height in px */
   h: number
-  /** Tailwind/inline position classes */
   className: string
   rotation?: string
   priority?: boolean
 }
 
 const DESKTOP_SLOTS: PosterSlot[] = [
-  // Far left — tall, slightly rotated
-  { eventIndex: 0, w: 220, h: 290, className: 'hidden lg:block absolute left-[3%] top-[12%]', rotation: '-1.5deg', priority: true },
-  // Left middle — smaller, offset lower
-  { eventIndex: 1, w: 160, h: 210, className: 'hidden lg:block absolute left-[16%] top-[42%]', rotation: '1deg' },
-  // Left-center — medium
-  { eventIndex: 2, w: 185, h: 245, className: 'hidden xl:block absolute left-[28%] top-[8%]', rotation: '-0.8deg' },
-  // Right-center — medium, mirror left
-  { eventIndex: 3, w: 185, h: 245, className: 'hidden xl:block absolute right-[28%] top-[10%]', rotation: '0.8deg' },
-  // Right middle — smaller
-  { eventIndex: 4, w: 160, h: 210, className: 'hidden lg:block absolute right-[16%] top-[44%]', rotation: '-1deg' },
-  // Far right — tall
-  { eventIndex: 5, w: 220, h: 290, className: 'hidden lg:block absolute right-[3%] top-[10%]', rotation: '1.5deg', priority: true },
-  // Bottom left accent
-  { eventIndex: 6, w: 130, h: 170, className: 'hidden xl:block absolute left-[8%] bottom-[8%]', rotation: '1.2deg' },
-  // Bottom right accent
-  { eventIndex: 7, w: 130, h: 170, className: 'hidden xl:block absolute right-[8%] bottom-[6%]', rotation: '-1deg' },
+  { eventIndex: 0, w: 210, h: 278, className: 'hidden lg:block absolute left-[2%]  top-[10%]', rotation: '-1.5deg', priority: true },
+  { eventIndex: 1, w: 155, h: 205, className: 'hidden lg:block absolute left-[15%] top-[45%]', rotation: '1deg' },
+  { eventIndex: 2, w: 178, h: 236, className: 'hidden xl:block absolute left-[27%] top-[7%]',  rotation: '-0.8deg' },
+  { eventIndex: 3, w: 178, h: 236, className: 'hidden xl:block absolute right-[27%] top-[9%]', rotation: '0.8deg' },
+  { eventIndex: 4, w: 155, h: 205, className: 'hidden lg:block absolute right-[15%] top-[47%]', rotation: '-1deg' },
+  { eventIndex: 5, w: 210, h: 278, className: 'hidden lg:block absolute right-[2%]  top-[8%]',  rotation: '1.5deg', priority: true },
+  { eventIndex: 6, w: 125, h: 165, className: 'hidden xl:block absolute left-[7%]  bottom-[7%]', rotation: '1.2deg' },
+  { eventIndex: 7, w: 125, h: 165, className: 'hidden xl:block absolute right-[7%] bottom-[5%]', rotation: '-1deg' },
 ]
 
 const MOBILE_SLOTS: PosterSlot[] = [
-  { eventIndex: 0, w: 130, h: 170, className: 'absolute left-[4%] bottom-[6%]', rotation: '-1.5deg' },
-  { eventIndex: 1, w: 110, h: 145, className: 'absolute left-[38%] bottom-[4%]', rotation: '1deg' },
-  { eventIndex: 2, w: 120, h: 158, className: 'absolute right-[4%] bottom-[7%]', rotation: '1.5deg' },
+  { eventIndex: 0, w: 120, h: 158, className: 'absolute left-[3%]  bottom-[5%]', rotation: '-1.5deg' },
+  { eventIndex: 1, w: 105, h: 138, className: 'absolute left-[36%] bottom-[3%]', rotation: '1deg' },
+  { eventIndex: 2, w: 112, h: 148, className: 'absolute right-[3%] bottom-[6%]', rotation: '1.5deg' },
 ]
 
-// ─── Individual poster ────────────────────────────────────────────────────────
+// ─── Poster ───────────────────────────────────────────────────────────────────
 
 function Poster({
   event,
@@ -66,20 +53,17 @@ function Poster({
   delay = 0,
 }: PosterSlot & { event: EventListItem | undefined; delay?: number }) {
   const shouldReduce = useReducedMotion()
-
   if (!event) return null
-
-  const style: React.CSSProperties = {
-    width: w,
-    height: h,
-    transform: rotation !== '0deg' ? `rotate(${rotation})` : undefined,
-    animationDelay: shouldReduce ? undefined : `${delay}ms`,
-  }
 
   return (
     <div
-      className={`${className} overflow-hidden rounded-[14px] shadow-[0_8px_32px_rgba(0,0,0,0.55)] poster-fade-in`}
-      style={style}
+      className={`${className} overflow-hidden rounded-[14px] shadow-[0_8px_40px_rgba(0,0,0,0.6)] poster-fade-in`}
+      style={{
+        width: w,
+        height: h,
+        transform: rotation !== '0deg' ? `rotate(${rotation})` : undefined,
+        animationDelay: shouldReduce ? undefined : `${delay}ms`,
+      }}
       aria-hidden="true"
     >
       {event.imageUrl ? (
@@ -94,48 +78,33 @@ function Poster({
           loading={priority ? 'eager' : 'lazy'}
         />
       ) : (
-        <PosterFallback category={event.category?.name} color={event.category?.color} />
+        // No-image fallback stays dark — it lives inside the always-dark hero
+        <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[#1a1a18] p-4">
+          <div className="h-px w-6 bg-white/15" />
+          <p className="text-center text-[10px] font-semibold tracking-[0.15em] text-white/20 uppercase">
+            {(event.category?.name ?? 'SWITCH').slice(0, 6)}
+          </p>
+          <div className="h-px w-6 bg-white/15" />
+        </div>
       )}
     </div>
   )
 }
 
-function PosterFallback({
-  category,
-  color,
-}: {
-  category?: string | null
-  color?: string | null
-}) {
-  return (
-    <div
-      className="flex h-full w-full flex-col items-center justify-center gap-3 p-4"
-      style={{ backgroundColor: '#1a1a18' }}
-    >
-      <div className="h-px w-8 bg-white/20" />
-      <p
-        className="text-center font-semibold leading-none text-white/20"
-        style={{ fontSize: '11px', letterSpacing: '0.15em' }}
-      >
-        {(category ?? 'SWITCH').toUpperCase()}
-      </p>
-      <div className="h-px w-8 bg-white/20" />
-    </div>
-  )
-}
+// ─── Hero ─────────────────────────────────────────────────────────────────────
 
-// ─── Hero section ─────────────────────────────────────────────────────────────
-
-export function HeroSection({ events, categories }: HeroSectionProps) {
+export function HeroSection({ events }: HeroSectionProps) {
   const shouldReduce = useReducedMotion()
 
   return (
+    // The hero is intentionally always dark — it is a cinematic section.
+    // Theme toggling affects all sections below it.
     <section
-      className="relative min-h-svh overflow-hidden"
-      style={{ backgroundColor: '#0D0D0D' }}
+      className="relative overflow-hidden pt-[60px]"
+      style={{ backgroundColor: '#0D0D0D', minHeight: 'clamp(560px, 85svh, 780px)' }}
       aria-label="SWITCH — Discover events"
     >
-      {/* ── Fine grain texture ── */}
+      {/* ── Grain texture ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[1]"
@@ -149,107 +118,107 @@ export function HeroSection({ events, categories }: HeroSectionProps) {
         }}
       />
 
-      {/* ── Vignette edges — softens the poster composition ── */}
+      {/* ── Edge vignette — frames the poster composition ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[2]"
         style={{
           background:
-            'radial-gradient(ellipse 75% 80% at 50% 45%, transparent 30%, rgba(13,13,13,0.75) 100%)',
+            'radial-gradient(ellipse 75% 80% at 50% 45%, transparent 25%, rgba(13,13,13,0.72) 100%)',
         }}
       />
 
-      {/* ── Bottom fade into light content ── */}
+      {/* ── Bottom fade — transitions into the themed page background ── */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-40"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[3]"
         style={{
-          background: 'linear-gradient(to bottom, transparent, #0D0D0D 70%, var(--background) 100%)',
+          height: '180px',
+          // Goes from transparent → pure #0D0D0D → then the page background var
+          // so there is no hard edge between hero and the content below
+          background:
+            'linear-gradient(to bottom, transparent 0%, #0D0D0D 55%, var(--color-background) 100%)',
         }}
       />
 
-      {/* ── Desktop poster artwork ── */}
+      {/* ── Desktop posters ── */}
       {DESKTOP_SLOTS.map((slot, i) => (
-        <Poster
-          key={i}
-          {...slot}
-          event={events[slot.eventIndex]}
-          delay={i * 60}
-        />
+        <Poster key={i} {...slot} event={events[slot.eventIndex]} delay={i * 55} />
       ))}
 
-      {/* ── Mobile poster artwork (bottom strip) ── */}
+      {/* ── Mobile posters ── */}
       {MOBILE_SLOTS.map((slot, i) => (
         <Poster
           key={`m-${i}`}
           {...slot}
           event={events[slot.eventIndex]}
-          delay={400 + i * 80}
+          delay={350 + i * 75}
           className={slot.className + ' lg:hidden'}
         />
       ))}
 
-      {/* ── Central content ── */}
-      <div
-        className="relative z-[10] flex min-h-svh flex-col items-center justify-center px-5 pb-40 pt-28 sm:pb-48 sm:pt-32 lg:pb-32"
-        style={{ textAlign: 'center' }}
-      >
-        {/* Brand wordmark */}
+      {/* ── Central copy ── */}
+      <div className="relative z-[10] flex h-full flex-col items-center justify-center px-5 py-20 text-center sm:py-24 lg:py-28">
+        {/* Wordmark label */}
         <p
-          className="hero-fade mb-8 text-[11px] font-semibold tracking-[0.22em] text-white/40 uppercase"
-          style={{ animationDelay: shouldReduce ? undefined : '80ms' }}
+          className="hero-fade mb-7 text-[11px] font-semibold tracking-[0.22em] text-white/35 uppercase"
+          style={{ animationDelay: shouldReduce ? undefined : '60ms' }}
         >
           SWITCH
         </p>
 
-        {/* Headline */}
+        {/* Main headline */}
         <h1
-          className="hero-fade mx-auto max-w-[14ch] font-semibold text-white"
+          className="hero-fade mx-auto font-semibold text-white"
           style={{
-            fontSize: 'clamp(42px, 7vw, 80px)',
-            lineHeight: 1.04,
+            maxWidth: '14ch',
+            fontSize: 'clamp(40px, 6.5vw, 76px)',
+            lineHeight: 1.05,
             letterSpacing: '-0.04em',
-            animationDelay: shouldReduce ? undefined : '160ms',
+            animationDelay: shouldReduce ? undefined : '140ms',
           }}
         >
           Something worth{' '}
-          <span style={{ color: '#a5b4fc' }}>going to</span>
-          {' '}is happening.
+          <span style={{ color: '#a5b4fc' }}>going to</span>{' '}
+          is happening.
         </h1>
 
-        {/* Sub-copy */}
+        {/* Subtext */}
         <p
-          className="hero-fade mt-6 max-w-[36ch] text-[15px] leading-relaxed text-white/55 sm:text-[16px]"
-          style={{ animationDelay: shouldReduce ? undefined : '240ms' }}
+          className="hero-fade mt-5 text-[15px] leading-relaxed text-white/50 sm:text-[16px]"
+          style={{
+            maxWidth: '38ch',
+            animationDelay: shouldReduce ? undefined : '220ms',
+          }}
         >
           Concerts, comedy, culture, sports and more — all on SWITCH.
         </p>
 
         {/* CTAs */}
         <div
-          className="hero-fade mt-9 flex flex-wrap items-center justify-center gap-3"
-          style={{ animationDelay: shouldReduce ? undefined : '320ms' }}
+          className="hero-fade mt-8 flex flex-wrap items-center justify-center gap-3"
+          style={{ animationDelay: shouldReduce ? undefined : '300ms' }}
         >
           <Link
             href="/events"
-            className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-7 text-[14px] font-semibold text-black transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="inline-flex h-11 items-center gap-2 rounded-xl bg-white px-6 text-[13.5px] font-semibold text-black transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Explore Events
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
           <Link
             href="/dashboard/events/new"
-            className="inline-flex h-12 items-center rounded-xl border border-white/20 bg-white/8 px-7 text-[14px] font-medium text-white/80 backdrop-blur-sm transition-colors hover:bg-white/14 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="inline-flex h-11 items-center rounded-xl border border-white/20 px-6 text-[13.5px] font-medium text-white/75 transition-colors hover:border-white/35 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Create an Event
           </Link>
         </div>
 
-        {/* Event count badge — only if we have real events */}
+        {/* Event count — only rendered when real events exist */}
         {events.length > 0 && (
           <p
-            className="hero-fade mt-8 text-[12px] text-white/30"
-            style={{ animationDelay: shouldReduce ? undefined : '400ms' }}
+            className="hero-fade mt-7 text-[12px] text-white/25"
+            style={{ animationDelay: shouldReduce ? undefined : '380ms' }}
           >
             {events.length}+ events happening soon
           </p>
