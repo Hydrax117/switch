@@ -77,12 +77,12 @@ function Poster({
           loading={priority ? 'eager' : 'lazy'}
         />
       ) : (
-        <div className="bg-muted flex h-full w-full flex-col items-center justify-center gap-3 p-4">
-          <div className="bg-border h-px w-6" />
-          <p className="text-border text-center text-[10px] font-semibold tracking-[0.15em] uppercase">
+      <div className="bg-[#1a1a18] flex h-full w-full flex-col items-center justify-center gap-3 p-4">
+          <div className="h-px w-6 bg-white/15" />
+          <p className="text-center text-[10px] font-semibold tracking-[0.15em] text-white/25 uppercase">
             {(event.category?.name ?? 'SWITCH').slice(0, 6)}
           </p>
-          <div className="bg-border h-px w-6" />
+          <div className="h-px w-6 bg-white/15" />
         </div>
       )}
     </div>
@@ -96,16 +96,13 @@ export function HeroSection({ events }: HeroSectionProps) {
 
   return (
     /*
-     * bg-background makes the hero respond to theme:
-     *   dark mode → #0a0a0a  (near-black, cinematic)
-     *   light mode → #fafaf8 (warm white)
-     *
-     * The poster images provide the visual interest in both modes.
-     * Vignette opacity is reduced in light mode via separate layer.
+     * Hero is intentionally always dark — cinematic signature.
+     * Text uses fixed white values, not semantic tokens.
+     * The sections below respond to the theme toggle.
      */
     <section
-      className="bg-background relative overflow-hidden pt-[60px]"
-      style={{ minHeight: 'clamp(560px, 85svh, 780px)' }}
+      className="relative overflow-hidden pt-[60px]"
+      style={{ backgroundColor: '#0D0D0D', minHeight: 'clamp(560px, 85svh, 780px)' }}
       aria-label="SWITCH — Discover events"
     >
       {/* ── Grain texture (dark mode: overlay blend; light mode: multiply) ── */}
@@ -122,13 +119,24 @@ export function HeroSection({ events }: HeroSectionProps) {
         }}
       />
 
-      {/* ── Vignette — frames the poster art, adapts with theme ── */}
+      {/* ── Edge vignette — frames the poster art, always dark ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[2]"
         style={{
           background:
-            'radial-gradient(ellipse 75% 80% at 50% 45%, transparent 25%, var(--color-background) 100%)',
+            'radial-gradient(ellipse 75% 80% at 50% 45%, transparent 25%, rgba(13,13,13,0.75) 100%)',
+        }}
+      />
+
+      {/* ── Bottom fade into themed page background ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[3]"
+        style={{
+          height: '180px',
+          background:
+            'linear-gradient(to bottom, transparent 0%, #0D0D0D 55%, var(--color-background) 100%)',
         }}
       />
 
@@ -152,15 +160,15 @@ export function HeroSection({ events }: HeroSectionProps) {
       <div className="relative z-[10] flex h-full flex-col items-center justify-center px-5 py-20 text-center sm:py-24 lg:py-28">
         {/* Wordmark */}
         <p
-          className="hero-fade text-foreground/35 mb-7 text-[11px] font-semibold tracking-[0.22em] uppercase"
+          className="hero-fade mb-7 text-[11px] font-semibold tracking-[0.22em] text-white/35 uppercase"
           style={{ animationDelay: shouldReduce ? undefined : '60ms' }}
         >
           SWITCH
         </p>
 
-        {/* Headline — theme-aware */}
+        {/* Headline */}
         <h1
-          className="hero-fade text-foreground mx-auto font-semibold"
+          className="hero-fade mx-auto font-semibold text-white"
           style={{
             maxWidth: '14ch',
             fontSize: 'clamp(40px, 6.5vw, 76px)',
@@ -176,7 +184,7 @@ export function HeroSection({ events }: HeroSectionProps) {
 
         {/* Subtext */}
         <p
-          className="hero-fade text-muted-foreground mt-5 text-[15px] leading-relaxed sm:text-[16px]"
+          className="hero-fade mt-5 text-[15px] leading-relaxed text-white/50 sm:text-[16px]"
           style={{
             maxWidth: '38ch',
             animationDelay: shouldReduce ? undefined : '220ms',
@@ -192,14 +200,14 @@ export function HeroSection({ events }: HeroSectionProps) {
         >
           <Link
             href="/events"
-            className="bg-foreground text-background inline-flex h-11 items-center gap-2 rounded-xl px-6 text-[13.5px] font-semibold transition-opacity hover:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+            className="inline-flex h-11 items-center gap-2 rounded-xl bg-white px-6 text-[13.5px] font-semibold text-black transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Explore Events
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
           <Link
             href="/dashboard/events/new"
-            className="border-border text-muted-foreground hover:text-foreground inline-flex h-11 items-center rounded-xl border px-6 text-[13.5px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+            className="inline-flex h-11 items-center rounded-xl border border-white/25 px-6 text-[13.5px] font-medium text-white/75 transition-colors hover:border-white/40 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Create an Event
           </Link>
@@ -208,7 +216,7 @@ export function HeroSection({ events }: HeroSectionProps) {
         {/* Event count */}
         {events.length > 0 && (
           <p
-            className="hero-fade text-muted-foreground/60 mt-7 text-[12px]"
+            className="hero-fade mt-7 text-[12px] text-white/25"
             style={{ animationDelay: shouldReduce ? undefined : '380ms' }}
           >
             {events.length}+ events happening soon
