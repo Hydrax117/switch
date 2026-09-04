@@ -103,18 +103,18 @@ function EventFallbackBg({
   title: string
 }) {
   return (
-    <div className="absolute inset-0 flex flex-col items-start justify-end bg-[#111110] p-6 sm:p-8">
-      {/* Oversized background category text */}
+    <div className="bg-muted absolute inset-0 flex flex-col items-start justify-end p-6 sm:p-8">
+      {/* Oversized background category text — adapts to theme */}
       <p
         aria-hidden
-        className="pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden font-semibold text-white/[0.04]"
+        className="text-border pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden font-semibold"
         style={{ fontSize: 'clamp(80px, 18vw, 160px)', letterSpacing: '-0.04em' }}
       >
         {category ?? 'SWITCH'}
       </p>
       {/* Thin horizontal rules */}
-      <div className="absolute inset-x-6 top-8 h-px bg-white/10" aria-hidden />
-      <div className="absolute inset-x-6 bottom-20 h-px bg-white/10" aria-hidden />
+      <div className="bg-border/60 absolute inset-x-6 top-8 h-px" aria-hidden />
+      <div className="bg-border/60 absolute inset-x-6 bottom-20 h-px" aria-hidden />
     </div>
   )
 }

@@ -190,11 +190,11 @@ function NoImageFallback({
   small?: boolean
 }) {
   return (
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-[#f0efeb]">
-      {/* Oversized category label as texture */}
+    <div className="bg-muted relative flex h-full w-full items-center justify-center overflow-hidden">
+      {/* Oversized category abbreviation — theme-aware */}
       <p
         aria-hidden
-        className="pointer-events-none select-none font-semibold text-[#d8d6d0]"
+        className="text-border pointer-events-none select-none font-semibold"
         style={{
           fontSize: small ? '32px' : '60px',
           letterSpacing: '-0.04em',
@@ -203,8 +203,8 @@ function NoImageFallback({
       >
         {(category ?? 'SW').slice(0, 2).toUpperCase()}
       </p>
-      {/* Thin rule at top */}
-      <div className="absolute inset-x-0 top-0 h-[2px] bg-[#d0cec8]" />
+      {/* Thin accent rule at top */}
+      <div className="bg-border absolute inset-x-0 top-0 h-[2px]" />
     </div>
   )
 }
