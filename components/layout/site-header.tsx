@@ -16,9 +16,9 @@ function LogoMark() {
     <Image
       src="/android-chrome-192x192.png"
       alt="SWITCH logo"
-      width={28}
-      height={28}
-      className="rounded-md"
+      width={40}
+      height={40}
+      className="rounded-lg"
       priority
     />
   )
