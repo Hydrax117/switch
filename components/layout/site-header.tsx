@@ -36,8 +36,11 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
   const headerRef = useRef<HTMLElement>(null)
   const isLoggedIn = Boolean(userEmail)
 
+  // On the homepage the hero is dark, so we use white nav text until scrolled
+  const isHome = pathname === '/'
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12)
+    const onScroll = () => setScrolled(window.scrollY > 60)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -48,12 +51,16 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
     setMobileOpen(false)
   }, [pathname])
 
+  // On homepage before scroll: transparent, white text
+  // After scroll (or on other pages): normal themed treatment
+  const overDark = isHome && !scrolled
+
   return (
     <header
       ref={headerRef}
       className={cn(
-        'fixed inset-x-0 top-0 z-50 transition-all duration-300',
-        scrolled
+        'fixed inset-x-0 top-0 z-50 transition-all duration-500',
+        scrolled || !isHome
           ? 'bg-background/90 border-border/60 border-b shadow-[0_1px_0_0_var(--border)] backdrop-blur-xl'
           : 'bg-transparent'
       )}
@@ -62,7 +69,7 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
         {/* ── Logo ── */}
         <Link
           href="/"
-          className="text-foreground flex items-center transition-opacity hover:opacity-80"
+          className="flex items-center transition-opacity hover:opacity-80"
         >
           <LogoMark />
         </Link>
@@ -74,16 +81,24 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'relative rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors',
-                'hover:text-foreground',
-                pathname === item.href ? 'text-foreground' : 'text-muted-foreground'
+                'relative rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors duration-300',
+                overDark
+                  ? pathname === item.href
+                    ? 'text-white'
+                    : 'text-white/60 hover:text-white'
+                  : pathname === item.href
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {item.title}
               {pathname === item.href && (
                 <motion.span
                   layoutId="nav-indicator"
-                  className="bg-foreground/60 absolute inset-x-1.5 -bottom-px h-px rounded-full"
+                  className={cn(
+                    'absolute inset-x-1.5 -bottom-px h-px rounded-full',
+                    overDark ? 'bg-white/50' : 'bg-foreground/60'
+                  )}
                 />
               )}
             </Link>
@@ -99,7 +114,10 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
               <>
                 <Link
                   href="/dashboard"
-                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors"
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors duration-300',
+                    overDark ? 'text-white/60 hover:text-white' : 'text-muted-foreground hover:text-foreground'
+                  )}
                 >
                   <LayoutDashboard className="h-3.5 w-3.5" />
                   Dashboard
@@ -108,9 +126,10 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
                   <button
                     type="submit"
                     className={cn(
-                      'inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[13.5px] font-medium',
-                      'border-border border bg-transparent',
-                      'text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200',
+                      'inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[13.5px] font-medium transition-all duration-200',
+                      overDark
+                        ? 'border border-white/20 bg-transparent text-white/70 hover:border-white/40 hover:text-white'
+                        : 'border-border border bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted',
                       'focus-visible:outline-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'
                     )}
                   >
@@ -123,16 +142,20 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
               <>
                 <Link
                   href="/login"
-                  className="text-muted-foreground hover:text-foreground rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors"
+                  className={cn(
+                    'rounded-md px-3.5 py-2 text-[13.5px] font-medium transition-colors duration-300',
+                    overDark ? 'text-white/60 hover:text-white' : 'text-muted-foreground hover:text-foreground'
+                  )}
                 >
                   Sign in
                 </Link>
                 <Link
                   href="/login"
                   className={cn(
-                    'inline-flex items-center rounded-lg px-4 py-2 text-[13.5px] font-medium',
-                    'bg-foreground text-background',
-                    'transition-all duration-200 hover:opacity-85',
+                    'inline-flex items-center rounded-lg px-4 py-2 text-[13.5px] font-medium transition-all duration-200',
+                    overDark
+                      ? 'bg-white text-black hover:opacity-90'
+                      : 'bg-foreground text-background hover:opacity-85',
                     'focus-visible:outline-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'
                   )}
                 >
@@ -144,7 +167,10 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
 
           {/* Mobile toggle */}
           <button
-            className="text-muted-foreground hover:text-foreground flex h-9 w-9 items-center justify-center rounded-md transition-colors md:hidden"
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-md transition-colors md:hidden',
+              overDark ? 'text-white/70 hover:text-white' : 'text-muted-foreground hover:text-foreground'
+            )}
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}

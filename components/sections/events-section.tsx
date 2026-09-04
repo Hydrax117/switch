@@ -13,28 +13,28 @@ export async function EventsSection() {
   const hasHero = Boolean(first?.imageUrl)
 
   return (
-    <section className="pb-24 sm:pb-32" aria-label="Upcoming events">
+    <section className="bg-background py-16 sm:py-20" aria-label="Worth checking out">
       <div className="mx-auto max-w-[1120px] px-5 sm:px-8">
         {/* ── Section header ── */}
-        <div className="mb-8 flex items-baseline justify-between gap-4">
+        <div className="mb-9 flex items-baseline justify-between gap-4">
           <h2
             className="text-foreground font-semibold tracking-tight"
-            style={{ fontSize: 'clamp(20px, 2.5vw, 26px)', letterSpacing: '-0.03em' }}
+            style={{ fontSize: 'clamp(22px, 2.8vw, 28px)', letterSpacing: '-0.03em' }}
           >
-            Upcoming events
+            Worth checking out
           </h2>
           <Link
             href="/events"
-            className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-[13px] font-medium transition-colors"
+            className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1.5 text-[13px] font-medium transition-colors"
           >
-            View all
+            All events
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </div>
 
         {/* ── Editorial grid ── */}
         {hasHero ? (
-          <div className="grid gap-5 lg:grid-cols-[1fr_1fr_1fr]">
+          <div className="grid gap-5 lg:grid-cols-3">
             {/* Hero card — spans 2 columns */}
             <div className="lg:col-span-2">
               <FeaturedEventCard event={first!} />
@@ -47,13 +47,12 @@ export async function EventsSection() {
               ))}
             </div>
 
-            {/* Bottom row — standard 3-col */}
+            {/* Bottom row — 3-col standard cards */}
             {rest.slice(2, 5).map((event, i) => (
               <EventCard key={event.id} event={event} index={i + 3} />
             ))}
           </div>
         ) : (
-          /* Fallback: uniform 3-col grid when no hero image */
           <div className="grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((event, i) => (
               <EventCard key={event.id} event={event} index={i} />
