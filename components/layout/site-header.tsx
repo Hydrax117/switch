@@ -62,10 +62,9 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
         {/* ── Logo ── */}
         <Link
           href="/"
-          className="text-foreground flex items-center gap-2.5 transition-opacity hover:opacity-80"
+          className="text-foreground flex items-center transition-opacity hover:opacity-80"
         >
           <LogoMark />
-          <span className="text-[15px] font-semibold tracking-tight">{siteConfig.name}</span>
         </Link>
 
         {/* ── Desktop Nav ── */}

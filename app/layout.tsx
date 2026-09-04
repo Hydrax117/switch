@@ -88,7 +88,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
         <ThemeProvider
-          attribute="data-theme"
+          attribute="class"
           defaultTheme="dark"
           enableSystem={false}
           disableTransitionOnChange
