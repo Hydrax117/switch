@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   ChevronRight,
   Sparkles,
+  Banknote,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -44,6 +45,12 @@ const ORGANIZER_NAV: NavItem[] = [
     href: '/dashboard/analytics',
     label: 'Analytics',
     icon: BarChart3,
+    roles: ['ORGANIZER', 'ADMIN'],
+  },
+  {
+    href: '/dashboard/payouts',
+    label: 'Payouts',
+    icon: Banknote,
     roles: ['ORGANIZER', 'ADMIN'],
   },
   { href: '/dashboard/admin', label: 'Admin', icon: ShieldCheck, roles: ['ADMIN'] },
