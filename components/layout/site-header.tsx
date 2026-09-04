@@ -37,7 +37,8 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
   const isLoggedIn = Boolean(userEmail)
 
   // On the homepage the hero is dark, so we use white nav text until scrolled
-  const isHome = pathname === '/'
+  // Cast to string to avoid typed-route comparison error (/ is not a nav link)
+  const isHome = (pathname as string) === '/'
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60)
