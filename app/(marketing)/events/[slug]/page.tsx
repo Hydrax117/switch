@@ -73,7 +73,7 @@ export default async function EventDetailPage({ params }: PageProps) {
   ])
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-[#0a0a0a]">
+    <div className="relative flex min-h-screen flex-col bg-background">
       <Suspense>
         <HeaderWithSession />
       </Suspense>
@@ -87,8 +87,8 @@ export default async function EventDetailPage({ params }: PageProps) {
           <div
             className={`w-full py-3 text-center text-[13px] font-semibold ${
               event.status === 'CANCELLED'
-                ? 'bg-red-500/10 text-red-400'
-                : 'bg-white/5 text-white/60'
+                ? 'bg-red-500/10 text-red-600 dark:text-red-400'
+                : 'bg-muted text-muted-foreground'
             }`}
             role="alert"
           >
@@ -99,7 +99,7 @@ export default async function EventDetailPage({ params }: PageProps) {
         )}
 
         {/* ── Meta strip ─────────────────────────────────────────────── */}
-        <div className="border-b border-white/8 bg-[#0a0a0a]">
+        <div className="border-border/60 border-b bg-background">
           <div className="mx-auto max-w-[1120px] px-5 py-8 sm:px-8">
             <EventMeta
               event={event}
@@ -196,7 +196,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
           {/* ── Related Events ─────────────────────────────────────── */}
           {relatedEvents.length > 0 && (
-            <div className="mt-20 border-t border-white/8 pt-16 sm:mt-24 sm:pt-20">
+            <div className="mt-20 border-t border-border/60 pt-16 sm:mt-24 sm:pt-20">
               <SectionReveal>
                 <RelatedEvents events={relatedEvents} currentEventId={event.id} />
               </SectionReveal>

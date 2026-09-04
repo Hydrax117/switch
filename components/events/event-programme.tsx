@@ -31,7 +31,7 @@ export function EventProgramme({ items }: EventProgrammeProps) {
     <section aria-labelledby="programme-heading">
       <h2
         id="programme-heading"
-        className="mb-6 text-[20px] font-semibold tracking-tight text-white"
+        className="mb-6 text-[20px] font-semibold tracking-tight text-foreground"
       >
         Programme
       </h2>
@@ -47,28 +47,28 @@ export function EventProgramme({ items }: EventProgrammeProps) {
               {!isLast && (
                 <span
                   aria-hidden
-                  className="absolute left-[15px] top-8 bottom-0 w-px bg-white/10"
+                  className="bg-border absolute left-[15px] top-8 bottom-0 w-px"
                 />
               )}
 
               {/* Step circle */}
-              <div className="relative z-10 mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-[12px] font-semibold text-white/50">
+              <div className="border-border bg-surface text-muted-foreground relative z-10 mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[12px] font-semibold">
                 {idx + 1}
               </div>
 
               {/* Content */}
               <div className="min-w-0 flex-1 pt-0.5">
-                <p className="text-[15px] font-semibold text-white">{item.title}</p>
+                <p className="text-foreground text-[15px] font-semibold">{item.title}</p>
 
                 <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
                   {item.hostName && (
-                    <span className="flex items-center gap-1.5 text-[13px] text-white/55">
+                    <span className="text-muted-foreground flex items-center gap-1.5 text-[13px]">
                       <User className="h-3.5 w-3.5 shrink-0" aria-hidden />
                       {item.hostName}
                     </span>
                   )}
                   {timeStr && (
-                    <span className="flex items-center gap-1.5 text-[13px] text-white/55">
+                    <span className="text-muted-foreground flex items-center gap-1.5 text-[13px]">
                       <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
                       {timeStr}
                     </span>
@@ -76,7 +76,7 @@ export function EventProgramme({ items }: EventProgrammeProps) {
                 </div>
 
                 {item.description && (
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-white/45">
+                  <p className="text-muted-foreground mt-1.5 text-[13px] leading-relaxed">
                     {item.description}
                   </p>
                 )}

@@ -108,7 +108,7 @@ function MetaRow({
     <div className="flex items-start gap-3">
       <span className="text-muted-foreground mt-0.5 flex-shrink-0">{icon}</span>
       <span className="sr-only">{label}:</span>
-      <span className="text-[14px] leading-snug text-white/90">{children}</span>
+      <span className="text-[14px] leading-snug text-foreground">{children}</span>
     </div>
   )
 }

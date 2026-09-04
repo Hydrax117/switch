@@ -17,15 +17,15 @@ export function TicketPanel({ event, isLoggedIn }: TicketPanelProps) {
   return (
     <div className="lg:sticky lg:top-[96px] lg:self-start">
       {/* Section label */}
-      <p className="mb-4 text-[11px] font-semibold tracking-[0.12em] uppercase text-white/40">
+      <p className="mb-4 text-[11px] font-semibold tracking-[0.12em] uppercase text-muted-foreground">
         Tickets
       </p>
 
       {/* Price summary */}
       {!soldOut && minPrice !== null && (
         <div className="mb-4">
-          <span className="text-[13px] text-white/60">Starting from </span>
-          <span className="text-[20px] font-semibold tracking-tight text-white">
+          <span className="text-muted-foreground text-[13px]">Starting from </span>
+          <span className="text-foreground text-[20px] font-semibold tracking-tight">
             {minPrice === 0 ? 'Free' : formatPrice(minPrice)}
           </span>
         </div>
