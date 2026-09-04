@@ -129,14 +129,13 @@ export function HeroSection({ events }: HeroSectionProps) {
         }}
       />
 
-      {/* ── Bottom fade into themed page background ── */}
+      {/* ── Bottom fade — seamless transition to page background ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 z-[3]"
         style={{
-          height: '180px',
-          background:
-            'linear-gradient(to bottom, transparent 0%, #0D0D0D 55%, var(--color-background) 100%)',
+          height: '120px',
+          background: 'linear-gradient(to bottom, transparent 0%, #0D0D0D 100%)',
         }}
       />
 
