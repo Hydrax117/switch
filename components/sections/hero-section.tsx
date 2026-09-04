@@ -12,8 +12,6 @@ interface HeroSectionProps {
 }
 
 // ─── Poster slot config ───────────────────────────────────────────────────────
-// Positions are absolute percentages within the hero container.
-// The central 40% width is left clear for the copy block.
 
 interface PosterSlot {
   eventIndex: number
@@ -57,12 +55,13 @@ function Poster({
 
   return (
     <div
-      className={`${className} overflow-hidden rounded-[14px] shadow-[0_8px_40px_rgba(0,0,0,0.6)] poster-fade-in`}
+      className={`${className} overflow-hidden rounded-[14px] poster-fade-in`}
       style={{
         width: w,
         height: h,
         transform: rotation !== '0deg' ? `rotate(${rotation})` : undefined,
         animationDelay: shouldReduce ? undefined : `${delay}ms`,
+        boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
       }}
       aria-hidden="true"
     >
@@ -78,13 +77,12 @@ function Poster({
           loading={priority ? 'eager' : 'lazy'}
         />
       ) : (
-        // No-image fallback stays dark — it lives inside the always-dark hero
-        <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[#1a1a18] p-4">
-          <div className="h-px w-6 bg-white/15" />
-          <p className="text-center text-[10px] font-semibold tracking-[0.15em] text-white/20 uppercase">
+        <div className="bg-muted flex h-full w-full flex-col items-center justify-center gap-3 p-4">
+          <div className="bg-border h-px w-6" />
+          <p className="text-border text-center text-[10px] font-semibold tracking-[0.15em] uppercase">
             {(event.category?.name ?? 'SWITCH').slice(0, 6)}
           </p>
-          <div className="h-px w-6 bg-white/15" />
+          <div className="bg-border h-px w-6" />
         </div>
       )}
     </div>
@@ -97,14 +95,20 @@ export function HeroSection({ events }: HeroSectionProps) {
   const shouldReduce = useReducedMotion()
 
   return (
-    // The hero is intentionally always dark — it is a cinematic section.
-    // Theme toggling affects all sections below it.
+    /*
+     * bg-background makes the hero respond to theme:
+     *   dark mode → #0a0a0a  (near-black, cinematic)
+     *   light mode → #fafaf8 (warm white)
+     *
+     * The poster images provide the visual interest in both modes.
+     * Vignette opacity is reduced in light mode via separate layer.
+     */
     <section
-      className="relative overflow-hidden pt-[60px]"
-      style={{ backgroundColor: '#0D0D0D', minHeight: 'clamp(560px, 85svh, 780px)' }}
+      className="bg-background relative overflow-hidden pt-[60px]"
+      style={{ minHeight: 'clamp(560px, 85svh, 780px)' }}
       aria-label="SWITCH — Discover events"
     >
-      {/* ── Grain texture ── */}
+      {/* ── Grain texture (dark mode: overlay blend; light mode: multiply) ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[1]"
@@ -113,31 +117,18 @@ export function HeroSection({ events }: HeroSectionProps) {
             "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E\")",
           backgroundRepeat: 'repeat',
           backgroundSize: '256px 256px',
-          opacity: 0.028,
+          opacity: 0.035,
           mixBlendMode: 'overlay',
         }}
       />
 
-      {/* ── Edge vignette — frames the poster composition ── */}
+      {/* ── Vignette — frames the poster art, adapts with theme ── */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[2]"
         style={{
           background:
-            'radial-gradient(ellipse 75% 80% at 50% 45%, transparent 25%, rgba(13,13,13,0.72) 100%)',
-        }}
-      />
-
-      {/* ── Bottom fade — transitions into the themed page background ── */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-[3]"
-        style={{
-          height: '180px',
-          // Goes from transparent → pure #0D0D0D → then the page background var
-          // so there is no hard edge between hero and the content below
-          background:
-            'linear-gradient(to bottom, transparent 0%, #0D0D0D 55%, var(--color-background) 100%)',
+            'radial-gradient(ellipse 75% 80% at 50% 45%, transparent 25%, var(--color-background) 100%)',
         }}
       />
 
@@ -159,17 +150,17 @@ export function HeroSection({ events }: HeroSectionProps) {
 
       {/* ── Central copy ── */}
       <div className="relative z-[10] flex h-full flex-col items-center justify-center px-5 py-20 text-center sm:py-24 lg:py-28">
-        {/* Wordmark label */}
+        {/* Wordmark */}
         <p
-          className="hero-fade mb-7 text-[11px] font-semibold tracking-[0.22em] text-white/35 uppercase"
+          className="hero-fade text-foreground/35 mb-7 text-[11px] font-semibold tracking-[0.22em] uppercase"
           style={{ animationDelay: shouldReduce ? undefined : '60ms' }}
         >
           SWITCH
         </p>
 
-        {/* Main headline */}
+        {/* Headline — theme-aware */}
         <h1
-          className="hero-fade mx-auto font-semibold text-white"
+          className="hero-fade text-foreground mx-auto font-semibold"
           style={{
             maxWidth: '14ch',
             fontSize: 'clamp(40px, 6.5vw, 76px)',
@@ -179,13 +170,13 @@ export function HeroSection({ events }: HeroSectionProps) {
           }}
         >
           Something worth{' '}
-          <span style={{ color: '#a5b4fc' }}>going to</span>{' '}
+          <span style={{ color: '#818cf8' }}>going to</span>{' '}
           is happening.
         </h1>
 
         {/* Subtext */}
         <p
-          className="hero-fade mt-5 text-[15px] leading-relaxed text-white/50 sm:text-[16px]"
+          className="hero-fade text-muted-foreground mt-5 text-[15px] leading-relaxed sm:text-[16px]"
           style={{
             maxWidth: '38ch',
             animationDelay: shouldReduce ? undefined : '220ms',
@@ -201,23 +192,23 @@ export function HeroSection({ events }: HeroSectionProps) {
         >
           <Link
             href="/events"
-            className="inline-flex h-11 items-center gap-2 rounded-xl bg-white px-6 text-[13.5px] font-semibold text-black transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="bg-foreground text-background inline-flex h-11 items-center gap-2 rounded-xl px-6 text-[13.5px] font-semibold transition-opacity hover:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
           >
             Explore Events
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
           <Link
             href="/dashboard/events/new"
-            className="inline-flex h-11 items-center rounded-xl border border-white/20 px-6 text-[13.5px] font-medium text-white/75 transition-colors hover:border-white/35 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="border-border text-muted-foreground hover:text-foreground inline-flex h-11 items-center rounded-xl border px-6 text-[13.5px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
           >
             Create an Event
           </Link>
         </div>
 
-        {/* Event count — only rendered when real events exist */}
+        {/* Event count */}
         {events.length > 0 && (
           <p
-            className="hero-fade mt-7 text-[12px] text-white/25"
+            className="hero-fade text-muted-foreground/60 mt-7 text-[12px]"
             style={{ animationDelay: shouldReduce ? undefined : '380ms' }}
           >
             {events.length}+ events happening soon
