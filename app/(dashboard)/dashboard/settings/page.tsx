@@ -39,7 +39,7 @@ export default async function SettingsPage() {
 
       {organizer !== null && (
         <BankAccountForm
-          current={
+          currentBank={
             organizer
               ? {
                   bankCode: organizer.bankCode,

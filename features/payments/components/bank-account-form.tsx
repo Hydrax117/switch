@@ -7,10 +7,11 @@ import { getBanks, saveBankAccount } from '../actions'
 
 interface BankAccountFormProps {
   /** Currently saved bank details — null if not yet configured */
-  current: {
+  currentBank: {
     bankCode: string | null
     bankAccountNumber: string | null
     bankAccountName: string | null
+    [key: string]: unknown
   } | null
 }
 
@@ -23,7 +24,7 @@ const inputCls = cn(
   'disabled:cursor-not-allowed disabled:opacity-50'
 )
 
-export function BankAccountForm({ current }: BankAccountFormProps) {
+export function BankAccountForm({ currentBank }: BankAccountFormProps) {
   const [banks, setBanks] = useState<Bank[]>([])
   const [banksError, setBanksError] = useState(false)
   const [banksLoading, setBanksLoading] = useState(true)
@@ -35,7 +36,7 @@ export function BankAccountForm({ current }: BankAccountFormProps) {
 
   // Form state
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null)
-  const [accountNumber, setAccountNumber] = useState(current?.bankAccountNumber ?? '')
+  const [accountNumber, setAccountNumber] = useState(currentBank?.bankAccountNumber ?? '')
 
   // Submission
   const [isPending, startTransition] = useTransition()
@@ -49,8 +50,8 @@ export function BankAccountForm({ current }: BankAccountFormProps) {
         const sorted = [...result.data].sort((a, b) => a.name.localeCompare(b.name))
         setBanks(sorted)
         // Pre-select saved bank
-        if (current?.bankCode) {
-          const saved = sorted.find((b) => b.code === current.bankCode)
+        if (currentBank?.bankCode) {
+          const saved = sorted.find((b) => b.code === currentBank.bankCode)
           if (saved) setSelectedBank(saved)
         }
       } else {
@@ -58,7 +59,7 @@ export function BankAccountForm({ current }: BankAccountFormProps) {
       }
       setBanksLoading(false)
     })
-  }, [current?.bankCode])
+  }, [currentBank?.bankCode])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -103,9 +104,9 @@ export function BankAccountForm({ current }: BankAccountFormProps) {
   }
 
   const isEditing =
-    !current?.bankAccountNumber ||
-    selectedBank?.code !== current.bankCode ||
-    accountNumber !== current.bankAccountNumber
+    !currentBank?.bankAccountNumber ||
+    selectedBank?.code !== currentBank.bankCode ||
+    accountNumber !== currentBank.bankAccountNumber
 
   return (
     <div className="border-border bg-surface rounded-2xl border p-6">
@@ -123,14 +124,14 @@ export function BankAccountForm({ current }: BankAccountFormProps) {
       </div>
 
       {/* Currently saved — shown when not actively editing */}
-      {current?.bankAccountName && (
+      {currentBank?.bankAccountName && (
         <div className="mb-5 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
           <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
           <div className="min-w-0">
-            <p className="truncate text-[13px] font-medium">{current.bankAccountName}</p>
+            <p className="truncate text-[13px] font-medium">{currentBank.bankAccountName}</p>
             <p className="text-muted-foreground text-[12px]">
-              {banks.find((b) => b.code === current.bankCode)?.name ?? current.bankCode} ···{' '}
-              {current.bankAccountNumber?.slice(-4)}
+              {banks.find((b) => b.code === currentBank.bankCode)?.name ?? currentBank.bankCode} ···{' '}
+              {currentBank.bankAccountNumber?.slice(-4)}
             </p>
           </div>
         </div>
