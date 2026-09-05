@@ -183,7 +183,6 @@ export const OrganizerApplicationScalarFieldEnum = {
   organizerName: 'organizerName',
   bio: 'bio',
   nin: 'nin',
-  bvn: 'bvn',
   idType: 'idType',
   idDocUrl: 'idDocUrl',
   instagramUrl: 'instagramUrl',

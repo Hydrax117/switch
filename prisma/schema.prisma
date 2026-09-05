@@ -285,8 +285,6 @@ model OrganizerApplication {
   // ── Identity verification ─────────────────────────────────────────────────
   /// National Identification Number
   nin    String
-  /// Bank Verification Number
-  bvn    String
 
   /// Means of ID type submitted (e.g. "NATIONAL_ID", "DRIVERS_LICENSE", "INTL_PASSPORT", "VOTERS_CARD")
   idType    String
