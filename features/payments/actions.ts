@@ -13,6 +13,19 @@ type ActionResult<T = void> = { success: true; data: T } | { success: false; err
 const PAYOUT_HOLD_HOURS = 48
 const REFUND_WINDOW_HOURS = 48
 
+// ─── List banks (for bank account form) ──────────────────────────────────────
+
+export async function getBanks(): Promise<
+  ActionResult<Array<{ name: string; code: string; id: number }>>
+> {
+  try {
+    const banks = await paystack.listBanks()
+    return { success: true, data: banks }
+  } catch {
+    return { success: false, error: 'Failed to load banks. Please try again.' }
+  }
+}
+
 // ─── Save organizer bank account ──────────────────────────────────────────────
 
 const bankAccountSchema = z.object({
