@@ -344,10 +344,10 @@ function EventsBreakdown({
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
 const COLOR_MAP = {
-  brand: 'bg-brand-500/10 text-brand-400',
-  violet: 'bg-violet-500/10 text-violet-400',
-  emerald: 'bg-emerald-500/10 text-emerald-400',
-  amber: 'bg-amber-500/10 text-amber-400',
+  brand:   { icon: 'bg-brand-500/15 text-brand-400',   glow: 'rgba(99,102,241,0.22)'  },
+  violet:  { icon: 'bg-violet-500/15 text-violet-400', glow: 'rgba(139,92,246,0.22)'  },
+  emerald: { icon: 'bg-emerald-500/15 text-emerald-400', glow: 'rgba(16,185,129,0.20)' },
+  amber:   { icon: 'bg-amber-500/15 text-amber-400',   glow: 'rgba(245,158,11,0.20)'  },
 } as const
 
 function StatCard({
@@ -361,12 +361,14 @@ function StatCard({
   value: string | number
   color: keyof typeof COLOR_MAP
 }) {
+  const { icon: iconCls, glow } = COLOR_MAP[color]
   return (
-    <div className="border-border bg-surface rounded-2xl border p-5">
-      <div
-        className={`mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl ${COLOR_MAP[color]}`}
-      >
-        <Icon className="h-4.5 w-4.5" />
+    <div
+      className="glass-stat rounded-2xl p-5"
+      style={{ '--glow-color': glow } as React.CSSProperties}
+    >
+      <div className={cn('mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl', iconCls)}>
+        <Icon className="h-[18px] w-[18px]" />
       </div>
       <p className="text-[24px] font-bold tracking-tight">{value}</p>
       <p className="text-muted-foreground mt-0.5 text-[13px] font-medium">{label}</p>

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { format } from 'date-fns'
-import { Calendar, MapPin, Tag, Hash, Ticket } from 'lucide-react'
+import { Calendar, MapPin, Tag, Hash, ScanLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TicketModal, type TicketModalData } from './ticket-modal'
 import type { TicketWithDetails } from '../types'
@@ -13,31 +13,37 @@ interface TicketCardProps {
   className?: string
 }
 
-const STATUS_CONFIG: Record<string, { label: string; className: string; bgColor: string }> = {
+// Status config — light-on-glass badges
+const STATUS_CONFIG: Record<string, { label: string; dot: string; text: string; ring: string }> = {
   ACTIVE: {
     label: 'Valid',
-    className: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/15 border-emerald-500/30',
+    dot: 'bg-emerald-400',
+    text: 'text-emerald-400',
+    ring: 'ring-emerald-500/30',
   },
   USED: {
     label: 'Used',
-    className: 'text-zinc-400',
-    bgColor: 'bg-zinc-500/15 border-zinc-500/30',
+    dot: 'bg-zinc-500',
+    text: 'text-zinc-400',
+    ring: 'ring-zinc-500/20',
   },
   CANCELLED: {
     label: 'Cancelled',
-    className: 'text-red-400',
-    bgColor: 'bg-red-500/15 border-red-500/30',
+    dot: 'bg-red-500',
+    text: 'text-red-400',
+    ring: 'ring-red-500/30',
   },
   REFUNDED: {
     label: 'Refunded',
-    className: 'text-amber-400',
-    bgColor: 'bg-amber-500/15 border-amber-500/30',
+    dot: 'bg-amber-400',
+    text: 'text-amber-400',
+    ring: 'ring-amber-500/30',
   },
   EXPIRED: {
     label: 'Expired',
-    className: 'text-zinc-400',
-    bgColor: 'bg-zinc-500/15 border-zinc-500/30',
+    dot: 'bg-zinc-500',
+    text: 'text-zinc-500',
+    ring: 'ring-zinc-500/20',
   },
 }
 
@@ -45,6 +51,9 @@ export function TicketCard({ ticket, className }: TicketCardProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const statusCfg = STATUS_CONFIG[ticket.status] ?? STATUS_CONFIG.ACTIVE
   const isValid = ticket.status === 'ACTIVE'
+  const location = ticket.event.venue
+    ? `${ticket.event.venue.name}, ${ticket.event.venue.city}`
+    : null
 
   const modalData: TicketModalData = {
     id: ticket.id,
@@ -71,97 +80,96 @@ export function TicketCard({ ticket, className }: TicketCardProps) {
       <button
         onClick={() => setModalOpen(true)}
         className={cn(
-          'group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 transition-all duration-300',
-          'hover:border-brand-500/50 hover:shadow-lg hover:shadow-brand-500/10',
-          'active:scale-95',
+          'neo-ticket group relative w-full overflow-hidden rounded-xl bg-zinc-950 text-left',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/60',
+          !isValid && 'opacity-70',
           className
         )}
       >
-        {/* Background image with gradient overlay */}
-        <div className="relative h-32 w-full bg-gradient-to-br from-violet-900/50 to-purple-900/50">
-          {ticket.event.imageUrl && (
+        {/* ── Image banner ── */}
+        <div className="relative h-28 w-full overflow-hidden">
+          {ticket.event.imageUrl ? (
             <Image
               src={ticket.event.imageUrl}
               alt={ticket.event.title}
               fill
-              className="object-cover object-center"
+              className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-violet-900/60 to-indigo-900/60" />
           )}
-          {/* Dark gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/70" />
 
-          {/* Status badge - top right */}
-          <div className="absolute top-3 right-3 z-10">
+          {/* gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/75" />
+
+          {/* Glass status badge */}
+          <div className="absolute top-2.5 right-2.5 z-10">
             <span
               className={cn(
-                'rounded-full border px-2 py-0.5 text-xs font-semibold backdrop-blur-sm',
-                statusCfg.bgColor,
-                statusCfg.className
+                'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-semibold',
+                'bg-black/40 backdrop-blur-md ring-1',
+                statusCfg.text,
+                statusCfg.ring
               )}
             >
+              <span className={cn('h-1.5 w-1.5 rounded-full', statusCfg.dot)} />
               {statusCfg.label}
             </span>
           </div>
 
-          {/* Event title overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <p className="line-clamp-2 text-left text-sm font-bold leading-snug text-white drop-shadow">
+          {/* Scan icon — appears on hover */}
+          <div className="absolute right-2.5 bottom-2.5 z-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm ring-1 ring-white/20">
+              <ScanLine className="h-3.5 w-3.5 text-white" aria-hidden />
+            </span>
+          </div>
+
+          {/* Event title */}
+          <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
+            <p className="line-clamp-1 text-[13.5px] font-bold leading-snug text-white drop-shadow">
               {ticket.event.title}
             </p>
           </div>
         </div>
 
-        {/* Details section */}
-        <div className="space-y-2 px-3 py-3">
-          {/* Event date & time */}
+        {/* ── Details ── */}
+        <div className="space-y-1.5 px-3 py-3">
           <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <Calendar className="h-3.5 w-3.5 shrink-0" />
+            <Calendar className="h-3 w-3 shrink-0 text-zinc-500" />
             <span>{format(ticket.event.startsAt, 'MMM d, yyyy')}</span>
-            <span className="text-zinc-600">·</span>
+            <span className="text-zinc-700">·</span>
             <span>{format(ticket.event.startsAt, 'h:mm a')}</span>
           </div>
 
-          {/* Venue */}
-          {ticket.event.venue && (
+          {location && (
             <div className="flex items-center gap-2 text-xs text-zinc-400">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              <span className="line-clamp-1">
-                {ticket.event.venue.name}, {ticket.event.venue.city}
-              </span>
+              <MapPin className="h-3 w-3 shrink-0 text-zinc-500" />
+              <span className="line-clamp-1">{location}</span>
             </div>
           )}
 
-          {/* Ticket type & seat */}
           <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <Tag className="h-3.5 w-3.5 shrink-0" />
+            <Tag className="h-3 w-3 shrink-0 text-zinc-500" />
             <span>{ticket.ticketType.name}</span>
             {ticket.eventSeat?.seat && (
               <>
-                <span className="text-zinc-600">·</span>
+                <span className="text-zinc-700">·</span>
                 <span>Seat {ticket.eventSeat.seat.label}</span>
               </>
             )}
           </div>
 
-          {/* Ticket number */}
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
-            <Hash className="h-3.5 w-3.5 shrink-0" />
-            <span className="font-mono text-[11px] tracking-wider">
+          {/* Ticket number — bottom strip */}
+          <div className="mt-1 flex items-center gap-1.5 rounded-md bg-zinc-900/80 px-2 py-1.5 ring-1 ring-white/[0.04]">
+            <Hash className="h-2.5 w-2.5 shrink-0 text-zinc-600" />
+            <span className="font-mono text-[10.5px] tracking-[0.1em] text-zinc-500">
               {ticket.ticketNumber}
             </span>
           </div>
         </div>
-
-        {/* Hover action - show QR icon */}
-        <div className="absolute bottom-3 right-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500/20 text-brand-400">
-            <Ticket className="h-4 w-4" />
-          </div>
-        </div>
       </button>
 
-      {/* Ticket modal */}
       <TicketModal ticket={modalData} open={modalOpen} onClose={() => setModalOpen(false)} />
     </>
   )

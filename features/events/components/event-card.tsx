@@ -1,6 +1,9 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
+import { useRef, useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { formatPrice, getMinPrice, isSoldOut, hasFreeTickets } from '../utils'
 import type { EventListItem } from '../types'
@@ -23,9 +26,65 @@ export function EventCard({ event, index = 0, variant = 'default' }: EventCardPr
     return <CompactEventCard event={event} minPrice={minPrice} soldOut={soldOut} free={free} location={location} />
   }
 
+  return <SpatialEventCard event={event} index={index} minPrice={minPrice} soldOut={soldOut} free={free} location={location} />
+}
+
+// ─── Spatial (default) card ───────────────────────────────────────────────────
+
+function SpatialEventCard({
+  event,
+  index,
+  minPrice,
+  soldOut,
+  free,
+  location,
+}: {
+  event: EventListItem
+  index: number
+  minPrice: number | null
+  soldOut: boolean
+  free: boolean
+  location: string | null
+}) {
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = cardRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const x = e.clientX - rect.left   // 0 → width
+    const y = e.clientY - rect.top    // 0 → height
+    const cx = rect.width / 2
+    const cy = rect.height / 2
+    const maxTilt = 6 // degrees
+    const rx = ((y - cy) / cy) * -maxTilt
+    const ry = ((x - cx) / cx) * maxTilt
+    const mx = (x / rect.width) * 100
+    const my = (y / rect.height) * 100
+    el.style.setProperty('--rx', `${rx}deg`)
+    el.style.setProperty('--ry', `${ry}deg`)
+    el.style.setProperty('--sc', '1.02')
+    el.style.setProperty('--mx', `${mx}%`)
+    el.style.setProperty('--my', `${my}%`)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    const el = cardRef.current
+    if (!el) return
+    el.style.setProperty('--rx', '0deg')
+    el.style.setProperty('--ry', '0deg')
+    el.style.setProperty('--sc', '1')
+  }, [])
+
   return (
     <Link href={`/events/${event.slug}`} className="group block">
-      <article aria-label={event.title}>
+      <article
+        ref={cardRef}
+        aria-label={event.title}
+        className="spatial-card rounded-xl"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         {/* ── Image ── */}
         <div
           className="relative mb-3.5 overflow-hidden rounded-xl"
@@ -36,13 +95,16 @@ export function EventCard({ event, index = 0, variant = 'default' }: EventCardPr
               src={event.imageUrl}
               alt={event.title}
               fill
-              className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.025]"
+              className="spatial-image object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
               loading={index < 3 ? 'eager' : 'lazy'}
             />
           ) : (
             <NoImageFallback category={event.category?.name} />
           )}
+
+          {/* Specular shine overlay */}
+          <div className="spatial-shine" aria-hidden />
 
           {/* Status */}
           {(soldOut || free) && (
@@ -125,7 +187,7 @@ function CompactEventCard({
   return (
     <Link href={`/events/${event.slug}`} className="group block">
       <article
-        className="border-border bg-surface flex gap-4 overflow-hidden rounded-xl border transition-shadow duration-200 hover:shadow-[0_2px_12px_rgba(0,0,0,0.07)]"
+        className="border-border bg-surface flex gap-4 overflow-hidden rounded-xl border transition-all duration-300 hover:shadow-[0_4px_20px_rgba(0,0,0,0.12)] hover:-translate-y-0.5"
         aria-label={event.title}
       >
         {/* Thumbnail */}
@@ -135,7 +197,7 @@ function CompactEventCard({
               src={event.imageUrl}
               alt={event.title}
               fill
-              className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.06]"
               sizes="100px"
               loading="lazy"
             />
@@ -191,7 +253,6 @@ function NoImageFallback({
 }) {
   return (
     <div className="bg-muted relative flex h-full w-full items-center justify-center overflow-hidden">
-      {/* Oversized category abbreviation — theme-aware */}
       <p
         aria-hidden
         className="text-border pointer-events-none select-none font-semibold"
@@ -203,7 +264,6 @@ function NoImageFallback({
       >
         {(category ?? 'SW').slice(0, 2).toUpperCase()}
       </p>
-      {/* Thin accent rule at top */}
       <div className="bg-border absolute inset-x-0 top-0 h-[2px]" />
     </div>
   )

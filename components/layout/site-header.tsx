@@ -62,7 +62,7 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-all duration-500',
         scrolled || !isHome
-          ? 'bg-background/90 border-border/60 border-b shadow-[0_1px_0_0_var(--border)] backdrop-blur-xl'
+          ? 'glass border-b border-white/[0.08]'
           : 'bg-transparent'
       )}
     >
@@ -190,7 +190,7 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="border-border/60 bg-background/95 border-t backdrop-blur-xl md:hidden"
+            className="glass-heavy border-t border-white/[0.08] md:hidden"
           >
             <div className="mx-auto max-w-[1120px] px-5 pt-3 pb-6 sm:px-8">
               <nav className="flex flex-col gap-0.5">
