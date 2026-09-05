@@ -237,7 +237,23 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
 
 export async function getCategories() {
   return db.category.findMany({
-    select: { id: true, name: true, slug: true, color: true, imageUrl: true },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      color: true,
+      imageUrl: true,
+      _count: {
+        select: {
+          events: {
+            where: {
+              status: EventStatus.PUBLISHED,
+              startsAt: { gte: new Date() },
+            },
+          },
+        },
+      },
+    },
     orderBy: { name: 'asc' },
   })
 }
