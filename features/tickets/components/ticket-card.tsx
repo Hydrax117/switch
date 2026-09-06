@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { format } from 'date-fns'
+import { format, isPast } from 'date-fns'
 import { Calendar, MapPin, Tag, Hash, ScanLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TicketModal, type TicketModalData } from './ticket-modal'
@@ -20,6 +20,12 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; text: string; 
     dot: 'bg-emerald-400',
     text: 'text-emerald-400',
     ring: 'ring-emerald-500/30',
+  },
+  ACTIVE_PASSED: {
+    label: 'Event Passed',
+    dot: 'bg-zinc-500',
+    text: 'text-zinc-400',
+    ring: 'ring-zinc-500/20',
   },
   USED: {
     label: 'Used',
@@ -49,8 +55,15 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; text: string; 
 
 export function TicketCard({ ticket, className }: TicketCardProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const statusCfg = STATUS_CONFIG[ticket.status] ?? STATUS_CONFIG.ACTIVE
-  const isValid = ticket.status === 'ACTIVE'
+
+  // Determine effective display status:
+  // If the ticket is still ACTIVE but the event has already passed, show "Event Passed"
+  const eventEnded = isPast(ticket.event.endsAt ?? ticket.event.startsAt)
+  const displayStatusKey =
+    ticket.status === 'ACTIVE' && eventEnded ? 'ACTIVE_PASSED' : ticket.status
+
+  const statusCfg = STATUS_CONFIG[displayStatusKey] ?? STATUS_CONFIG.ACTIVE
+  const isValid = ticket.status === 'ACTIVE' && !eventEnded
   const location = ticket.event.venue
     ? `${ticket.event.venue.name}, ${ticket.event.venue.city}`
     : null

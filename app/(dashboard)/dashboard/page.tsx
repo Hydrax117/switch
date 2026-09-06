@@ -11,6 +11,8 @@ import {
 import { getOrganizerApplication } from '@/features/onboarding/queries'
 import { formatPrice } from '@/features/events/utils'
 import { format } from 'date-fns'
+import { db } from '@/lib/db'
+import { PostEventReviewPrompt } from '@/features/reviews/components/post-event-review-prompt'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -19,19 +21,57 @@ export default async function DashboardPage() {
   if (!session) redirect('/login')
 
   const isOrganizer = session.role === 'ORGANIZER' || session.role === 'ADMIN'
-  const organizer = isOrganizer ? await getOrganizerByUserId(session.userId) : null
-  const stats = organizer ? await getOrganizerStats(organizer.id) : null
-  const recentTickets = await getUserTickets(session.userId)
 
-  // For regular users — check if they have a pending application
-  const application = !isOrganizer ? await getOrganizerApplication(session.userId) : null
+  // Load user's display name and pending reviews in parallel
+  const [user, organizer, recentTickets, pendingReviewTickets, application] = await Promise.all([
+    db.user.findUnique({ where: { id: session.userId }, select: { name: true } }),
+    isOrganizer ? getOrganizerByUserId(session.userId) : Promise.resolve(null),
+    getUserTickets(session.userId),
+    // Tickets for past events where the user has not yet left a review
+    db.ticket.findMany({
+      where: {
+        userId: session.userId,
+        status: { in: ['ACTIVE', 'USED'] },
+        review: null,
+        event: {
+          status: 'COMPLETED',
+        },
+      },
+      select: {
+        id: true,
+        ticketNumber: true,
+        event: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            imageUrl: true,
+            startsAt: true,
+            endsAt: true,
+          },
+        },
+      },
+      take: 5,
+    }),
+    !isOrganizer ? getOrganizerApplication(session.userId) : Promise.resolve(null),
+  ])
+
+  const stats = organizer ? await getOrganizerStats(organizer.id) : null
+
+  // Display name: use user.name if set, otherwise fall back to email prefix
+  const displayName = user?.name?.trim() || (session.email ? session.email.split('@')[0] : null)
 
   return (
     <div className="space-y-8">
+      {/* ── Post-event review prompt ── */}
+      {pendingReviewTickets.length > 0 && (
+        <PostEventReviewPrompt tickets={pendingReviewTickets} />
+      )}
+
       {/* ── Page header ── */}
       <div>
         <h1 className="text-[22px] font-semibold tracking-tight">
-          Welcome back{session.email ? `, ${session.email.split('@')[0]}` : ''}
+          Welcome back{displayName ? `, ${displayName}` : ''}
         </h1>
         <p className="text-muted-foreground mt-1 text-[14px]">
           {isOrganizer

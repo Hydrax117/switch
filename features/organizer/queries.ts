@@ -172,6 +172,8 @@ export async function getUserTickets(userId: string, filters?: { status?: string
     slug: string
     imageUrl: string | null
     startsAt: Date
+    endsAt: Date | null
+    status: string
     venue: { id: string; name: string; city: string } | null
   }
   ticketType: {
@@ -215,6 +217,8 @@ export async function getUserTickets(userId: string, filters?: { status?: string
           slug: true,
           imageUrl: true,
           startsAt: true,
+          endsAt: true,
+          status: true,
           venue: { select: { id: true, name: true, city: true } },
         },
       },

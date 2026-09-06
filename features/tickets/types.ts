@@ -32,6 +32,8 @@ export interface EventData {
   slug: string
   imageUrl: string | null
   startsAt: Date
+  endsAt: Date | null
+  status: string
   venue: Venue | null
 }
 

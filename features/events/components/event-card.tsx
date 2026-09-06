@@ -7,7 +7,7 @@ import { useRef, useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { formatPrice, getMinPrice, isSoldOut, hasFreeTickets } from '../utils'
 import type { EventListItem } from '../types'
-import { format } from 'date-fns'
+import { format, isToday, isPast } from 'date-fns'
 
 interface EventCardProps {
   event: EventListItem
@@ -21,12 +21,14 @@ export function EventCard({ event, index = 0, variant = 'default' }: EventCardPr
   const soldOut = isSoldOut(event)
   const free = hasFreeTickets(event)
   const location = event.venue?.city ?? event.venueCity ?? null
+  const eventIsToday = isToday(event.startsAt)
+  const eventHasPassed = !eventIsToday && isPast(event.endsAt ?? event.startsAt)
 
   if (variant === 'compact') {
-    return <CompactEventCard event={event} minPrice={minPrice} soldOut={soldOut} free={free} location={location} />
+    return <CompactEventCard event={event} minPrice={minPrice} soldOut={soldOut} free={free} location={location} eventIsToday={eventIsToday} eventHasPassed={eventHasPassed} />
   }
 
-  return <SpatialEventCard event={event} index={index} minPrice={minPrice} soldOut={soldOut} free={free} location={location} />
+  return <SpatialEventCard event={event} index={index} minPrice={minPrice} soldOut={soldOut} free={free} location={location} eventIsToday={eventIsToday} eventHasPassed={eventHasPassed} />
 }
 
 // ─── Spatial (default) card ───────────────────────────────────────────────────
@@ -38,6 +40,8 @@ function SpatialEventCard({
   soldOut,
   free,
   location,
+  eventIsToday,
+  eventHasPassed,
 }: {
   event: EventListItem
   index: number
@@ -45,6 +49,8 @@ function SpatialEventCard({
   soldOut: boolean
   free: boolean
   location: string | null
+  eventIsToday: boolean
+  eventHasPassed: boolean
 }) {
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -106,21 +112,29 @@ function SpatialEventCard({
           {/* Specular shine overlay */}
           <div className="spatial-shine" aria-hidden />
 
-          {/* Status */}
-          {(soldOut || free) && (
-            <div className="absolute top-3 left-3 z-10">
-              <span
-                className={cn(
-                  'rounded-full px-2.5 py-1 text-[11px] font-medium',
-                  soldOut
-                    ? 'bg-black/60 text-white/80 backdrop-blur-sm'
-                    : 'bg-emerald-500 text-white'
-                )}
-              >
-                {soldOut ? 'Sold out' : 'Free'}
+          {/* Status badges — today / passed take priority over sold-out / free */}
+          <div className="absolute top-3 left-3 z-10 flex gap-1.5">
+            {eventIsToday && (
+              <span className="rounded-full bg-brand-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
+                Today
               </span>
-            </div>
-          )}
+            )}
+            {eventHasPassed && (
+              <span className="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white/70 backdrop-blur-sm">
+                Passed
+              </span>
+            )}
+            {!eventIsToday && !eventHasPassed && soldOut && (
+              <span className="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white/80 backdrop-blur-sm">
+                Sold out
+              </span>
+            )}
+            {!eventIsToday && !eventHasPassed && !soldOut && free && (
+              <span className="rounded-full bg-emerald-500 px-2.5 py-1 text-[11px] font-medium text-white">
+                Free
+              </span>
+            )}
+          </div>
 
           {/* Hover arrow */}
           <div className="absolute right-3 bottom-3 z-10">
@@ -146,7 +160,11 @@ function SpatialEventCard({
           </h3>
 
           <p className="text-muted-foreground text-[13px]">
-            {format(event.startsAt, 'EEE, MMM d · h:mm a')}
+            {eventIsToday
+              ? <span className="text-brand-400 font-semibold">Today</span>
+              : format(event.startsAt, 'EEE, MMM d')}
+            {!eventIsToday && <span> · {format(event.startsAt, 'h:mm a')}</span>}
+            {eventIsToday && <span className="text-muted-foreground"> · {format(event.startsAt, 'h:mm a')}</span>}
             {location && (
               <span className="before:mx-1.5 before:content-['·'] before:opacity-40">
                 {location}
@@ -155,13 +173,15 @@ function SpatialEventCard({
           </p>
 
           <p className="text-foreground pt-0.5 text-[13px] font-semibold">
-            {soldOut
-              ? <span className="text-muted-foreground line-through">Sold out</span>
-              : minPrice !== null
-                ? minPrice === 0
-                  ? 'Free'
-                  : `From ${formatPrice(minPrice)}`
-                : null}
+            {eventHasPassed
+              ? <span className="text-muted-foreground">Event passed</span>
+              : soldOut
+                ? <span className="text-muted-foreground line-through">Sold out</span>
+                : minPrice !== null
+                  ? minPrice === 0
+                    ? 'Free'
+                    : `From ${formatPrice(minPrice)}`
+                  : null}
           </p>
         </div>
       </article>
@@ -177,12 +197,16 @@ function CompactEventCard({
   soldOut,
   free,
   location,
+  eventIsToday,
+  eventHasPassed,
 }: {
   event: EventListItem
   minPrice: number | null
   soldOut: boolean
   free: boolean
   location: string | null
+  eventIsToday: boolean
+  eventHasPassed: boolean
 }) {
   return (
     <Link href={`/events/${event.slug}`} className="group block">
@@ -204,6 +228,22 @@ function CompactEventCard({
           ) : (
             <NoImageFallback category={event.category?.name} small />
           )}
+
+          {/* Today / Passed badge on thumbnail */}
+          {(eventIsToday || eventHasPassed) && (
+            <div className="absolute top-1.5 left-1.5">
+              <span
+                className={cn(
+                  'rounded-full px-1.5 py-0.5 text-[9px] font-semibold',
+                  eventIsToday
+                    ? 'bg-brand-500 text-white'
+                    : 'bg-black/60 text-white/70 backdrop-blur-sm'
+                )}
+              >
+                {eventIsToday ? 'Today' : 'Passed'}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Info */}
@@ -220,7 +260,10 @@ function CompactEventCard({
             {event.title}
           </h3>
           <p className="text-muted-foreground text-[12px]">
-            {format(event.startsAt, 'MMM d · h:mm a')}
+            {eventIsToday
+              ? <span className="text-brand-400 font-semibold">Today</span>
+              : format(event.startsAt, 'MMM d')}
+            {' · '}{format(event.startsAt, 'h:mm a')}
             {location && (
               <span className="before:mx-1 before:content-['·'] before:opacity-40">
                 {location}
@@ -228,13 +271,15 @@ function CompactEventCard({
             )}
           </p>
           <p className="text-foreground text-[12.5px] font-semibold">
-            {soldOut
-              ? <span className="text-muted-foreground">Sold out</span>
-              : minPrice !== null
-                ? minPrice === 0
-                  ? 'Free'
-                  : `From ${formatPrice(minPrice)}`
-                : null}
+            {eventHasPassed
+              ? <span className="text-muted-foreground text-[11.5px]">Event passed</span>
+              : soldOut
+                ? <span className="text-muted-foreground">Sold out</span>
+                : minPrice !== null
+                  ? minPrice === 0
+                    ? 'Free'
+                    : `From ${formatPrice(minPrice)}`
+                  : null}
           </p>
         </div>
       </article>

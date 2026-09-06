@@ -20,6 +20,8 @@ import { RelatedEvents } from '@/components/events/related-events'
 import { MobileTicketBar } from '@/components/events/mobile-ticket-bar'
 import { SectionReveal } from '@/components/events/section-reveal'
 import { EventProgramme } from '@/components/events/event-programme'
+import { EventReviewsSection } from '@/features/reviews/components/event-reviews-section'
+import { getEventReviews, getUserEventReviewStatus } from '@/features/reviews/actions'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -66,11 +68,17 @@ export default async function EventDetailPage({ params }: PageProps) {
   const isReserved = event.seatingType === 'RESERVED' || event.seatingType === 'MIXED'
   const isLoggedIn = Boolean(session)
 
-  // Fetch related events + user calendars in parallel
-  const [relatedEvents, userCalendars] = await Promise.all([
+  // Fetch related events + user calendars + reviews in parallel
+  const [relatedEvents, userCalendars, reviews, reviewStatus] = await Promise.all([
     getRelatedEvents(event.id, event.category?.id ?? null, 6),
     session ? getUserCalendars(session.userId) : Promise.resolve([]),
+    event.status === 'COMPLETED' ? getEventReviews(event.id) : Promise.resolve([]),
+    session && event.status === 'COMPLETED'
+      ? getUserEventReviewStatus(event.id)
+      : Promise.resolve({ canReview: false, hasReviewed: false, ticketId: null }),
   ])
+
+  const hasPassed = event.status === 'COMPLETED'
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
@@ -186,6 +194,17 @@ export default async function EventDetailPage({ params }: PageProps) {
               <SectionReveal>
                 <EventOrganizer organizer={event.organizer} />
               </SectionReveal>
+
+              {/* Reviews — only shown when the event has completed */}
+              {hasPassed && (
+                <SectionReveal>
+                  <EventReviewsSection
+                    reviews={reviews}
+                    pendingTicketId={reviewStatus.canReview ? reviewStatus.ticketId : null}
+                    eventTitle={event.title}
+                  />
+                </SectionReveal>
+              )}
             </div>
 
             {/* ── Right column (desktop sticky ticket panel) ─────────── */}
