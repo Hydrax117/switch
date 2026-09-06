@@ -31,7 +31,7 @@ function generateTicketNumber(): string {
 }
 
 function generateQrCode(): string {
-  return randomBytes(16).toString('hex')
+  return randomBytes(32).toString('hex')
 }
 
 export async function POST(req: NextRequest) {
@@ -176,7 +176,6 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
       userId,
       reference,
       paystackTransactionId,
-      amountPaid,
       promoCodeId,
       discountAmount,
     })
@@ -302,12 +301,18 @@ async function handleGAChargeSuccess({
       })
     }
 
-    // Increment promo code usage
+    // Atomic promo code increment — only succeeds if maxUses not yet reached.
+    // Uses a raw UPDATE with a WHERE guard to prevent race-condition over-redemption.
     if (promoCodeId) {
-      await tx.promoCode.update({
-        where: { id: promoCodeId },
-        data: { usedCount: { increment: 1 } },
-      })
+      const updated = await tx.$executeRaw`
+        UPDATE "promo_codes"
+        SET "usedCount" = "usedCount" + 1
+        WHERE "id" = ${promoCodeId}
+          AND ("maxUses" IS NULL OR "usedCount" < "maxUses")
+      `
+      if (updated === 0) {
+        throw new Error('PROMO_LIMIT_EXCEEDED')
+      }
     }
 
     await tx.reservation.update({
@@ -324,7 +329,6 @@ async function handleReservedChargeSuccess({
   userId,
   reference,
   paystackTransactionId,
-  amountPaid,
   promoCodeId,
   discountAmount,
 }: {
@@ -341,7 +345,6 @@ async function handleReservedChargeSuccess({
   userId: string
   reference: string
   paystackTransactionId: string
-  amountPaid: number
   promoCodeId: string | undefined
   discountAmount: number
 }) {
@@ -365,21 +368,25 @@ async function handleReservedChargeSuccess({
         },
       })
 
+      // Reject if ticketType is null — do not fall back to amountPaid from Paystack,
+      // as that could create a payment record with an inconsistent amount.
+      if (!eventSeat.ticketType) {
+        throw new Error(`MISSING_TICKET_TYPE:${eventSeat.id as string}`)
+      }
+      const seatPrice = eventSeat.ticketType.price
+      const seatCurrency = eventSeat.ticketType.currency
+
       await tx.payment.create({
         data: {
           ticketId: ticket.id,
           organizerId: reservation.event.organizer.id,
           userId,
           eventId: reservation.eventId,
-          amount: eventSeat.ticketType?.price ?? amountPaid,
-          currency: eventSeat.ticketType?.currency ?? 'NGN',
+          amount: seatPrice,
+          currency: seatCurrency,
           platformFeePercent: feePercent,
-          platformFeeAmount: Math.round(
-            (eventSeat.ticketType?.price ?? amountPaid) * (feePercent / 100)
-          ),
-          netAmount:
-            (eventSeat.ticketType?.price ?? amountPaid) -
-            Math.round((eventSeat.ticketType?.price ?? amountPaid) * (feePercent / 100)),
+          platformFeeAmount: Math.round(seatPrice * (feePercent / 100)),
+          netAmount: seatPrice - Math.round(seatPrice * (feePercent / 100)),
           status: PaymentStatus.SUCCESS,
           paystackReference: reference,
           paystackTransactionId,
@@ -402,11 +409,17 @@ async function handleReservedChargeSuccess({
       }
     }
 
+    // Atomic promo code increment — only succeeds if maxUses not yet reached.
     if (promoCodeId) {
-      await tx.promoCode.update({
-        where: { id: promoCodeId },
-        data: { usedCount: { increment: 1 } },
-      })
+      const updated = await tx.$executeRaw`
+        UPDATE "promo_codes"
+        SET "usedCount" = "usedCount" + 1
+        WHERE "id" = ${promoCodeId}
+          AND ("maxUses" IS NULL OR "usedCount" < "maxUses")
+      `
+      if (updated === 0) {
+        throw new Error('PROMO_LIMIT_EXCEEDED')
+      }
     }
 
     await tx.reservation.update({

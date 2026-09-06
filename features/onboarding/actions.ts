@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
+import { encryptNin } from '@/lib/nin-encryption'
 import { submitApplicationSchema } from './schemas'
 
 type ActionResult<T = void> = { success: true; data: T } | { success: false; error: string }
@@ -58,6 +59,10 @@ export async function submitOrganizerApplication(
     websiteUrl,
   } = parsed.data
 
+  // Encrypt NIN at rest — only the ciphertext is stored in the DB.
+  // Decryption happens only when an admin explicitly reviews the application.
+  const encryptedNin = encryptNin(nin)
+
   let application
 
   if (existing) {
@@ -67,7 +72,7 @@ export async function submitOrganizerApplication(
       data: {
         organizerName,
         bio,
-        nin,
+        nin: encryptedNin,
         idType,
         idDocUrl,
         instagramUrl,
@@ -87,7 +92,7 @@ export async function submitOrganizerApplication(
         userId: session.userId,
         organizerName,
         bio,
-        nin,
+        nin: encryptedNin,
         idType,
         idDocUrl,
         instagramUrl,

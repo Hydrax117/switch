@@ -41,6 +41,10 @@ const serverSchema = z.object({
   /// Default platform fee percentage, e.g. "4" for 4%
   PLATFORM_FEE_PERCENT: z.coerce.number().min(0).max(100).default(4),
 
+  // NIN encryption (KYC applications)
+  // Generate: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+  NIN_ENCRYPTION_KEY: z.string().length(64, 'NIN_ENCRYPTION_KEY must be 64 hex characters').optional(),
+
   // App
   NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL').optional(),
 })

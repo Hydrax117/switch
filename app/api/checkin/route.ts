@@ -22,9 +22,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
 import { verifyScanPin } from '@/lib/scan-pin'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { TicketStatus } from '@/app/generated/prisma/client'
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 60 checkin attempts per minute per IP to prevent QR brute-forcing
+  const ip = getClientIp(req.headers)
+  const rl = await rateLimit(`checkin:ip:${ip}`, { limit: 60, windowMs: 60_000 })
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please slow down.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) },
+      }
+    )
+  }
+
   const body = await req.json().catch(() => null)
   const qrCode   = body?.qrCode   as string | undefined
   const eventId  = body?.eventId  as string | undefined

@@ -18,6 +18,7 @@ import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
 import { paystack } from '@/lib/paystack'
 import { sendTicketConfirmationEmail } from '@/lib/email'
+import { rateLimit } from '@/lib/rate-limit'
 import { randomBytes } from 'crypto'
 import { z } from 'zod'
 import { ReservationStatus, TicketStatus } from '@/app/generated/prisma/client'
@@ -56,6 +57,18 @@ function calcDiscount(
 export async function POST(req: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+
+  // Rate limit: 10 payment initializations per minute per user
+  const rl = await rateLimit(`pay-init:user:${session.userId}`, { limit: 10, windowMs: 60_000 })
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait before trying again.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) },
+      }
+    )
+  }
 
   const rawBody = await req.json().catch(() => null)
   const parsed = bodySchema.safeParse(rawBody)
@@ -223,7 +236,7 @@ export async function POST(req: NextRequest) {
         for (let i = 0; i < sel.quantity; i++) {
           const year = new Date().getFullYear()
           const ticketNumber = `SWT-${year}-${randomBytes(3).toString('hex').toUpperCase()}`
-          const qrCode = randomBytes(16).toString('hex')
+          const qrCode = randomBytes(32).toString('hex')
 
           await tx.ticket.create({
             data: {

@@ -20,15 +20,23 @@ function createRedisClient(): Redis {
     throw new Error('REDIS_URL is not set. Redis is required for seat locking.')
   }
 
-  // Upstash uses TLS (rediss://) — allow their shared certificate
+  // Upstash uses TLS (rediss://) — use SNI hostname pinning instead of
+  // disabling certificate validation entirely
   const isTls = url.startsWith('rediss://')
+  let tlsHostname: string | undefined
+  if (isTls) {
+    try {
+      tlsHostname = new URL(url).hostname
+    } catch {
+      // malformed URL — fall through without SNI
+    }
+  }
 
   const client = new Redis(url, {
     maxRetriesPerRequest: 3,
     lazyConnect: true,
     enableOfflineQueue: false,
-    // Required for Upstash: their TLS cert is on a shared *.upstash.io domain
-    ...(isTls && { tls: { rejectUnauthorized: false } }),
+    ...(isTls && tlsHostname ? { tls: { servername: tlsHostname } } : {}),
   })
 
   client.on('error', (err) => {

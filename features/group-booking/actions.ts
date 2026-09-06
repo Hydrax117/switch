@@ -45,7 +45,8 @@ function generateTicketNumber(): string {
 }
 
 function generateQrCode(): string {
-  return randomBytes(16).toString('hex')
+  // 32 bytes = 64 hex chars — consistent with submitRsvp and crypto-utils
+  return randomBytes(32).toString('hex')
 }
 
 // ─── Create a group order ─────────────────────────────────────────────────────

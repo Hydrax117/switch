@@ -51,8 +51,8 @@ function generateTicketNumber(): string {
 }
 
 function generateQrCode(): string {
-  // Opaque token — the backend verifies this, never exposing user data in the QR
-  return randomBytes(16).toString('hex')
+  // 32 bytes = 64 hex chars — consistent with submitRsvp, group-booking, and crypto-utils
+  return randomBytes(32).toString('hex')
 }
 
 /**
@@ -366,8 +366,9 @@ export async function reserveGATickets(input: unknown): Promise<ReserveSeatsResu
 }
 
 // ─── Confirm order (post-payment) ────────────────────────────────────────────
-// In production this would be called from a payment webhook, not directly.
-// For now it's called directly to complete the flow (payment integration TBD).
+// Called after a successful Paystack payment to finalise a reserved-seat order.
+// Requires a verified Payment record (created by the Paystack webhook) to exist
+// for this reservation — prevents ticket issuance without confirmed payment.
 
 export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> {
   const session = await getSession()
@@ -389,7 +390,7 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
           seat: { select: { id: true } },
         },
       },
-      event: { select: { id: true, slug: true, title: true, startsAt: true } },
+      event: { select: { id: true, slug: true, title: true, startsAt: true, isFree: true } },
     },
   })
 
@@ -400,6 +401,23 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
   }
   if (new Date(reservation.expiresAt) < new Date()) {
     return { success: false, error: 'Reservation has expired' }
+  }
+
+  // Payment guard — for paid events, require at least one SUCCESS payment
+  // created by the Paystack webhook for this reservation's event + user.
+  // Free events (isFree = true) skip this check.
+  if (!reservation.event.isFree) {
+    const verifiedPayment = await db.payment.findFirst({
+      where: {
+        userId,
+        eventId: reservation.eventId,
+        status: 'SUCCESS',
+      },
+      select: { id: true },
+    })
+    if (!verifiedPayment) {
+      return { success: false, error: 'No verified payment found for this reservation' }
+    }
   }
 
   try {

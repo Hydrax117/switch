@@ -57,6 +57,30 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(self), microphone=(), geolocation=()',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              // Scripts: self + inline (Next.js requires unsafe-inline for hydration) + Paystack
+              "script-src 'self' 'unsafe-inline' https://js.paystack.co",
+              // Styles: self + inline (Tailwind inlines critical CSS)
+              "style-src 'self' 'unsafe-inline'",
+              // Images: self, data URIs, and all configured CDN/storage domains
+              "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co https://images.unsplash.com https://avatars.githubusercontent.com https://*.s3.amazonaws.com https://*.cloudfront.net https://utfs.io",
+              // Fonts served from self
+              "font-src 'self'",
+              // API calls: self + Paystack
+              "connect-src 'self' https://api.paystack.co https://*.supabase.co",
+              // Paystack checkout iframe
+              "frame-src https://checkout.paystack.com",
+              // Workers / service workers
+              "worker-src 'self' blob:",
+              // No plugins
+              "object-src 'none'",
+              // Upgrade insecure requests in production
+              ...(process.env.NODE_ENV === 'production' ? ['upgrade-insecure-requests'] : []),
+            ].join('; '),
+          },
         ],
       },
     ]
