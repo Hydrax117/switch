@@ -71,8 +71,8 @@ const nextConfig: NextConfig = {
               "font-src 'self'",
               // API calls: self + Paystack
               "connect-src 'self' https://api.paystack.co https://*.supabase.co",
-              // Paystack checkout iframe
-              "frame-src https://checkout.paystack.com",
+              // Paystack checkout iframe + Google Maps embed
+              "frame-src https://checkout.paystack.com https://maps.google.com https://www.google.com",
               // Workers / service workers
               "worker-src 'self' blob:",
               // No plugins
