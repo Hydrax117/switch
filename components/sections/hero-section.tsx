@@ -4,8 +4,23 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useReducedMotion } from 'framer-motion'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { EventListItem } from '@/features/events/types'
+
+// ─── Viewport hook ────────────────────────────────────────────────────────────
+// Returns true once mounted AND viewport width >= breakpoint.
+// Defaults to true (desktop-first) to avoid layout shift on SSR.
+function useIsDesktop(breakpoint = 1024): boolean {
+  const [isDesktop, setIsDesktop] = useState(true)
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${breakpoint}px)`)
+    setIsDesktop(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [breakpoint])
+  return isDesktop
+}
 
 // ─── Particle data ────────────────────────────────────────────────────────────
 // Hardcoded so they're SSR-safe and don't shift between renders.
@@ -107,7 +122,8 @@ function Poster({
   rotation = '0deg',
   priority = false,
   delay = 0,
-}: PosterSlot & { event: EventListItem | undefined; delay?: number }) {
+  loadImage = true,
+}: PosterSlot & { event: EventListItem | undefined; delay?: number; loadImage?: boolean }) {
   const shouldReduce = useReducedMotion()
   const [hovered, setHovered] = useState(false)
 
@@ -140,7 +156,8 @@ function Poster({
           transition: 'transform 280ms cubic-bezier(0.16,1,0.3,1), box-shadow 280ms ease',
         }}
       >
-        {event.imageUrl ? (
+        {/* Only fetch/render the image on desktop — saves bandwidth on mobile */}
+        {loadImage && event.imageUrl ? (
           <Image
             src={event.imageUrl}
             alt=""
@@ -183,6 +200,7 @@ function Poster({
 
 export function HeroSection({ events }: HeroSectionProps) {
   const shouldReduce = useReducedMotion()
+  const isDesktop = useIsDesktop(1024) // lg breakpoint — matches the hidden lg:block on desktop slots
 
   const nextEvent = events[0]
 
@@ -296,7 +314,7 @@ export function HeroSection({ events }: HeroSectionProps) {
 
       {/* ── Desktop posters ── */}
       {DESKTOP_SLOTS.map((slot, i) => (
-        <Poster key={i} {...slot} event={events[slot.eventIndex]} delay={i * 55} />
+        <Poster key={i} {...slot} event={events[slot.eventIndex]} delay={i * 55} loadImage={isDesktop} />
       ))}
 
       {/* ── Mobile posters — hidden on lg+ ── */}
@@ -307,6 +325,7 @@ export function HeroSection({ events }: HeroSectionProps) {
           event={events[slot.eventIndex]}
           delay={350 + i * 75}
           className={slot.className + ' lg:hidden'}
+          loadImage={false}
         />
       ))}
 
