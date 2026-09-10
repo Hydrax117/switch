@@ -434,6 +434,19 @@ h6 {
   animation: heroFade 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ─── Hero particle dot pulse ────────────────────────────────────────────────
+   Slow breathing animation for the floating dot particles in the hero.
+   Applied via .hero-dot-pulse class; reduced-motion guard disables it below.
+   ─────────────────────────────────────────────────────────────────────────── */
+@keyframes heroDotPulse {
+  0%, 100% { opacity: var(--dot-opacity, 0.22); transform: scale(1); }
+  50%       { opacity: calc(var(--dot-opacity, 0.22) * 0.4); transform: scale(1.5); }
+}
+
+.hero-dot-pulse {
+  animation: heroDotPulse 4s ease-in-out infinite;
+}
+
 /* ─── Respect reduced motion ─────────────────────────────────────────────────*/
 @media (prefers-reduced-motion: reduce) {
   .poster-fade-in,
@@ -441,5 +454,9 @@ h6 {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .hero-dot-pulse {
+    animation: none !important;
   }
 }

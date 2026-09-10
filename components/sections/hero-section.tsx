@@ -7,6 +7,63 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import { useState } from 'react'
 import type { EventListItem } from '@/features/events/types'
 
+// ─── Particle data ────────────────────────────────────────────────────────────
+// Hardcoded so they're SSR-safe and don't shift between renders.
+// top/left are percentages; size is px; opacity is base opacity; pulse = true
+// means the dot gets the slow breathing animation.
+
+interface ParticleDot {
+  top: number
+  left: number
+  size: number
+  opacity: number
+  pulse?: boolean
+  delay?: number // animation-delay in seconds
+}
+
+const PARTICLES: ParticleDot[] = [
+  // left zone — near the red/orange blob
+  { top: 8,  left: 4,  size: 2,   opacity: 0.30, pulse: true,  delay: 0    },
+  { top: 22, left: 9,  size: 1.5, opacity: 0.18                            },
+  { top: 38, left: 3,  size: 2.5, opacity: 0.22, pulse: true,  delay: 1.2  },
+  { top: 55, left: 11, size: 1,   opacity: 0.14                            },
+  { top: 68, left: 6,  size: 2,   opacity: 0.25, pulse: true,  delay: 2.4  },
+  { top: 80, left: 2,  size: 1.5, opacity: 0.16                            },
+  { top: 14, left: 18, size: 1,   opacity: 0.20                            },
+  { top: 45, left: 20, size: 2,   opacity: 0.28, pulse: true,  delay: 0.8  },
+  { top: 72, left: 16, size: 1.5, opacity: 0.18                            },
+  { top: 90, left: 12, size: 2,   opacity: 0.20, pulse: true,  delay: 3.1  },
+
+  // center-left
+  { top: 5,  left: 28, size: 1,   opacity: 0.15                            },
+  { top: 30, left: 32, size: 2,   opacity: 0.22, pulse: true,  delay: 1.8  },
+  { top: 62, left: 35, size: 1.5, opacity: 0.18                            },
+  { top: 85, left: 25, size: 2.5, opacity: 0.24, pulse: true,  delay: 0.4  },
+
+  // center — sparse (let the copy breathe)
+  { top: 10, left: 48, size: 1,   opacity: 0.12                            },
+  { top: 88, left: 50, size: 1.5, opacity: 0.16                            },
+  { top: 3,  left: 55, size: 2,   opacity: 0.20, pulse: true,  delay: 2.0  },
+
+  // center-right
+  { top: 7,  left: 65, size: 1,   opacity: 0.15                            },
+  { top: 35, left: 68, size: 2,   opacity: 0.22, pulse: true,  delay: 1.5  },
+  { top: 60, left: 62, size: 1.5, opacity: 0.18                            },
+  { top: 82, left: 70, size: 2.5, opacity: 0.24, pulse: true,  delay: 3.5  },
+
+  // right zone — near the purple blob
+  { top: 12, left: 78, size: 2,   opacity: 0.28, pulse: true,  delay: 0.6  },
+  { top: 25, left: 85, size: 1.5, opacity: 0.20                            },
+  { top: 42, left: 92, size: 2,   opacity: 0.30, pulse: true,  delay: 1.0  },
+  { top: 58, left: 80, size: 1,   opacity: 0.16                            },
+  { top: 70, left: 88, size: 2.5, opacity: 0.24, pulse: true,  delay: 2.7  },
+  { top: 84, left: 96, size: 1.5, opacity: 0.18                            },
+  { top: 18, left: 74, size: 1,   opacity: 0.14                            },
+  { top: 50, left: 90, size: 2,   opacity: 0.22, pulse: true,  delay: 0.2  },
+  { top: 93, left: 82, size: 1.5, opacity: 0.20                            },
+  { top: 6,  left: 97, size: 2,   opacity: 0.26, pulse: true,  delay: 3.8  },
+]
+
 interface HeroSectionProps {
   events: EventListItem[]
   categories: { id: string; name: string; slug: string }[]
@@ -127,15 +184,44 @@ function Poster({
 export function HeroSection({ events }: HeroSectionProps) {
   const shouldReduce = useReducedMotion()
 
-  // Find the next upcoming event for the teaser
   const nextEvent = events[0]
 
   return (
     <section
       className="relative overflow-hidden pt-[60px]"
-      style={{ backgroundColor: '#0D0D0D', minHeight: 'clamp(540px, 85svh, 780px)' }}
+      style={{ backgroundColor: '#08080f', minHeight: 'clamp(540px, 85svh, 780px)' }}
       aria-label="SWITCH — Discover events"
     >
+      {/* ── Red/orange blob — left ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute z-[0]"
+        style={{
+          top: '-10%',
+          left: '-15%',
+          width: '70%',
+          height: '110%',
+          background:
+            'radial-gradient(ellipse at 35% 45%, rgba(192,40,10,0.72) 0%, rgba(120,20,0,0.45) 35%, transparent 70%)',
+          filter: 'blur(8px)',
+        }}
+      />
+
+      {/* ── Purple/violet blob — right ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute z-[0]"
+        style={{
+          top: '-15%',
+          right: '-15%',
+          width: '65%',
+          height: '110%',
+          background:
+            'radial-gradient(ellipse at 65% 40%, rgba(109,40,217,0.68) 0%, rgba(60,10,130,0.42) 38%, transparent 70%)',
+          filter: 'blur(8px)',
+        }}
+      />
+
       {/* ── Grain texture ── */}
       <div
         aria-hidden
@@ -145,28 +231,62 @@ export function HeroSection({ events }: HeroSectionProps) {
             "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E\")",
           backgroundRepeat: 'repeat',
           backgroundSize: '256px 256px',
-          opacity: 0.035,
+          opacity: 0.045,
           mixBlendMode: 'overlay',
+        }}
+      />
+
+      {/* ── Particles ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[2]"
+      >
+        {PARTICLES.map((dot, i) => (
+          <span
+            key={i}
+            className={dot.pulse && !shouldReduce ? 'hero-dot-pulse' : undefined}
+            style={{
+              position: 'absolute',
+              top: `${dot.top}%`,
+              left: `${dot.left}%`,
+              width: dot.size,
+              height: dot.size,
+              borderRadius: '50%',
+              backgroundColor: '#ffffff',
+              opacity: dot.opacity,
+              animationDelay: dot.delay != null ? `${dot.delay}s` : undefined,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* ── Center darkening vignette — keeps copy readable ── */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[3]"
+        style={{
+          background:
+            'radial-gradient(ellipse 60% 70% at 50% 45%, rgba(8,8,15,0.55) 0%, transparent 100%)',
         }}
       />
 
       {/* ── Edge vignette ── */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[2]"
+        className="pointer-events-none absolute inset-0 z-[3]"
         style={{
           background:
-            'radial-gradient(ellipse 75% 80% at 50% 45%, transparent 25%, rgba(13,13,13,0.75) 100%)',
+            'radial-gradient(ellipse 90% 90% at 50% 50%, transparent 40%, rgba(8,8,15,0.82) 100%)',
         }}
       />
 
       {/* ── Bottom fade ── */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-[3]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[4]"
         style={{
-          height: '120px',
-          background: 'linear-gradient(to bottom, transparent 0%, #0D0D0D 100%)',
+          height: '140px',
+          background: 'linear-gradient(to bottom, transparent 0%, #08080f 100%)',
         }}
       />
 
@@ -188,12 +308,16 @@ export function HeroSection({ events }: HeroSectionProps) {
 
       {/* ── Central copy ── */}
       <div className="relative z-[10] flex h-full flex-col items-center justify-center px-5 py-20 text-center sm:py-24 lg:py-28">
-        {/* Wordmark */}
+
+        {/* Bracketed eyebrow label */}
         <p
-          className="hero-fade mb-6 text-[10px] font-semibold tracking-[0.22em] text-white/35 uppercase sm:mb-7 sm:text-[11px]"
-          style={{ animationDelay: shouldReduce ? undefined : '60ms' }}
+          className="hero-fade mb-5 text-[10px] font-semibold tracking-[0.28em] uppercase sm:mb-6 sm:text-[11px]"
+          style={{
+            color: 'rgba(251,146,60,0.55)',
+            animationDelay: shouldReduce ? undefined : '60ms',
+          }}
         >
-          SWITCH
+          [ DISCOVER EVENTS ]
         </p>
 
         {/* Headline */}
@@ -208,7 +332,7 @@ export function HeroSection({ events }: HeroSectionProps) {
           }}
         >
           Something worth{' '}
-          <span style={{ color: '#818cf8' }}>going to</span>{' '}
+          <span style={{ color: '#c084fc' }}>going&nbsp;to</span>{' '}
           is happening.
         </h1>
 
@@ -216,7 +340,7 @@ export function HeroSection({ events }: HeroSectionProps) {
         <p
           className="hero-fade mt-4 text-[14px] leading-relaxed text-white/50 sm:mt-5 sm:text-[16px]"
           style={{
-            maxWidth: '36ch',
+            maxWidth: '38ch',
             animationDelay: shouldReduce ? undefined : '220ms',
           }}
         >
@@ -228,16 +352,20 @@ export function HeroSection({ events }: HeroSectionProps) {
           className="hero-fade mt-7 flex flex-wrap items-center justify-center gap-3 sm:mt-8"
           style={{ animationDelay: shouldReduce ? undefined : '300ms' }}
         >
+          {/* Primary — warm orange, matching the GrantFox reference energy */}
           <Link
             href="/events"
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-5 text-[13px] font-semibold text-black transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-11 sm:px-6 sm:text-[13.5px]"
+            className="inline-flex h-10 items-center gap-2 rounded-full px-6 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400 sm:h-11 sm:px-7 sm:text-[13.5px]"
+            style={{ background: 'linear-gradient(135deg, #e8430a 0%, #c0280a 100%)' }}
           >
             Explore Events
             <ArrowRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
+
+          {/* Secondary — dark pill with subtle border */}
           <Link
             href="/dashboard/events/new"
-            className="inline-flex h-10 items-center rounded-xl border border-white/25 px-5 text-[13px] font-medium text-white/75 transition-colors hover:border-white/40 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-11 sm:px-6 sm:text-[13.5px]"
+            className="inline-flex h-10 items-center rounded-full border border-white/20 bg-white/5 px-6 text-[13px] font-medium text-white/75 backdrop-blur-sm transition-colors hover:border-white/35 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-11 sm:px-7 sm:text-[13.5px]"
           >
             Create an Event
           </Link>
