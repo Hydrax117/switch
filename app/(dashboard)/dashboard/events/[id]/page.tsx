@@ -164,17 +164,38 @@ export default async function ManageEventPage({ params }: PageProps) {
 
       {/* ── Seat configuration (RESERVED / MIXED only) ── */}
       {event.seatingType !== 'GENERAL_ADMISSION' && (
-        <SeatingManager
-          eventId={event.id}
-          seatingType={event.seatingType}
-          ticketTypes={event.ticketTypes.map((tt) => ({
-            id: tt.id,
-            name: tt.name,
-            price: tt.price,
-            currency: tt.currency,
-          }))}
-          initialConfig={seatConfig}
-        />
+        <>
+          <SeatingManager
+            eventId={event.id}
+            seatingType={event.seatingType}
+            ticketTypes={event.ticketTypes.map((tt) => ({
+              id: tt.id,
+              name: tt.name,
+              price: tt.price,
+              currency: tt.currency,
+            }))}
+            initialConfig={seatConfig}
+          />
+          {/* Visual seat map editor — only shown when a seat config exists */}
+          {seatConfig && (
+            <div className="border-border bg-surface rounded-2xl border p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-[14px] font-semibold">Visual Seat Map Editor</h2>
+                  <p className="text-muted-foreground mt-0.5 text-[12px]">
+                    Drag sections, block individual seats, and assign seat types on a live canvas.
+                  </p>
+                </div>
+                <Link
+                  href={`/dashboard/events/${event.id}/seat-map/edit`}
+                  className="from-brand-600 flex items-center gap-1.5 rounded-lg bg-gradient-to-r to-violet-600 px-3.5 py-2 text-[12.5px] font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  Open visual editor
+                </Link>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Promo codes ── */}
