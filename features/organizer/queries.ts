@@ -686,6 +686,86 @@ export async function getEventInventory(
   }
 }
 
+// ─── Get full event detail for organizer preview (bypasses PUBLISHED filter) ──
+
+export async function getEventPreview(
+  eventId: string,
+  organizerId: string
+) {
+  // First fetch to get the id (needed for the nested eventSeats where-clause)
+  const stub = await db.event.findUnique({
+    where: { id: eventId, organizerId },
+    select: { id: true },
+  })
+  if (!stub) return null
+
+  return db.event.findUnique({
+    where: { id: stub.id },
+    include: {
+      organizer: {
+        select: { id: true, name: true, slug: true, logoUrl: true },
+      },
+      venue: {
+        select: { id: true, name: true, address: true, city: true, state: true, country: true },
+      },
+      category: {
+        select: { id: true, name: true, slug: true, color: true },
+      },
+      ticketTypes: {
+        where: { status: { not: 'INACTIVE' } },
+        orderBy: { price: 'asc' },
+      },
+      speakers: {
+        orderBy: { position: 'asc' },
+        select: { id: true, name: true, role: true, avatarUrl: true, position: true },
+      },
+      images: {
+        select: { id: true, url: true, position: true },
+        orderBy: { position: 'asc' },
+      },
+      seatMap: {
+        include: {
+          sections: {
+            orderBy: { name: 'asc' },
+            include: {
+              rows: {
+                orderBy: [{ position: 'asc' }, { label: 'asc' }],
+                include: {
+                  seats: {
+                    orderBy: [{ number: 'asc' }, { label: 'asc' }],
+                    include: {
+                      eventSeats: {
+                        where: { eventId: stub.id },
+                        select: { id: true, status: true, price: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      _count: {
+        select: { tickets: true, eventSeats: true },
+      },
+      scheduleItems: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          hostName: true,
+          speakerId: true,
+          startsAt: true,
+          endsAt: true,
+          position: true,
+        },
+        orderBy: { position: 'asc' },
+      },
+    },
+  })
+}
+
 // ─── Get event schedule items ─────────────────────────────────────────────────
 
 export async function getEventScheduleItems(eventId: string) {

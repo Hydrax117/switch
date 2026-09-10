@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ExternalLink, ChevronLeft, Wifi, Gift, ScanLine } from 'lucide-react'
+import { ExternalLink, ChevronLeft, Wifi, Gift, ScanLine, Eye } from 'lucide-react'
 import { getSession } from '@/lib/session'
 import {
   getOrganizerByUserId,
@@ -106,6 +106,13 @@ export default async function ManageEventPage({ params }: PageProps) {
           >
             <ScanLine className="h-3.5 w-3.5" />
             Check-in Scanner
+          </Link>
+          <Link
+            href={`/dashboard/events/${event.id}/preview`}
+            className="border-border hover:bg-muted flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition-colors"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Preview
           </Link>
           <Link
             href={`/events/${event.slug}`}
