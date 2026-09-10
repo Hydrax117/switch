@@ -45,16 +45,16 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
   return (
     <header
       ref={headerRef}
-      className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-8 sm:pt-5"
+      className="fixed inset-x-0 top-0 z-50 flex justify-center px-3 pt-3 sm:px-8 sm:pt-5"
       style={{ pointerEvents: 'none' }}
     >
       {/* ── Floating pill ── */}
       <div
         style={{ pointerEvents: 'auto' }}
         className={cn(
-          'flex w-full max-w-[860px] items-center justify-between rounded-full px-3 py-2 transition-opacity duration-500',
-          'bg-black/40 backdrop-blur-xl',
-          'border border-white/[0.12]',
+          'flex w-full max-w-[860px] items-center justify-between rounded-full px-3 py-2.5 sm:py-2 transition-opacity duration-500',
+          'bg-black/50 backdrop-blur-xl sm:bg-black/40',
+          'border border-white/[0.14]',
           'shadow-[0_4px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]',
           mounted ? 'opacity-100' : 'opacity-0'
         )}
@@ -62,10 +62,10 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
         {/* ── Logo ── */}
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-full pl-1 pr-3 transition-opacity hover:opacity-80"
+          className="flex items-center gap-2.5 rounded-full pl-1.5 pr-3 transition-opacity hover:opacity-80"
         >
           <LogoMark />
-          <span className="text-[13px] font-semibold tracking-tight text-white">
+          <span className="text-[14px] font-bold tracking-tight text-white sm:text-[13px] sm:font-semibold">
             SWITCH
           </span>
         </Link>

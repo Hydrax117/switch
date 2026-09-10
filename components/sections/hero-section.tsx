@@ -92,9 +92,9 @@ const DESKTOP_SLOTS: PosterSlot[] = [
 ]
 
 const MOBILE_SLOTS: PosterSlot[] = [
-  { eventIndex: 0, w: 120, h: 158, className: 'absolute left-[3%]  bottom-[5%]', rotation: '-1.5deg' },
-  { eventIndex: 1, w: 105, h: 138, className: 'absolute left-[36%] bottom-[3%]', rotation: '1deg' },
-  { eventIndex: 2, w: 112, h: 148, className: 'absolute right-[3%] bottom-[6%]', rotation: '1.5deg' },
+  { eventIndex: 0, w: 130, h: 172, className: 'absolute left-[-2%] bottom-[-4%]',  rotation: '-2deg' },
+  { eventIndex: 1, w: 118, h: 156, className: 'absolute left-[30%] bottom-[-6%]',  rotation: '1deg'  },
+  { eventIndex: 2, w: 124, h: 164, className: 'absolute right-[-2%] bottom-[-4%]', rotation: '2deg'  },
 ]
 
 // ─── Poster ───────────────────────────────────────────────────────────────────
@@ -188,8 +188,8 @@ export function HeroSection({ events }: HeroSectionProps) {
 
   return (
     <section
-      className="relative overflow-hidden pt-[104px]"
-      style={{ backgroundColor: '#08080f', minHeight: 'clamp(540px, 85svh, 780px)' }}
+      className="relative overflow-hidden pt-[88px] sm:pt-[104px]"
+      style={{ backgroundColor: '#08080f', minHeight: 'clamp(620px, 92svh, 820px)' }}
       aria-label="SWITCH — Discover events"
     >
       {/* ── Red/orange blob — left ── */}
@@ -311,26 +311,26 @@ export function HeroSection({ events }: HeroSectionProps) {
       ))}
 
       {/* ── Central copy ── */}
-      <div className="relative z-[10] flex h-full flex-col items-center justify-center px-5 py-20 text-center sm:py-24 lg:py-28">
+      <div className="relative z-[10] flex h-full flex-col items-center justify-center px-5 py-16 text-center sm:py-24 lg:py-28">
 
         {/* Bracketed eyebrow label */}
         <p
-          className="hero-fade mb-5 text-[10px] font-semibold tracking-[0.28em] uppercase sm:mb-6 sm:text-[11px]"
+          className="hero-fade mb-4 text-[10px] font-semibold tracking-[0.28em] uppercase sm:mb-6 sm:text-[11px]"
           style={{
-            color: 'rgba(251,146,60,0.55)',
+            color: 'rgba(251,146,60,0.65)',
             animationDelay: shouldReduce ? undefined : '60ms',
           }}
         >
           [ DISCOVER EVENTS ]
         </p>
 
-        {/* Headline */}
+        {/* Headline — bigger on mobile */}
         <h1
-          className="hero-fade mx-auto font-semibold text-white"
+          className="hero-fade mx-auto font-bold text-white"
           style={{
-            maxWidth: '13ch',
-            fontSize: 'clamp(36px, 6.5vw, 76px)',
-            lineHeight: 1.05,
+            maxWidth: '12ch',
+            fontSize: 'clamp(44px, 10vw, 76px)',
+            lineHeight: 1.02,
             letterSpacing: '-0.04em',
             animationDelay: shouldReduce ? undefined : '140ms',
           }}
@@ -342,34 +342,32 @@ export function HeroSection({ events }: HeroSectionProps) {
 
         {/* Subtext */}
         <p
-          className="hero-fade mt-4 text-[14px] leading-relaxed text-white/50 sm:mt-5 sm:text-[16px]"
+          className="hero-fade mt-4 text-[15px] leading-relaxed text-white/55 sm:mt-5 sm:text-[16px]"
           style={{
-            maxWidth: '38ch',
+            maxWidth: '34ch',
             animationDelay: shouldReduce ? undefined : '220ms',
           }}
         >
           Concerts, comedy, culture, sports and more — all on SWITCH.
         </p>
 
-        {/* CTAs */}
+        {/* CTAs — stacked full-width on mobile, side-by-side on sm+ */}
         <div
-          className="hero-fade mt-7 flex flex-wrap items-center justify-center gap-3 sm:mt-8"
+          className="hero-fade mt-7 flex w-full max-w-[320px] flex-col gap-3 sm:mt-8 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center"
           style={{ animationDelay: shouldReduce ? undefined : '300ms' }}
         >
-          {/* Primary — warm orange, matching the GrantFox reference energy */}
           <Link
             href="/events"
-            className="inline-flex h-10 items-center gap-2 rounded-full px-6 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400 sm:h-11 sm:px-7 sm:text-[13.5px]"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400 sm:h-11 sm:w-auto sm:px-7 sm:text-[13.5px]"
             style={{ background: 'linear-gradient(135deg, #e8430a 0%, #c0280a 100%)' }}
           >
             Explore Events
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
 
-          {/* Secondary — dark pill with subtle border */}
           <Link
             href="/dashboard/events/new"
-            className="inline-flex h-10 items-center rounded-full border border-white/20 bg-white/5 px-6 text-[13px] font-medium text-white/75 backdrop-blur-sm transition-colors hover:border-white/35 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-11 sm:px-7 sm:text-[13.5px]"
+            className="flex h-12 w-full items-center justify-center rounded-full border border-white/20 bg-white/8 text-[15px] font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-white/35 hover:bg-white/12 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-11 sm:w-auto sm:px-7 sm:text-[13.5px]"
           >
             Create an Event
           </Link>
