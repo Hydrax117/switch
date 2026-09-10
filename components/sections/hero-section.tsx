@@ -23,45 +23,45 @@ interface ParticleDot {
 
 const PARTICLES: ParticleDot[] = [
   // left zone — near the red/orange blob
-  { top: 8,  left: 4,  size: 3,   opacity: 0.55, pulse: true,  delay: 0    },
-  { top: 22, left: 9,  size: 2,   opacity: 0.35                            },
-  { top: 38, left: 3,  size: 3.5, opacity: 0.45, pulse: true,  delay: 1.2  },
-  { top: 55, left: 11, size: 1.5, opacity: 0.28                            },
-  { top: 68, left: 6,  size: 3,   opacity: 0.50, pulse: true,  delay: 2.4  },
-  { top: 80, left: 2,  size: 2,   opacity: 0.32                            },
-  { top: 14, left: 18, size: 1.5, opacity: 0.38                            },
-  { top: 45, left: 20, size: 3,   opacity: 0.52, pulse: true,  delay: 0.8  },
-  { top: 72, left: 16, size: 2,   opacity: 0.35                            },
-  { top: 90, left: 12, size: 3,   opacity: 0.42, pulse: true,  delay: 3.1  },
+  { top: 8,  left: 4,  size: 6,  opacity: 0.90, pulse: true,  delay: 0    },
+  { top: 22, left: 9,  size: 4,  opacity: 0.75                            },
+  { top: 38, left: 3,  size: 7,  opacity: 0.85, pulse: true,  delay: 1.2  },
+  { top: 55, left: 11, size: 3,  opacity: 0.65                            },
+  { top: 68, left: 6,  size: 6,  opacity: 0.88, pulse: true,  delay: 2.4  },
+  { top: 80, left: 2,  size: 4,  opacity: 0.70                            },
+  { top: 14, left: 18, size: 3,  opacity: 0.72                            },
+  { top: 45, left: 20, size: 6,  opacity: 0.90, pulse: true,  delay: 0.8  },
+  { top: 72, left: 16, size: 4,  opacity: 0.75                            },
+  { top: 90, left: 12, size: 6,  opacity: 0.82, pulse: true,  delay: 3.1  },
 
   // center-left
-  { top: 5,  left: 28, size: 1.5, opacity: 0.30                            },
-  { top: 30, left: 32, size: 3,   opacity: 0.45, pulse: true,  delay: 1.8  },
-  { top: 62, left: 35, size: 2,   opacity: 0.36                            },
-  { top: 85, left: 25, size: 3.5, opacity: 0.48, pulse: true,  delay: 0.4  },
+  { top: 5,  left: 28, size: 3,  opacity: 0.65                            },
+  { top: 30, left: 32, size: 6,  opacity: 0.88, pulse: true,  delay: 1.8  },
+  { top: 62, left: 35, size: 4,  opacity: 0.75                            },
+  { top: 85, left: 25, size: 7,  opacity: 0.85, pulse: true,  delay: 0.4  },
 
   // center — sparse (let the copy breathe)
-  { top: 10, left: 48, size: 1.5, opacity: 0.25                            },
-  { top: 88, left: 50, size: 2,   opacity: 0.32                            },
-  { top: 3,  left: 55, size: 3,   opacity: 0.42, pulse: true,  delay: 2.0  },
+  { top: 10, left: 48, size: 3,  opacity: 0.60                            },
+  { top: 88, left: 50, size: 4,  opacity: 0.70                            },
+  { top: 3,  left: 55, size: 6,  opacity: 0.82, pulse: true,  delay: 2.0  },
 
   // center-right
-  { top: 7,  left: 65, size: 1.5, opacity: 0.30                            },
-  { top: 35, left: 68, size: 3,   opacity: 0.45, pulse: true,  delay: 1.5  },
-  { top: 60, left: 62, size: 2,   opacity: 0.36                            },
-  { top: 82, left: 70, size: 3.5, opacity: 0.48, pulse: true,  delay: 3.5  },
+  { top: 7,  left: 65, size: 3,  opacity: 0.65                            },
+  { top: 35, left: 68, size: 6,  opacity: 0.88, pulse: true,  delay: 1.5  },
+  { top: 60, left: 62, size: 4,  opacity: 0.75                            },
+  { top: 82, left: 70, size: 7,  opacity: 0.85, pulse: true,  delay: 3.5  },
 
   // right zone — near the purple blob
-  { top: 12, left: 78, size: 3,   opacity: 0.55, pulse: true,  delay: 0.6  },
-  { top: 25, left: 85, size: 2,   opacity: 0.40                            },
-  { top: 42, left: 92, size: 3,   opacity: 0.58, pulse: true,  delay: 1.0  },
-  { top: 58, left: 80, size: 1.5, opacity: 0.32                            },
-  { top: 70, left: 88, size: 3.5, opacity: 0.48, pulse: true,  delay: 2.7  },
-  { top: 84, left: 96, size: 2,   opacity: 0.38                            },
-  { top: 18, left: 74, size: 1.5, opacity: 0.28                            },
-  { top: 50, left: 90, size: 3,   opacity: 0.45, pulse: true,  delay: 0.2  },
-  { top: 93, left: 82, size: 2,   opacity: 0.40                            },
-  { top: 6,  left: 97, size: 3,   opacity: 0.52, pulse: true,  delay: 3.8  },
+  { top: 12, left: 78, size: 6,  opacity: 0.92, pulse: true,  delay: 0.6  },
+  { top: 25, left: 85, size: 4,  opacity: 0.78                            },
+  { top: 42, left: 92, size: 6,  opacity: 0.92, pulse: true,  delay: 1.0  },
+  { top: 58, left: 80, size: 3,  opacity: 0.68                            },
+  { top: 70, left: 88, size: 7,  opacity: 0.88, pulse: true,  delay: 2.7  },
+  { top: 84, left: 96, size: 4,  opacity: 0.75                            },
+  { top: 18, left: 74, size: 3,  opacity: 0.65                            },
+  { top: 50, left: 90, size: 6,  opacity: 0.88, pulse: true,  delay: 0.2  },
+  { top: 93, left: 82, size: 4,  opacity: 0.78                            },
+  { top: 6,  left: 97, size: 6,  opacity: 0.90, pulse: true,  delay: 3.8  },
 ]
 
 interface HeroSectionProps {
@@ -255,6 +255,9 @@ export function HeroSection({ events }: HeroSectionProps) {
               backgroundColor: '#ffffff',
               opacity: dot.opacity,
               display: 'block',
+              boxShadow: dot.size >= 5
+                ? `0 0 ${dot.size * 3}px ${dot.size}px rgba(255,255,255,0.35)`
+                : undefined,
               animationDelay: dot.delay != null ? `${dot.delay}s` : undefined,
             }}
           />
