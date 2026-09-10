@@ -45,12 +45,14 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
   return (
     <header
       ref={headerRef}
-      className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5"
+      className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-8 sm:pt-5"
+      style={{ pointerEvents: 'none' }}
     >
       {/* ── Floating pill ── */}
       <div
+        style={{ pointerEvents: 'auto' }}
         className={cn(
-          'flex w-full max-w-[860px] items-center justify-between rounded-full px-3 py-2 transition-all duration-500',
+          'flex w-full max-w-[860px] items-center justify-between rounded-full px-3 py-2 transition-opacity duration-500',
           'bg-black/40 backdrop-blur-xl',
           'border border-white/[0.12]',
           'shadow-[0_4px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]',
@@ -160,6 +162,7 @@ export function SiteHeader({ userEmail }: SiteHeaderProps) {
               'border border-white/[0.10]',
               'shadow-[0_8px_40px_rgba(0,0,0,0.5)]',
             )}
+            style={{ pointerEvents: 'auto' }}
           >
             <div className="px-4 pt-4 pb-5">
               <nav className="flex flex-col gap-0.5">
