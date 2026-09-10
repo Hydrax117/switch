@@ -188,7 +188,7 @@ export function HeroSection({ events }: HeroSectionProps) {
 
   return (
     <section
-      className="relative overflow-hidden pt-[60px]"
+      className="relative overflow-hidden pt-[104px]"
       style={{ backgroundColor: '#08080f', minHeight: 'clamp(540px, 85svh, 780px)' }}
       aria-label="SWITCH — Discover events"
     >
@@ -249,11 +249,12 @@ export function HeroSection({ events }: HeroSectionProps) {
               position: 'absolute',
               top: `${dot.top}%`,
               left: `${dot.left}%`,
-              width: dot.size,
-              height: dot.size,
+              width: `${dot.size}px`,
+              height: `${dot.size}px`,
               borderRadius: '50%',
               backgroundColor: '#ffffff',
               opacity: dot.opacity,
+              display: 'block',
               animationDelay: dot.delay != null ? `${dot.delay}s` : undefined,
             }}
           />
