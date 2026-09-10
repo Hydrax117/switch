@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Trash2, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, Trash2, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, LayoutGrid } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { saveSeatConfiguration } from '../actions'
 import type { SeatConfig } from '../queries'
@@ -325,6 +326,8 @@ export function SeatingManager({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  // true after the very first save — triggers the "open visual editor" prompt
+  const [justCreated, setJustCreated] = useState(false)
 
   const total = totalSeats(sections)
 
@@ -376,6 +379,8 @@ export function SeatingManager({
         setSuccess(
           `Configuration saved — ${result.data.totalSeats.toLocaleString()} seat(s) generated.`
         )
+        // First-time save: flag to show the visual editor prompt
+        if (!initialConfig) setJustCreated(true)
         setIsOpen(false)
       } else {
         setError(result.error)
@@ -430,9 +435,28 @@ export function SeatingManager({
         </div>
       )}
       {success && !isOpen && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2.5 text-[12.5px] text-emerald-500">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          {success}
+        <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-3 text-[12.5px] text-emerald-500">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            {success}
+          </div>
+          {justCreated && (
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2.5">
+              <div>
+                <p className="text-[12px] font-semibold text-emerald-300">Seats are ready</p>
+                <p className="text-emerald-500/80 mt-0.5 text-[11px]">
+                  Open the visual editor to block seats, assign types, and arrange your layout.
+                </p>
+              </div>
+              <Link
+                href={`/dashboard/events/${eventId}/seat-map/edit`}
+                className="ml-4 flex shrink-0 items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-[12px] font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Open editor
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
