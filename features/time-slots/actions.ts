@@ -1,6 +1,5 @@
 'use server'
 
-import 'server-only'
 import { db } from '@/lib/db'
 import { acquireSlotHold, releaseSlotHold } from '@/lib/redis'
 import { getSession } from '@/lib/session'
