@@ -205,6 +205,73 @@ export default async function ManageEventPage({ params }: PageProps) {
         </>
       )}
 
+      {/* ── Show Times / Time Slots ── */}
+      <div className="border-border bg-surface rounded-2xl border p-5">
+        <TimeSlotConfigTab
+          eventId={event.id}
+          timeSlots={timeSlots.map((slot) => ({
+            id:       slot.id,
+            label:    slot.label,
+            startsAt: slot.startsAt,
+            endsAt:   slot.endsAt,
+            status:   slot.status,
+            capacities: slot.capacities.map((cap) => ({
+              ticketTypeId:   cap.ticketTypeId,
+              ticketTypeName: cap.ticketTypeName,
+              price:          cap.price,
+              currency:       cap.currency,
+              capacity:       cap.capacity,
+              booked:         cap.booked,
+              available:      cap.available,
+            })),
+          }))}
+          ticketTypes={event.ticketTypes.map((tt) => ({
+            id:       tt.id,
+            name:     tt.name,
+            price:    tt.price,
+            currency: tt.currency,
+          }))}
+        />
+      </div>
+
+      {/* ── Tables ── */}
+      <div className="border-border bg-surface rounded-2xl border p-5">
+        <TableConfigTab
+          eventId={event.id}
+          tableTicketTypes={event.ticketTypes
+            .filter((tt) => tt.isTableType)
+            .map((tt) => ({
+              id:                     tt.id,
+              name:                   tt.name,
+              price:                  tt.price,
+              currency:               tt.currency,
+              quantity:               tt.quantity,
+              sold:                   tt.sold,
+              tableCapacity:          tt.tableCapacity,
+              requiresAssignedSeating: tt.requiresAssignedSeating,
+            }))}
+        />
+      </div>
+
+      {/* ── Sessions / Workshops ── */}
+      <div className="border-border bg-surface rounded-2xl border p-5">
+        <SessionConfigTab
+          eventId={event.id}
+          sessions={sessions.map((s) => ({
+            id:             s.id,
+            title:          s.title,
+            facilitator:    s.facilitator,
+            startsAt:       s.startsAt,
+            endsAt:         s.endsAt,
+            inclusionMode:  s.inclusionMode,
+            capacity:       s.capacity,
+            price:          s.price,
+            currency:       s.currency,
+            enrolmentCount: s.enrolmentCount,
+          }))}
+        />
+      </div>
+
       {/* ── Promo codes ── */}
       <PromoCodesManager
         eventId={event.id}

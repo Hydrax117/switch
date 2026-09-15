@@ -28,6 +28,7 @@ export type TimeSlotTicketMinAggregateOutputType = {
   id: string | null
   ticketId: string | null
   timeSlotId: string | null
+  ticketTypeId: string | null
   createdAt: Date | null
 }
 
@@ -35,6 +36,7 @@ export type TimeSlotTicketMaxAggregateOutputType = {
   id: string | null
   ticketId: string | null
   timeSlotId: string | null
+  ticketTypeId: string | null
   createdAt: Date | null
 }
 
@@ -42,6 +44,7 @@ export type TimeSlotTicketCountAggregateOutputType = {
   id: number
   ticketId: number
   timeSlotId: number
+  ticketTypeId: number
   createdAt: number
   _all: number
 }
@@ -51,6 +54,7 @@ export type TimeSlotTicketMinAggregateInputType = {
   id?: true
   ticketId?: true
   timeSlotId?: true
+  ticketTypeId?: true
   createdAt?: true
 }
 
@@ -58,6 +62,7 @@ export type TimeSlotTicketMaxAggregateInputType = {
   id?: true
   ticketId?: true
   timeSlotId?: true
+  ticketTypeId?: true
   createdAt?: true
 }
 
@@ -65,6 +70,7 @@ export type TimeSlotTicketCountAggregateInputType = {
   id?: true
   ticketId?: true
   timeSlotId?: true
+  ticketTypeId?: true
   createdAt?: true
   _all?: true
 }
@@ -145,6 +151,7 @@ export type TimeSlotTicketGroupByOutputType = {
   id: string
   ticketId: string
   timeSlotId: string
+  ticketTypeId: string
   createdAt: Date
   _count: TimeSlotTicketCountAggregateOutputType | null
   _min: TimeSlotTicketMinAggregateOutputType | null
@@ -173,18 +180,22 @@ export type TimeSlotTicketWhereInput = {
   id?: Prisma.StringFilter<"TimeSlotTicket"> | string
   ticketId?: Prisma.StringFilter<"TimeSlotTicket"> | string
   timeSlotId?: Prisma.StringFilter<"TimeSlotTicket"> | string
+  ticketTypeId?: Prisma.StringFilter<"TimeSlotTicket"> | string
   createdAt?: Prisma.DateTimeFilter<"TimeSlotTicket"> | Date | string
   ticket?: Prisma.XOR<Prisma.TicketScalarRelationFilter, Prisma.TicketWhereInput>
   timeSlot?: Prisma.XOR<Prisma.TimeSlotScalarRelationFilter, Prisma.TimeSlotWhereInput>
+  ticketType?: Prisma.XOR<Prisma.TicketTypeScalarRelationFilter, Prisma.TicketTypeWhereInput>
 }
 
 export type TimeSlotTicketOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   ticketId?: Prisma.SortOrder
   timeSlotId?: Prisma.SortOrder
+  ticketTypeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   ticket?: Prisma.TicketOrderByWithRelationInput
   timeSlot?: Prisma.TimeSlotOrderByWithRelationInput
+  ticketType?: Prisma.TicketTypeOrderByWithRelationInput
 }
 
 export type TimeSlotTicketWhereUniqueInput = Prisma.AtLeast<{
@@ -195,15 +206,18 @@ export type TimeSlotTicketWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.TimeSlotTicketWhereInput | Prisma.TimeSlotTicketWhereInput[]
   ticketId?: Prisma.StringFilter<"TimeSlotTicket"> | string
   timeSlotId?: Prisma.StringFilter<"TimeSlotTicket"> | string
+  ticketTypeId?: Prisma.StringFilter<"TimeSlotTicket"> | string
   createdAt?: Prisma.DateTimeFilter<"TimeSlotTicket"> | Date | string
   ticket?: Prisma.XOR<Prisma.TicketScalarRelationFilter, Prisma.TicketWhereInput>
   timeSlot?: Prisma.XOR<Prisma.TimeSlotScalarRelationFilter, Prisma.TimeSlotWhereInput>
+  ticketType?: Prisma.XOR<Prisma.TicketTypeScalarRelationFilter, Prisma.TicketTypeWhereInput>
 }, "id" | "ticketId_timeSlotId">
 
 export type TimeSlotTicketOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   ticketId?: Prisma.SortOrder
   timeSlotId?: Prisma.SortOrder
+  ticketTypeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.TimeSlotTicketCountOrderByAggregateInput
   _max?: Prisma.TimeSlotTicketMaxOrderByAggregateInput
@@ -217,6 +231,7 @@ export type TimeSlotTicketScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"TimeSlotTicket"> | string
   ticketId?: Prisma.StringWithAggregatesFilter<"TimeSlotTicket"> | string
   timeSlotId?: Prisma.StringWithAggregatesFilter<"TimeSlotTicket"> | string
+  ticketTypeId?: Prisma.StringWithAggregatesFilter<"TimeSlotTicket"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TimeSlotTicket"> | Date | string
 }
 
@@ -225,12 +240,14 @@ export type TimeSlotTicketCreateInput = {
   createdAt?: Date | string
   ticket: Prisma.TicketCreateNestedOneWithoutTimeSlotTicketsInput
   timeSlot: Prisma.TimeSlotCreateNestedOneWithoutTicketsInput
+  ticketType: Prisma.TicketTypeCreateNestedOneWithoutTimeSlotTicketsInput
 }
 
 export type TimeSlotTicketUncheckedCreateInput = {
   id?: string
   ticketId: string
   timeSlotId: string
+  ticketTypeId: string
   createdAt?: Date | string
 }
 
@@ -239,12 +256,14 @@ export type TimeSlotTicketUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ticket?: Prisma.TicketUpdateOneRequiredWithoutTimeSlotTicketsNestedInput
   timeSlot?: Prisma.TimeSlotUpdateOneRequiredWithoutTicketsNestedInput
+  ticketType?: Prisma.TicketTypeUpdateOneRequiredWithoutTimeSlotTicketsNestedInput
 }
 
 export type TimeSlotTicketUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ticketId?: Prisma.StringFieldUpdateOperationsInput | string
   timeSlotId?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -252,6 +271,7 @@ export type TimeSlotTicketCreateManyInput = {
   id?: string
   ticketId: string
   timeSlotId: string
+  ticketTypeId: string
   createdAt?: Date | string
 }
 
@@ -264,6 +284,7 @@ export type TimeSlotTicketUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ticketId?: Prisma.StringFieldUpdateOperationsInput | string
   timeSlotId?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -286,6 +307,7 @@ export type TimeSlotTicketCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ticketId?: Prisma.SortOrder
   timeSlotId?: Prisma.SortOrder
+  ticketTypeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -293,6 +315,7 @@ export type TimeSlotTicketMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ticketId?: Prisma.SortOrder
   timeSlotId?: Prisma.SortOrder
+  ticketTypeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -300,7 +323,50 @@ export type TimeSlotTicketMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ticketId?: Prisma.SortOrder
   timeSlotId?: Prisma.SortOrder
+  ticketTypeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type TimeSlotTicketCreateNestedManyWithoutTicketTypeInput = {
+  create?: Prisma.XOR<Prisma.TimeSlotTicketCreateWithoutTicketTypeInput, Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput> | Prisma.TimeSlotTicketCreateWithoutTicketTypeInput[] | Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput[]
+  connectOrCreate?: Prisma.TimeSlotTicketCreateOrConnectWithoutTicketTypeInput | Prisma.TimeSlotTicketCreateOrConnectWithoutTicketTypeInput[]
+  createMany?: Prisma.TimeSlotTicketCreateManyTicketTypeInputEnvelope
+  connect?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+}
+
+export type TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput = {
+  create?: Prisma.XOR<Prisma.TimeSlotTicketCreateWithoutTicketTypeInput, Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput> | Prisma.TimeSlotTicketCreateWithoutTicketTypeInput[] | Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput[]
+  connectOrCreate?: Prisma.TimeSlotTicketCreateOrConnectWithoutTicketTypeInput | Prisma.TimeSlotTicketCreateOrConnectWithoutTicketTypeInput[]
+  createMany?: Prisma.TimeSlotTicketCreateManyTicketTypeInputEnvelope
+  connect?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+}
+
+export type TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput = {
+  create?: Prisma.XOR<Prisma.TimeSlotTicketCreateWithoutTicketTypeInput, Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput> | Prisma.TimeSlotTicketCreateWithoutTicketTypeInput[] | Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput[]
+  connectOrCreate?: Prisma.TimeSlotTicketCreateOrConnectWithoutTicketTypeInput | Prisma.TimeSlotTicketCreateOrConnectWithoutTicketTypeInput[]
+  upsert?: Prisma.TimeSlotTicketUpsertWithWhereUniqueWithoutTicketTypeInput | Prisma.TimeSlotTicketUpsertWithWhereUniqueWithoutTicketTypeInput[]
+  createMany?: Prisma.TimeSlotTicketCreateManyTicketTypeInputEnvelope
+  set?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+  disconnect?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+  delete?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+  connect?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+  update?: Prisma.TimeSlotTicketUpdateWithWhereUniqueWithoutTicketTypeInput | Prisma.TimeSlotTicketUpdateWithWhereUniqueWithoutTicketTypeInput[]
+  updateMany?: Prisma.TimeSlotTicketUpdateManyWithWhereWithoutTicketTypeInput | Prisma.TimeSlotTicketUpdateManyWithWhereWithoutTicketTypeInput[]
+  deleteMany?: Prisma.TimeSlotTicketScalarWhereInput | Prisma.TimeSlotTicketScalarWhereInput[]
+}
+
+export type TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput = {
+  create?: Prisma.XOR<Prisma.TimeSlotTicketCreateWithoutTicketTypeInput, Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput> | Prisma.TimeSlotTicketCreateWithoutTicketTypeInput[] | Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput[]
+  connectOrCreate?: Prisma.TimeSlotTicketCreateOrConnectWithoutTicketTypeInput | Prisma.TimeSlotTicketCreateOrConnectWithoutTicketTypeInput[]
+  upsert?: Prisma.TimeSlotTicketUpsertWithWhereUniqueWithoutTicketTypeInput | Prisma.TimeSlotTicketUpsertWithWhereUniqueWithoutTicketTypeInput[]
+  createMany?: Prisma.TimeSlotTicketCreateManyTicketTypeInputEnvelope
+  set?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+  disconnect?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+  delete?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+  connect?: Prisma.TimeSlotTicketWhereUniqueInput | Prisma.TimeSlotTicketWhereUniqueInput[]
+  update?: Prisma.TimeSlotTicketUpdateWithWhereUniqueWithoutTicketTypeInput | Prisma.TimeSlotTicketUpdateWithWhereUniqueWithoutTicketTypeInput[]
+  updateMany?: Prisma.TimeSlotTicketUpdateManyWithWhereWithoutTicketTypeInput | Prisma.TimeSlotTicketUpdateManyWithWhereWithoutTicketTypeInput[]
+  deleteMany?: Prisma.TimeSlotTicketScalarWhereInput | Prisma.TimeSlotTicketScalarWhereInput[]
 }
 
 export type TimeSlotTicketCreateNestedManyWithoutTicketInput = {
@@ -387,15 +453,68 @@ export type TimeSlotTicketUncheckedUpdateManyWithoutTimeSlotNestedInput = {
   deleteMany?: Prisma.TimeSlotTicketScalarWhereInput | Prisma.TimeSlotTicketScalarWhereInput[]
 }
 
+export type TimeSlotTicketCreateWithoutTicketTypeInput = {
+  id?: string
+  createdAt?: Date | string
+  ticket: Prisma.TicketCreateNestedOneWithoutTimeSlotTicketsInput
+  timeSlot: Prisma.TimeSlotCreateNestedOneWithoutTicketsInput
+}
+
+export type TimeSlotTicketUncheckedCreateWithoutTicketTypeInput = {
+  id?: string
+  ticketId: string
+  timeSlotId: string
+  createdAt?: Date | string
+}
+
+export type TimeSlotTicketCreateOrConnectWithoutTicketTypeInput = {
+  where: Prisma.TimeSlotTicketWhereUniqueInput
+  create: Prisma.XOR<Prisma.TimeSlotTicketCreateWithoutTicketTypeInput, Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput>
+}
+
+export type TimeSlotTicketCreateManyTicketTypeInputEnvelope = {
+  data: Prisma.TimeSlotTicketCreateManyTicketTypeInput | Prisma.TimeSlotTicketCreateManyTicketTypeInput[]
+  skipDuplicates?: boolean
+}
+
+export type TimeSlotTicketUpsertWithWhereUniqueWithoutTicketTypeInput = {
+  where: Prisma.TimeSlotTicketWhereUniqueInput
+  update: Prisma.XOR<Prisma.TimeSlotTicketUpdateWithoutTicketTypeInput, Prisma.TimeSlotTicketUncheckedUpdateWithoutTicketTypeInput>
+  create: Prisma.XOR<Prisma.TimeSlotTicketCreateWithoutTicketTypeInput, Prisma.TimeSlotTicketUncheckedCreateWithoutTicketTypeInput>
+}
+
+export type TimeSlotTicketUpdateWithWhereUniqueWithoutTicketTypeInput = {
+  where: Prisma.TimeSlotTicketWhereUniqueInput
+  data: Prisma.XOR<Prisma.TimeSlotTicketUpdateWithoutTicketTypeInput, Prisma.TimeSlotTicketUncheckedUpdateWithoutTicketTypeInput>
+}
+
+export type TimeSlotTicketUpdateManyWithWhereWithoutTicketTypeInput = {
+  where: Prisma.TimeSlotTicketScalarWhereInput
+  data: Prisma.XOR<Prisma.TimeSlotTicketUpdateManyMutationInput, Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeInput>
+}
+
+export type TimeSlotTicketScalarWhereInput = {
+  AND?: Prisma.TimeSlotTicketScalarWhereInput | Prisma.TimeSlotTicketScalarWhereInput[]
+  OR?: Prisma.TimeSlotTicketScalarWhereInput[]
+  NOT?: Prisma.TimeSlotTicketScalarWhereInput | Prisma.TimeSlotTicketScalarWhereInput[]
+  id?: Prisma.StringFilter<"TimeSlotTicket"> | string
+  ticketId?: Prisma.StringFilter<"TimeSlotTicket"> | string
+  timeSlotId?: Prisma.StringFilter<"TimeSlotTicket"> | string
+  ticketTypeId?: Prisma.StringFilter<"TimeSlotTicket"> | string
+  createdAt?: Prisma.DateTimeFilter<"TimeSlotTicket"> | Date | string
+}
+
 export type TimeSlotTicketCreateWithoutTicketInput = {
   id?: string
   createdAt?: Date | string
   timeSlot: Prisma.TimeSlotCreateNestedOneWithoutTicketsInput
+  ticketType: Prisma.TicketTypeCreateNestedOneWithoutTimeSlotTicketsInput
 }
 
 export type TimeSlotTicketUncheckedCreateWithoutTicketInput = {
   id?: string
   timeSlotId: string
+  ticketTypeId: string
   createdAt?: Date | string
 }
 
@@ -425,25 +544,17 @@ export type TimeSlotTicketUpdateManyWithWhereWithoutTicketInput = {
   data: Prisma.XOR<Prisma.TimeSlotTicketUpdateManyMutationInput, Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketInput>
 }
 
-export type TimeSlotTicketScalarWhereInput = {
-  AND?: Prisma.TimeSlotTicketScalarWhereInput | Prisma.TimeSlotTicketScalarWhereInput[]
-  OR?: Prisma.TimeSlotTicketScalarWhereInput[]
-  NOT?: Prisma.TimeSlotTicketScalarWhereInput | Prisma.TimeSlotTicketScalarWhereInput[]
-  id?: Prisma.StringFilter<"TimeSlotTicket"> | string
-  ticketId?: Prisma.StringFilter<"TimeSlotTicket"> | string
-  timeSlotId?: Prisma.StringFilter<"TimeSlotTicket"> | string
-  createdAt?: Prisma.DateTimeFilter<"TimeSlotTicket"> | Date | string
-}
-
 export type TimeSlotTicketCreateWithoutTimeSlotInput = {
   id?: string
   createdAt?: Date | string
   ticket: Prisma.TicketCreateNestedOneWithoutTimeSlotTicketsInput
+  ticketType: Prisma.TicketTypeCreateNestedOneWithoutTimeSlotTicketsInput
 }
 
 export type TimeSlotTicketUncheckedCreateWithoutTimeSlotInput = {
   id?: string
   ticketId: string
+  ticketTypeId: string
   createdAt?: Date | string
 }
 
@@ -473,9 +584,38 @@ export type TimeSlotTicketUpdateManyWithWhereWithoutTimeSlotInput = {
   data: Prisma.XOR<Prisma.TimeSlotTicketUpdateManyMutationInput, Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTimeSlotInput>
 }
 
+export type TimeSlotTicketCreateManyTicketTypeInput = {
+  id?: string
+  ticketId: string
+  timeSlotId: string
+  createdAt?: Date | string
+}
+
+export type TimeSlotTicketUpdateWithoutTicketTypeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ticket?: Prisma.TicketUpdateOneRequiredWithoutTimeSlotTicketsNestedInput
+  timeSlot?: Prisma.TimeSlotUpdateOneRequiredWithoutTicketsNestedInput
+}
+
+export type TimeSlotTicketUncheckedUpdateWithoutTicketTypeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketId?: Prisma.StringFieldUpdateOperationsInput | string
+  timeSlotId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketId?: Prisma.StringFieldUpdateOperationsInput | string
+  timeSlotId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type TimeSlotTicketCreateManyTicketInput = {
   id?: string
   timeSlotId: string
+  ticketTypeId: string
   createdAt?: Date | string
 }
 
@@ -483,23 +623,27 @@ export type TimeSlotTicketUpdateWithoutTicketInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timeSlot?: Prisma.TimeSlotUpdateOneRequiredWithoutTicketsNestedInput
+  ticketType?: Prisma.TicketTypeUpdateOneRequiredWithoutTimeSlotTicketsNestedInput
 }
 
 export type TimeSlotTicketUncheckedUpdateWithoutTicketInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   timeSlotId?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TimeSlotTicketUncheckedUpdateManyWithoutTicketInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   timeSlotId?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TimeSlotTicketCreateManyTimeSlotInput = {
   id?: string
   ticketId: string
+  ticketTypeId: string
   createdAt?: Date | string
 }
 
@@ -507,17 +651,20 @@ export type TimeSlotTicketUpdateWithoutTimeSlotInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ticket?: Prisma.TicketUpdateOneRequiredWithoutTimeSlotTicketsNestedInput
+  ticketType?: Prisma.TicketTypeUpdateOneRequiredWithoutTimeSlotTicketsNestedInput
 }
 
 export type TimeSlotTicketUncheckedUpdateWithoutTimeSlotInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ticketId?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TimeSlotTicketUncheckedUpdateManyWithoutTimeSlotInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ticketId?: Prisma.StringFieldUpdateOperationsInput | string
+  ticketTypeId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -527,48 +674,58 @@ export type TimeSlotTicketSelect<ExtArgs extends runtime.Types.Extensions.Intern
   id?: boolean
   ticketId?: boolean
   timeSlotId?: boolean
+  ticketTypeId?: boolean
   createdAt?: boolean
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
   timeSlot?: boolean | Prisma.TimeSlotDefaultArgs<ExtArgs>
+  ticketType?: boolean | Prisma.TicketTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["timeSlotTicket"]>
 
 export type TimeSlotTicketSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ticketId?: boolean
   timeSlotId?: boolean
+  ticketTypeId?: boolean
   createdAt?: boolean
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
   timeSlot?: boolean | Prisma.TimeSlotDefaultArgs<ExtArgs>
+  ticketType?: boolean | Prisma.TicketTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["timeSlotTicket"]>
 
 export type TimeSlotTicketSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ticketId?: boolean
   timeSlotId?: boolean
+  ticketTypeId?: boolean
   createdAt?: boolean
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
   timeSlot?: boolean | Prisma.TimeSlotDefaultArgs<ExtArgs>
+  ticketType?: boolean | Prisma.TicketTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["timeSlotTicket"]>
 
 export type TimeSlotTicketSelectScalar = {
   id?: boolean
   ticketId?: boolean
   timeSlotId?: boolean
+  ticketTypeId?: boolean
   createdAt?: boolean
 }
 
-export type TimeSlotTicketOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ticketId" | "timeSlotId" | "createdAt", ExtArgs["result"]["timeSlotTicket"]>
+export type TimeSlotTicketOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ticketId" | "timeSlotId" | "ticketTypeId" | "createdAt", ExtArgs["result"]["timeSlotTicket"]>
 export type TimeSlotTicketInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
   timeSlot?: boolean | Prisma.TimeSlotDefaultArgs<ExtArgs>
+  ticketType?: boolean | Prisma.TicketTypeDefaultArgs<ExtArgs>
 }
 export type TimeSlotTicketIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
   timeSlot?: boolean | Prisma.TimeSlotDefaultArgs<ExtArgs>
+  ticketType?: boolean | Prisma.TicketTypeDefaultArgs<ExtArgs>
 }
 export type TimeSlotTicketIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ticket?: boolean | Prisma.TicketDefaultArgs<ExtArgs>
   timeSlot?: boolean | Prisma.TimeSlotDefaultArgs<ExtArgs>
+  ticketType?: boolean | Prisma.TicketTypeDefaultArgs<ExtArgs>
 }
 
 export type $TimeSlotTicketPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -576,11 +733,16 @@ export type $TimeSlotTicketPayload<ExtArgs extends runtime.Types.Extensions.Inte
   objects: {
     ticket: Prisma.$TicketPayload<ExtArgs>
     timeSlot: Prisma.$TimeSlotPayload<ExtArgs>
+    ticketType: Prisma.$TicketTypePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     ticketId: string
     timeSlotId: string
+    /**
+     * Which ticket type was used for this slot (for per-type capacity tracking)
+     */
+    ticketTypeId: string
     createdAt: Date
   }, ExtArgs["result"]["timeSlotTicket"]>
   composites: {}
@@ -978,6 +1140,7 @@ export interface Prisma__TimeSlotTicketClient<T, Null = never, ExtArgs extends r
   readonly [Symbol.toStringTag]: "PrismaPromise"
   ticket<T extends Prisma.TicketDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TicketDefaultArgs<ExtArgs>>): Prisma.Prisma__TicketClient<runtime.Types.Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   timeSlot<T extends Prisma.TimeSlotDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TimeSlotDefaultArgs<ExtArgs>>): Prisma.Prisma__TimeSlotClient<runtime.Types.Result.GetResult<Prisma.$TimeSlotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  ticketType<T extends Prisma.TicketTypeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TicketTypeDefaultArgs<ExtArgs>>): Prisma.Prisma__TicketTypeClient<runtime.Types.Result.GetResult<Prisma.$TicketTypePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1010,6 +1173,7 @@ export interface TimeSlotTicketFieldRefs {
   readonly id: Prisma.FieldRef<"TimeSlotTicket", 'String'>
   readonly ticketId: Prisma.FieldRef<"TimeSlotTicket", 'String'>
   readonly timeSlotId: Prisma.FieldRef<"TimeSlotTicket", 'String'>
+  readonly ticketTypeId: Prisma.FieldRef<"TimeSlotTicket", 'String'>
   readonly createdAt: Prisma.FieldRef<"TimeSlotTicket", 'DateTime'>
 }
     

@@ -59,7 +59,8 @@ interface ConfirmedData {
 interface Props {
   reservationId: string
   eventSlug: string
-  isGA: boolean
+  /** 'ga' | 'shows' | 'reserved' */
+  orderType: 'ga' | 'shows' | 'reserved'
   /** True when the reservation was already COMPLETED on the first server render */
   initiallyConfirmed: boolean
   /** Pre-loaded confirmed data (only when initiallyConfirmed = true) */
@@ -74,7 +75,7 @@ const POLL_TIMEOUT_MS  = 90_000
 export function PaymentConfirmationPoller({
   reservationId,
   eventSlug,
-  isGA,
+  orderType,
   initiallyConfirmed,
   initialData,
 }: Props) {
@@ -96,7 +97,7 @@ export function PaymentConfirmationPoller({
 
       try {
         const res = await fetch(
-          `/api/payments/status?reservation=${reservationId}${isGA ? '&type=ga' : ''}`,
+          `/api/payments/status?reservation=${reservationId}&type=${orderType}`,
           { cache: 'no-store' }
         )
         if (!res.ok) continue

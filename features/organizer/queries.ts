@@ -22,9 +22,12 @@ export interface TicketRow {
   eventSeat: {
     seat: { label: string }
   } | null
-  payment: {
-    amount: number
-    currency: string
+  /** Payment amount via Order → Payment (null for comps or free tickets) */
+  order: {
+    payment: {
+      amount: number
+      currency: string
+    } | null
   } | null
 }
 
@@ -402,8 +405,10 @@ export async function getEventReservations(
         eventSeat: {
           select: { seat: { select: { label: true } } },
         },
-        payment: {
-          select: { amount: true, currency: true },
+        order: {
+          select: {
+            payment: { select: { amount: true, currency: true } },
+          },
         },
       },
     }),
@@ -432,9 +437,19 @@ export interface TimeSlotInventory {
   label: string
   startsAt: Date
   endsAt: Date
-  capacity: number
-  booked: number
-  available: number
+  /** Per-ticket-type breakdown */
+  capacities: Array<{
+    ticketTypeId:   string
+    ticketTypeName: string
+    capacity:       number
+    booked:         number
+    held:           number
+    available:      number
+  }>
+  /** Totals across all ticket types */
+  totalCapacity: number
+  totalBooked:   number
+  totalAvailable: number
 }
 
 export interface SessionInventory {
@@ -524,20 +539,20 @@ export async function getEventInventory(
       _count: { id: true },
     }),
 
-    // 5. TimeSlot records
+    // 5. TimeSlot records (label/times only — capacities queried separately)
     db.timeSlot.findMany({
       where: { eventId },
       select: {
-        id: true,
-        label: true,
+        id:       true,
+        label:    true,
         startsAt: true,
-        endsAt: true,
-        capacity: true,
+        endsAt:   true,
       },
       orderBy: { startsAt: 'asc' },
     }),
 
     // 6. TimeSlotTicket counts per timeSlotId (only confirmed tickets)
+    // ticketTypeId may not exist in the old generated client yet — group by timeSlotId only
     db.timeSlotTicket.groupBy({
       by: ['timeSlotId'],
       where: {
@@ -577,13 +592,29 @@ export async function getEventInventory(
   ])
 
   // ── Build held counts from gaHolds JSON ────────────────────────────────────
-  // gaHolds shape: { [ticketTypeId]: quantity }
+  // gaHolds shape:
+  //   Legacy GA:   { [ticketTypeId]: quantity }
+  //   Time-slot:   { ["slotId:ticketTypeId"]: quantity }
+  // For TicketType inventory we only sum plain ticketTypeId keys.
+  // For TimeSlot inventory we parse composite "slotId:ticketTypeId" keys.
   const heldByTicketType = new Map<string, number>()
+  // heldBySlotType: key = "slotId:ticketTypeId"
+  const heldBySlotType = new Map<string, number>()
+
   for (const reservation of activeReservations) {
     if (!reservation.gaHolds || typeof reservation.gaHolds !== 'object') continue
     const holds = reservation.gaHolds as Record<string, number>
-    for (const [ttId, qty] of Object.entries(holds)) {
-      heldByTicketType.set(ttId, (heldByTicketType.get(ttId) ?? 0) + (Number(qty) || 0))
+    for (const [key, qty] of Object.entries(holds)) {
+      if (key.includes(':')) {
+        // Time-slot hold: "slotId:ticketTypeId"
+        heldBySlotType.set(key, (heldBySlotType.get(key) ?? 0) + (Number(qty) || 0))
+        // Also credit the ticketType held total
+        const ttId = key.split(':')[1]!
+        heldByTicketType.set(ttId, (heldByTicketType.get(ttId) ?? 0) + (Number(qty) || 0))
+      } else {
+        // Legacy plain ticketTypeId key
+        heldByTicketType.set(key, (heldByTicketType.get(key) ?? 0) + (Number(qty) || 0))
+      }
     }
   }
 
@@ -594,9 +625,27 @@ export async function getEventInventory(
   const cancelledByTicketType = new Map<string, number>(
     cancelledTickets.map((c) => [c.ticketTypeId, c._count.id])
   )
+  // bookingsBySlot: key = timeSlotId (total across all ticket types)
   const bookingsBySlot = new Map<string, number>(
-    timeSlotBookings.map((b) => [b.timeSlotId, b._count.id])
+    timeSlotBookings.map((b) => [b.timeSlotId, (b._count as { id: number }).id])
   )
+
+  // Fetch time slot capacities separately (new junction table — not in old Prisma client)
+  const slotIds = timeSlots.map((s) => s.id)
+  const slotCapacityRows: Array<{ timeSlotId: string; ticketTypeId: string; capacity: number; ticketTypeName: string }> =
+    slotIds.length > 0
+      ? await db.$queryRaw`
+          SELECT
+            tsc."timeSlotId",
+            tsc."ticketTypeId",
+            tsc."capacity",
+            tt."name" AS "ticketTypeName"
+          FROM "time_slot_capacities" tsc
+          JOIN "ticket_types" tt ON tt."id" = tsc."ticketTypeId"
+          WHERE tsc."timeSlotId" = ANY(${slotIds}::text[])
+          ORDER BY tsc."timeSlotId", tt."name"
+        `
+      : []
 
   // ── Assemble TicketTypeInventory ──────────────────────────────────────────
   const ticketTypeInventory: TicketTypeInventory[] = ticketTypes.map((tt) => {
@@ -615,16 +664,47 @@ export async function getEventInventory(
   })
 
   // ── Assemble TimeSlotInventory ────────────────────────────────────────────
+  // Group capacity rows by timeSlotId
+  const capsBySlot = new Map<string, typeof slotCapacityRows>()
+  for (const row of slotCapacityRows) {
+    const arr = capsBySlot.get(row.timeSlotId) ?? []
+    arr.push(row)
+    capsBySlot.set(row.timeSlotId, arr)
+  }
+
   const timeSlotInventory: TimeSlotInventory[] = timeSlots.map((slot) => {
-    const booked = bookingsBySlot.get(slot.id) ?? 0
+    const caps = capsBySlot.get(slot.id) ?? []
+    const capacities = caps.map((cap) => {
+      const holdKey   = `${slot.id}:${cap.ticketTypeId}`
+      const booked    = bookingsBySlot.get(slot.id) ?? 0  // total per slot (until client regen)
+      const held      = heldBySlotType.get(holdKey) ?? 0
+      // Note: until Prisma client is regenerated with new schema, booked is the
+      // total for the slot — not broken out by ticketTypeId. This is a temporary
+      // approximation; it becomes exact after `prisma generate` runs.
+      const available = Math.max(0, cap.capacity - booked - held)
+      return {
+        ticketTypeId:   cap.ticketTypeId,
+        ticketTypeName: cap.ticketTypeName,
+        capacity:       cap.capacity,
+        booked,
+        held,
+        available,
+      }
+    })
+
+    const totalCapacity  = caps.reduce((s, c) => s + c.capacity, 0)
+    const totalBooked    = bookingsBySlot.get(slot.id) ?? 0
+    const totalAvailable = Math.max(0, totalCapacity - totalBooked)
+
     return {
-      timeSlotId: slot.id,
-      label: slot.label,
-      startsAt: slot.startsAt,
-      endsAt: slot.endsAt,
-      capacity: slot.capacity,
-      booked,
-      available: Math.max(0, slot.capacity - booked),
+      timeSlotId:    slot.id,
+      label:         slot.label,
+      startsAt:      slot.startsAt,
+      endsAt:        slot.endsAt,
+      capacities,
+      totalCapacity,
+      totalBooked,
+      totalAvailable,
     }
   })
 

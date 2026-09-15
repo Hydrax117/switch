@@ -189,6 +189,7 @@ model User {
   organizer     Organizer?
   reservations  Reservation[]
   tickets       Ticket[]
+  orders        Order[]
   organizerApplication OrganizerApplication?
   payments      Payment[]
   reviews       EventReview[]
@@ -504,6 +505,7 @@ model Event {
   eventSeats  EventSeat[]  @relation("EventToEventSeats")
   reservations Reservation[]
   tickets     Ticket[]
+  orders      Order[]
   images      EventImage[]
   speakers    EventSpeaker[]
   payments    Payment[]
@@ -632,6 +634,8 @@ model TicketType {
   promoCodes PromoCode[]
   waitlistEntries  WaitlistEntry[]
   tableAssignments TableSeatAssignment[]
+  timeSlotCapacities TimeSlotCapacity[]
+  timeSlotTickets    TimeSlotTicket[]
 
   @@index([eventId])
   @@map("ticket_types")
@@ -691,6 +695,7 @@ model Reservation {
   user          User           @relation(fields: [userId], references: [id])
   eventSeats    EventSeat[]
   waitlistEntry WaitlistEntry? @relation(fields: [waitlistEntryId], references: [id])
+  order         Order?
 
   @@index([eventId, status])
   @@index([userId])
@@ -703,6 +708,8 @@ model Ticket {
   id           String       @id @default(cuid())
   eventId      String
   userId       String
+  /// FK to the Order this ticket belongs to (null for legacy/RSVP tickets without an Order)
+  orderId      String?
   /// Null for general admission tickets
   eventSeatId  String?      @unique
   ticketTypeId String
@@ -718,10 +725,10 @@ model Ticket {
 
   event      Event      @relation(fields: [eventId], references: [id])
   user       User       @relation(fields: [userId], references: [id])
+  order      Order?     @relation(fields: [orderId], references: [id])
   /// Ticket owns the FK — EventSeat.ticket is the virtual back-relation
   eventSeat  EventSeat? @relation(fields: [eventSeatId], references: [id])
   ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
-  payment    Payment?
   review     EventReview?
   groupSlot  GroupOrderSlot?
   isComplimentary   Boolean            @default(false)
@@ -731,26 +738,61 @@ model Ticket {
 
   @@index([eventId])
   @@index([userId])
+  @@index([orderId])
   @@map("tickets")
+}
+
+// ─── Order ────────────────────────────────────────────────────────────────────
+
+/// An Order groups all tickets purchased in a single checkout session.
+/// One Order → one Paystack charge → one Payment → many Tickets.
+model Order {
+  id            String      @id @default(cuid())
+  userId        String
+  eventId       String
+  /// FK to the Reservation that was active during checkout (nullable for RSVP)
+  reservationId String?     @unique
+  /// Total amount charged in minor units (kobo) — after discount
+  totalAmount   Int
+  currency      String      @default("NGN")
+  /// Discount applied from a promo code (0 if none)
+  discountAmount Int        @default(0)
+  /// FK to the promo code used (nullable)
+  promoCodeId   String?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id])
+  event         Event       @relation(fields: [eventId], references: [id])
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+  promoCode     PromoCode?  @relation(fields: [promoCodeId], references: [id])
+  payment       Payment?
+  tickets       Ticket[]
+
+  @@index([userId])
+  @@index([eventId])
+  @@map("orders")
 }
 
 // ─── Payment ──────────────────────────────────────────────────────────────────
 
 model Payment {
   id              String        @id @default(cuid())
-  ticketId        String        @unique
+  /// FK to the Order this payment covers — replaces the old ticketId 1:1 relation
+  orderId         String        @unique
   organizerId     String
   userId          String
   eventId         String
 
-  /// Amount user paid in minor units (kobo)
+  /// Total amount user paid in minor units (kobo) — matches Order.totalAmount
   amount          Int
   currency        String        @default("NGN")
   /// Platform fee % snapshotted at purchase time
   platformFeePercent Float
-  /// Platform fee amount in minor units
+  /// Platform fee amount in minor units (calculated on total amount)
   platformFeeAmount  Int
-  /// Net amount organizer will receive (amount - fee)
+  /// Net amount organizer will receive (amount - platformFeeAmount)
   netAmount          Int
 
   status          PaymentStatus @default(PENDING)
@@ -762,20 +804,14 @@ model Payment {
   /// FK to the payout request this payment is included in (set when payout is approved)
   payoutRequestId String?
 
-  /// FK to the promo code used for this payment (nullable)
-  promoCodeId     String?
-  /// Discount amount applied in minor units (0 if no promo code used)
-  discountAmount  Int?
-
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  ticket          Ticket        @relation(fields: [ticketId], references: [id])
+  order           Order         @relation(fields: [orderId], references: [id])
   organizer       Organizer     @relation(fields: [organizerId], references: [id])
   user            User          @relation(fields: [userId], references: [id])
   event           Event         @relation(fields: [eventId], references: [id])
   payoutRequest   PayoutRequest? @relation("PaymentToPayoutRequest", fields: [payoutRequestId], references: [id])
-  promoCode       PromoCode?    @relation(fields: [promoCodeId], references: [id])
   refundRequest   RefundRequest?
   groupSlot       GroupOrderSlot?
 
@@ -854,6 +890,7 @@ model EventReview {
 
 model RefundRequest {
   id          String       @id @default(cuid())
+  /// FK to the Payment (via Order) — kept for backward compat
   paymentId   String       @unique
   userId      String
   eventId     String
@@ -867,6 +904,8 @@ model RefundRequest {
   reviewedAt  DateTime?
   /// Paystack refund id (set when refund is processed)
   paystackRefundId String?
+  /// For partial refunds: which specific ticket is being refunded
+  ticketId    String?
 
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -1037,7 +1076,7 @@ model PromoCode {
   organizer    Organizer    @relation(fields: [organizerId], references: [id], onDelete: Cascade)
   event        Event?       @relation(fields: [eventId], references: [id], onDelete: Cascade)
   ticketType   TicketType?  @relation(fields: [ticketTypeId], references: [id], onDelete: SetNull)
-  payments     Payment[]
+  orders       Order[]
 
   @@index([code])
   @@index([organizerId])
@@ -1079,36 +1118,63 @@ model WaitlistEntry {
 model TimeSlot {
   id       String           @id @default(cuid())
   eventId  String
+  /// Display label, e.g. "26 Dec — 4pm Show"
   label    String
   startsAt DateTime
   endsAt   DateTime
-  capacity Int
-  price    Int
-  currency String           @default("NGN")
+  /// Overall status (ACTIVE / INACTIVE / SOLD_OUT computed per-capacity)
   status   TicketTypeStatus @default(ACTIVE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  event   Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  tickets TimeSlotTicket[]
+  event      Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  capacities TimeSlotCapacity[]
+  tickets    TimeSlotTicket[]
 
   @@index([eventId, status])
   @@map("time_slots")
 }
 
+// ─── Time Slot Capacity ───────────────────────────────────────────────────────
+
+/// Per-ticket-type capacity for a time slot.
+/// e.g. "26 Dec 4pm show" has 500 VIP spots and 500 Regular spots.
+model TimeSlotCapacity {
+  id           String     @id @default(cuid())
+  timeSlotId   String
+  ticketTypeId String
+  /// Max spots available for this ticket type at this show
+  capacity     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  timeSlot   TimeSlot   @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
+
+  /// One capacity entry per slot+ticketType combination
+  @@unique([timeSlotId, ticketTypeId])
+  @@index([timeSlotId])
+  @@map("time_slot_capacities")
+}
+
 // ─── Time Slot Ticket (join) ──────────────────────────────────────────────────
 
 model TimeSlotTicket {
-  id         String   @id @default(cuid())
-  ticketId   String
-  timeSlotId String
-  createdAt  DateTime @default(now())
+  id           String   @id @default(cuid())
+  ticketId     String
+  timeSlotId   String
+  /// Which ticket type was used for this slot (for per-type capacity tracking)
+  ticketTypeId String
+  createdAt    DateTime @default(now())
 
-  ticket   Ticket   @relation(fields: [ticketId], references: [id])
-  timeSlot TimeSlot @relation(fields: [timeSlotId], references: [id])
+  ticket     Ticket     @relation(fields: [ticketId], references: [id])
+  timeSlot   TimeSlot   @relation(fields: [timeSlotId], references: [id])
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
 
   @@unique([ticketId, timeSlotId])
+  @@index([timeSlotId, ticketTypeId])
   @@map("time_slot_tickets")
 }
 

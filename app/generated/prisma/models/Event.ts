@@ -384,6 +384,7 @@ export type EventWhereInput = {
   eventSeats?: Prisma.EventSeatListRelationFilter
   reservations?: Prisma.ReservationListRelationFilter
   tickets?: Prisma.TicketListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
   images?: Prisma.EventImageListRelationFilter
   speakers?: Prisma.EventSpeakerListRelationFilter
   payments?: Prisma.PaymentListRelationFilter
@@ -433,6 +434,7 @@ export type EventOrderByWithRelationInput = {
   eventSeats?: Prisma.EventSeatOrderByRelationAggregateInput
   reservations?: Prisma.ReservationOrderByRelationAggregateInput
   tickets?: Prisma.TicketOrderByRelationAggregateInput
+  orders?: Prisma.OrderOrderByRelationAggregateInput
   images?: Prisma.EventImageOrderByRelationAggregateInput
   speakers?: Prisma.EventSpeakerOrderByRelationAggregateInput
   payments?: Prisma.PaymentOrderByRelationAggregateInput
@@ -485,6 +487,7 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   eventSeats?: Prisma.EventSeatListRelationFilter
   reservations?: Prisma.ReservationListRelationFilter
   tickets?: Prisma.TicketListRelationFilter
+  orders?: Prisma.OrderListRelationFilter
   images?: Prisma.EventImageListRelationFilter
   speakers?: Prisma.EventSpeakerListRelationFilter
   payments?: Prisma.PaymentListRelationFilter
@@ -594,6 +597,7 @@ export type EventCreateInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -639,6 +643,7 @@ export type EventUncheckedCreateInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -684,6 +689,7 @@ export type EventUpdateInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -729,6 +735,7 @@ export type EventUncheckedUpdateInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -1214,6 +1221,20 @@ export type EventUpdateOneRequiredWithoutTicketsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutTicketsInput, Prisma.EventUpdateWithoutTicketsInput>, Prisma.EventUncheckedUpdateWithoutTicketsInput>
 }
 
+export type EventCreateNestedOneWithoutOrdersInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutOrdersInput, Prisma.EventUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutOrdersInput
+  connect?: Prisma.EventWhereUniqueInput
+}
+
+export type EventUpdateOneRequiredWithoutOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutOrdersInput, Prisma.EventUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutOrdersInput
+  upsert?: Prisma.EventUpsertWithoutOrdersInput
+  connect?: Prisma.EventWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutOrdersInput, Prisma.EventUpdateWithoutOrdersInput>, Prisma.EventUncheckedUpdateWithoutOrdersInput>
+}
+
 export type EventCreateNestedOneWithoutPaymentsInput = {
   create?: Prisma.XOR<Prisma.EventCreateWithoutPaymentsInput, Prisma.EventUncheckedCreateWithoutPaymentsInput>
   connectOrCreate?: Prisma.EventCreateOrConnectWithoutPaymentsInput
@@ -1387,6 +1408,7 @@ export type EventCreateWithoutOrganizerInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -1431,6 +1453,7 @@ export type EventUncheckedCreateWithoutOrganizerInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -1532,6 +1555,7 @@ export type EventCreateWithoutCategoryInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -1576,6 +1600,7 @@ export type EventUncheckedCreateWithoutCategoryInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -1646,6 +1671,7 @@ export type EventCreateWithoutVenueInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -1690,6 +1716,7 @@ export type EventUncheckedCreateWithoutVenueInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -1760,6 +1787,7 @@ export type EventCreateWithoutSeatMapInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -1804,6 +1832,7 @@ export type EventUncheckedCreateWithoutSeatMapInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -1875,6 +1904,7 @@ export type EventCreateWithoutSpeakersInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutEventInput
@@ -1919,6 +1949,7 @@ export type EventUncheckedCreateWithoutSpeakersInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutEventInput
@@ -1979,6 +2010,7 @@ export type EventUpdateWithoutSpeakersInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutEventNestedInput
@@ -2023,6 +2055,7 @@ export type EventUncheckedUpdateWithoutSpeakersInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutEventNestedInput
@@ -2067,6 +2100,7 @@ export type EventCreateWithoutScheduleItemsInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -2111,6 +2145,7 @@ export type EventUncheckedCreateWithoutScheduleItemsInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -2171,6 +2206,7 @@ export type EventUpdateWithoutScheduleItemsInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -2215,6 +2251,7 @@ export type EventUncheckedUpdateWithoutScheduleItemsInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -2259,6 +2296,7 @@ export type EventCreateWithoutImagesInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutEventInput
@@ -2303,6 +2341,7 @@ export type EventUncheckedCreateWithoutImagesInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutEventInput
@@ -2363,6 +2402,7 @@ export type EventUpdateWithoutImagesInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutEventNestedInput
@@ -2407,6 +2447,7 @@ export type EventUncheckedUpdateWithoutImagesInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutEventNestedInput
@@ -2450,6 +2491,7 @@ export type EventCreateWithoutTicketTypesInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -2494,6 +2536,7 @@ export type EventUncheckedCreateWithoutTicketTypesInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -2554,6 +2597,7 @@ export type EventUpdateWithoutTicketTypesInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -2598,6 +2642,7 @@ export type EventUncheckedUpdateWithoutTicketTypesInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -2642,6 +2687,7 @@ export type EventCreateWithoutEventSeatsInput = {
   ticketTypes?: Prisma.TicketTypeCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -2686,6 +2732,7 @@ export type EventUncheckedCreateWithoutEventSeatsInput = {
   ticketTypes?: Prisma.TicketTypeUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -2746,6 +2793,7 @@ export type EventUpdateWithoutEventSeatsInput = {
   ticketTypes?: Prisma.TicketTypeUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -2790,6 +2838,7 @@ export type EventUncheckedUpdateWithoutEventSeatsInput = {
   ticketTypes?: Prisma.TicketTypeUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -2834,6 +2883,7 @@ export type EventCreateWithoutReservationsInput = {
   ticketTypes?: Prisma.TicketTypeCreateNestedManyWithoutEventInput
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -2878,6 +2928,7 @@ export type EventUncheckedCreateWithoutReservationsInput = {
   ticketTypes?: Prisma.TicketTypeUncheckedCreateNestedManyWithoutEventInput
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -2938,6 +2989,7 @@ export type EventUpdateWithoutReservationsInput = {
   ticketTypes?: Prisma.TicketTypeUpdateManyWithoutEventNestedInput
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -2982,6 +3034,7 @@ export type EventUncheckedUpdateWithoutReservationsInput = {
   ticketTypes?: Prisma.TicketTypeUncheckedUpdateManyWithoutEventNestedInput
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -3026,6 +3079,7 @@ export type EventCreateWithoutTicketsInput = {
   ticketTypes?: Prisma.TicketTypeCreateNestedManyWithoutEventInput
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -3070,6 +3124,7 @@ export type EventUncheckedCreateWithoutTicketsInput = {
   ticketTypes?: Prisma.TicketTypeUncheckedCreateNestedManyWithoutEventInput
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -3130,6 +3185,7 @@ export type EventUpdateWithoutTicketsInput = {
   ticketTypes?: Prisma.TicketTypeUpdateManyWithoutEventNestedInput
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -3174,6 +3230,203 @@ export type EventUncheckedUpdateWithoutTicketsInput = {
   ticketTypes?: Prisma.TicketTypeUncheckedUpdateManyWithoutEventNestedInput
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
+  images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
+  speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutEventNestedInput
+  reviews?: Prisma.EventReviewUncheckedUpdateManyWithoutEventNestedInput
+  refundRequests?: Prisma.RefundRequestUncheckedUpdateManyWithoutEventNestedInput
+  groupOrders?: Prisma.GroupOrderUncheckedUpdateManyWithoutEventNestedInput
+  promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutEventNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutLinkedEventNestedInput
+  scheduleItems?: Prisma.EventScheduleItemUncheckedUpdateManyWithoutEventNestedInput
+  timeSlots?: Prisma.TimeSlotUncheckedUpdateManyWithoutEventNestedInput
+  sessions?: Prisma.EventSessionUncheckedUpdateManyWithoutEventNestedInput
+  waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutEventNestedInput
+}
+
+export type EventCreateWithoutOrdersInput = {
+  id?: string
+  title: string
+  slug: string
+  description?: string | null
+  imageUrl?: string | null
+  seatingType?: $Enums.SeatingType
+  status?: $Enums.EventStatus
+  isFree?: boolean
+  isVirtual?: boolean
+  virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  startsAt: Date | string
+  endsAt?: Date | string | null
+  salesStart?: Date | string | null
+  salesEnd?: Date | string | null
+  capacity?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organizer: Prisma.OrganizerCreateNestedOneWithoutEventsInput
+  venue?: Prisma.VenueCreateNestedOneWithoutEventsInput
+  seatMap?: Prisma.SeatMapCreateNestedOneWithoutEventsInput
+  category?: Prisma.CategoryCreateNestedOneWithoutEventsInput
+  ticketTypes?: Prisma.TicketTypeCreateNestedManyWithoutEventInput
+  eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
+  reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
+  tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  images?: Prisma.EventImageCreateNestedManyWithoutEventInput
+  speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
+  payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutEventInput
+  reviews?: Prisma.EventReviewCreateNestedManyWithoutEventInput
+  refundRequests?: Prisma.RefundRequestCreateNestedManyWithoutEventInput
+  groupOrders?: Prisma.GroupOrderCreateNestedManyWithoutEventInput
+  promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutEventInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutLinkedEventInput
+  scheduleItems?: Prisma.EventScheduleItemCreateNestedManyWithoutEventInput
+  timeSlots?: Prisma.TimeSlotCreateNestedManyWithoutEventInput
+  sessions?: Prisma.EventSessionCreateNestedManyWithoutEventInput
+  waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutEventInput
+}
+
+export type EventUncheckedCreateWithoutOrdersInput = {
+  id?: string
+  organizerId: string
+  venueId?: string | null
+  seatMapId?: string | null
+  categoryId?: string | null
+  title: string
+  slug: string
+  description?: string | null
+  imageUrl?: string | null
+  seatingType?: $Enums.SeatingType
+  status?: $Enums.EventStatus
+  isFree?: boolean
+  isVirtual?: boolean
+  virtualLink?: string | null
+  venueName?: string | null
+  venueAddress?: string | null
+  venueCity?: string | null
+  venueState?: string | null
+  startsAt: Date | string
+  endsAt?: Date | string | null
+  salesStart?: Date | string | null
+  salesEnd?: Date | string | null
+  capacity?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  ticketTypes?: Prisma.TicketTypeUncheckedCreateNestedManyWithoutEventInput
+  eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
+  reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
+  tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
+  speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
+  payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutEventInput
+  reviews?: Prisma.EventReviewUncheckedCreateNestedManyWithoutEventInput
+  refundRequests?: Prisma.RefundRequestUncheckedCreateNestedManyWithoutEventInput
+  groupOrders?: Prisma.GroupOrderUncheckedCreateNestedManyWithoutEventInput
+  promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutEventInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutLinkedEventInput
+  scheduleItems?: Prisma.EventScheduleItemUncheckedCreateNestedManyWithoutEventInput
+  timeSlots?: Prisma.TimeSlotUncheckedCreateNestedManyWithoutEventInput
+  sessions?: Prisma.EventSessionUncheckedCreateNestedManyWithoutEventInput
+  waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutEventInput
+}
+
+export type EventCreateOrConnectWithoutOrdersInput = {
+  where: Prisma.EventWhereUniqueInput
+  create: Prisma.XOR<Prisma.EventCreateWithoutOrdersInput, Prisma.EventUncheckedCreateWithoutOrdersInput>
+}
+
+export type EventUpsertWithoutOrdersInput = {
+  update: Prisma.XOR<Prisma.EventUpdateWithoutOrdersInput, Prisma.EventUncheckedUpdateWithoutOrdersInput>
+  create: Prisma.XOR<Prisma.EventCreateWithoutOrdersInput, Prisma.EventUncheckedCreateWithoutOrdersInput>
+  where?: Prisma.EventWhereInput
+}
+
+export type EventUpdateToOneWithWhereWithoutOrdersInput = {
+  where?: Prisma.EventWhereInput
+  data: Prisma.XOR<Prisma.EventUpdateWithoutOrdersInput, Prisma.EventUncheckedUpdateWithoutOrdersInput>
+}
+
+export type EventUpdateWithoutOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seatingType?: Prisma.EnumSeatingTypeFieldUpdateOperationsInput | $Enums.SeatingType
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salesEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  capacity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organizer?: Prisma.OrganizerUpdateOneRequiredWithoutEventsNestedInput
+  venue?: Prisma.VenueUpdateOneWithoutEventsNestedInput
+  seatMap?: Prisma.SeatMapUpdateOneWithoutEventsNestedInput
+  category?: Prisma.CategoryUpdateOneWithoutEventsNestedInput
+  ticketTypes?: Prisma.TicketTypeUpdateManyWithoutEventNestedInput
+  eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
+  reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
+  tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
+  speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
+  payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutEventNestedInput
+  reviews?: Prisma.EventReviewUpdateManyWithoutEventNestedInput
+  refundRequests?: Prisma.RefundRequestUpdateManyWithoutEventNestedInput
+  groupOrders?: Prisma.GroupOrderUpdateManyWithoutEventNestedInput
+  promoCodes?: Prisma.PromoCodeUpdateManyWithoutEventNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutLinkedEventNestedInput
+  scheduleItems?: Prisma.EventScheduleItemUpdateManyWithoutEventNestedInput
+  timeSlots?: Prisma.TimeSlotUpdateManyWithoutEventNestedInput
+  sessions?: Prisma.EventSessionUpdateManyWithoutEventNestedInput
+  waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutEventNestedInput
+}
+
+export type EventUncheckedUpdateWithoutOrdersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizerId?: Prisma.StringFieldUpdateOperationsInput | string
+  venueId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seatMapId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  seatingType?: Prisma.EnumSeatingTypeFieldUpdateOperationsInput | $Enums.SeatingType
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  virtualLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  venueState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salesEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  capacity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ticketTypes?: Prisma.TicketTypeUncheckedUpdateManyWithoutEventNestedInput
+  eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
+  reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
+  tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -3219,6 +3472,7 @@ export type EventCreateWithoutPaymentsInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payoutRequests?: Prisma.PayoutRequestCreateNestedManyWithoutEventInput
@@ -3263,6 +3517,7 @@ export type EventUncheckedCreateWithoutPaymentsInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payoutRequests?: Prisma.PayoutRequestUncheckedCreateNestedManyWithoutEventInput
@@ -3323,6 +3578,7 @@ export type EventUpdateWithoutPaymentsInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payoutRequests?: Prisma.PayoutRequestUpdateManyWithoutEventNestedInput
@@ -3367,6 +3623,7 @@ export type EventUncheckedUpdateWithoutPaymentsInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payoutRequests?: Prisma.PayoutRequestUncheckedUpdateManyWithoutEventNestedInput
@@ -3411,6 +3668,7 @@ export type EventCreateWithoutPayoutRequestsInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -3455,6 +3713,7 @@ export type EventUncheckedCreateWithoutPayoutRequestsInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -3515,6 +3774,7 @@ export type EventUpdateWithoutPayoutRequestsInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -3559,6 +3819,7 @@ export type EventUncheckedUpdateWithoutPayoutRequestsInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -3603,6 +3864,7 @@ export type EventCreateWithoutReviewsInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -3647,6 +3909,7 @@ export type EventUncheckedCreateWithoutReviewsInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -3707,6 +3970,7 @@ export type EventUpdateWithoutReviewsInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -3751,6 +4015,7 @@ export type EventUncheckedUpdateWithoutReviewsInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -3795,6 +4060,7 @@ export type EventCreateWithoutRefundRequestsInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -3839,6 +4105,7 @@ export type EventUncheckedCreateWithoutRefundRequestsInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -3899,6 +4166,7 @@ export type EventUpdateWithoutRefundRequestsInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -3943,6 +4211,7 @@ export type EventUncheckedUpdateWithoutRefundRequestsInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -3987,6 +4256,7 @@ export type EventCreateWithoutGroupOrdersInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -4031,6 +4301,7 @@ export type EventUncheckedCreateWithoutGroupOrdersInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -4091,6 +4362,7 @@ export type EventUpdateWithoutGroupOrdersInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -4135,6 +4407,7 @@ export type EventUncheckedUpdateWithoutGroupOrdersInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -4179,6 +4452,7 @@ export type EventCreateWithoutCalendarEventsInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -4223,6 +4497,7 @@ export type EventUncheckedCreateWithoutCalendarEventsInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -4283,6 +4558,7 @@ export type EventUpdateWithoutCalendarEventsInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -4327,6 +4603,7 @@ export type EventUncheckedUpdateWithoutCalendarEventsInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -4371,6 +4648,7 @@ export type EventCreateWithoutPromoCodesInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -4415,6 +4693,7 @@ export type EventUncheckedCreateWithoutPromoCodesInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -4475,6 +4754,7 @@ export type EventUpdateWithoutPromoCodesInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -4519,6 +4799,7 @@ export type EventUncheckedUpdateWithoutPromoCodesInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -4563,6 +4844,7 @@ export type EventCreateWithoutWaitlistEntriesInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -4607,6 +4889,7 @@ export type EventUncheckedCreateWithoutWaitlistEntriesInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -4667,6 +4950,7 @@ export type EventUpdateWithoutWaitlistEntriesInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -4711,6 +4995,7 @@ export type EventUncheckedUpdateWithoutWaitlistEntriesInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -4755,6 +5040,7 @@ export type EventCreateWithoutTimeSlotsInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -4799,6 +5085,7 @@ export type EventUncheckedCreateWithoutTimeSlotsInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -4859,6 +5146,7 @@ export type EventUpdateWithoutTimeSlotsInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -4903,6 +5191,7 @@ export type EventUncheckedUpdateWithoutTimeSlotsInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -4947,6 +5236,7 @@ export type EventCreateWithoutSessionsInput = {
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentCreateNestedManyWithoutEventInput
@@ -4991,6 +5281,7 @@ export type EventUncheckedCreateWithoutSessionsInput = {
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutEventInput
   reservations?: Prisma.ReservationUncheckedCreateNestedManyWithoutEventInput
   tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutEventInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutEventInput
   images?: Prisma.EventImageUncheckedCreateNestedManyWithoutEventInput
   speakers?: Prisma.EventSpeakerUncheckedCreateNestedManyWithoutEventInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutEventInput
@@ -5051,6 +5342,7 @@ export type EventUpdateWithoutSessionsInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -5095,6 +5387,7 @@ export type EventUncheckedUpdateWithoutSessionsInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -5165,6 +5458,7 @@ export type EventUpdateWithoutOrganizerInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -5209,6 +5503,7 @@ export type EventUncheckedUpdateWithoutOrganizerInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -5307,6 +5602,7 @@ export type EventUpdateWithoutCategoryInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -5351,6 +5647,7 @@ export type EventUncheckedUpdateWithoutCategoryInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -5449,6 +5746,7 @@ export type EventUpdateWithoutVenueInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -5493,6 +5791,7 @@ export type EventUncheckedUpdateWithoutVenueInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -5591,6 +5890,7 @@ export type EventUpdateWithoutSeatMapInput = {
   eventSeats?: Prisma.EventSeatUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutEventNestedInput
@@ -5635,6 +5935,7 @@ export type EventUncheckedUpdateWithoutSeatMapInput = {
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutEventNestedInput
   reservations?: Prisma.ReservationUncheckedUpdateManyWithoutEventNestedInput
   tickets?: Prisma.TicketUncheckedUpdateManyWithoutEventNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutEventNestedInput
   images?: Prisma.EventImageUncheckedUpdateManyWithoutEventNestedInput
   speakers?: Prisma.EventSpeakerUncheckedUpdateManyWithoutEventNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutEventNestedInput
@@ -5687,6 +5988,7 @@ export type EventCountOutputType = {
   eventSeats: number
   reservations: number
   tickets: number
+  orders: number
   images: number
   speakers: number
   payments: number
@@ -5707,6 +6009,7 @@ export type EventCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   eventSeats?: boolean | EventCountOutputTypeCountEventSeatsArgs
   reservations?: boolean | EventCountOutputTypeCountReservationsArgs
   tickets?: boolean | EventCountOutputTypeCountTicketsArgs
+  orders?: boolean | EventCountOutputTypeCountOrdersArgs
   images?: boolean | EventCountOutputTypeCountImagesArgs
   speakers?: boolean | EventCountOutputTypeCountSpeakersArgs
   payments?: boolean | EventCountOutputTypeCountPaymentsArgs
@@ -5758,6 +6061,13 @@ export type EventCountOutputTypeCountReservationsArgs<ExtArgs extends runtime.Ty
  */
 export type EventCountOutputTypeCountTicketsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.TicketWhereInput
+}
+
+/**
+ * EventCountOutputType without action
+ */
+export type EventCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderWhereInput
 }
 
 /**
@@ -5886,6 +6196,7 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   eventSeats?: boolean | Prisma.Event$eventSeatsArgs<ExtArgs>
   reservations?: boolean | Prisma.Event$reservationsArgs<ExtArgs>
   tickets?: boolean | Prisma.Event$ticketsArgs<ExtArgs>
+  orders?: boolean | Prisma.Event$ordersArgs<ExtArgs>
   images?: boolean | Prisma.Event$imagesArgs<ExtArgs>
   speakers?: boolean | Prisma.Event$speakersArgs<ExtArgs>
   payments?: boolean | Prisma.Event$paymentsArgs<ExtArgs>
@@ -6004,6 +6315,7 @@ export type EventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   eventSeats?: boolean | Prisma.Event$eventSeatsArgs<ExtArgs>
   reservations?: boolean | Prisma.Event$reservationsArgs<ExtArgs>
   tickets?: boolean | Prisma.Event$ticketsArgs<ExtArgs>
+  orders?: boolean | Prisma.Event$ordersArgs<ExtArgs>
   images?: boolean | Prisma.Event$imagesArgs<ExtArgs>
   speakers?: boolean | Prisma.Event$speakersArgs<ExtArgs>
   payments?: boolean | Prisma.Event$paymentsArgs<ExtArgs>
@@ -6043,6 +6355,7 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     eventSeats: Prisma.$EventSeatPayload<ExtArgs>[]
     reservations: Prisma.$ReservationPayload<ExtArgs>[]
     tickets: Prisma.$TicketPayload<ExtArgs>[]
+    orders: Prisma.$OrderPayload<ExtArgs>[]
     images: Prisma.$EventImagePayload<ExtArgs>[]
     speakers: Prisma.$EventSpeakerPayload<ExtArgs>[]
     payments: Prisma.$PaymentPayload<ExtArgs>[]
@@ -6509,6 +6822,7 @@ export interface Prisma__EventClient<T, Null = never, ExtArgs extends runtime.Ty
   eventSeats<T extends Prisma.Event$eventSeatsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$eventSeatsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventSeatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reservations<T extends Prisma.Event$reservationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$reservationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tickets<T extends Prisma.Event$ticketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  orders<T extends Prisma.Event$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   images<T extends Prisma.Event$imagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventImagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   speakers<T extends Prisma.Event$speakersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$speakersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventSpeakerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   payments<T extends Prisma.Event$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -7127,6 +7441,30 @@ export type Event$ticketsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.TicketScalarFieldEnum | Prisma.TicketScalarFieldEnum[]
+}
+
+/**
+ * Event.orders
+ */
+export type Event$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+  orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[]
+  cursor?: Prisma.OrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
 }
 
 /**

@@ -20,20 +20,8 @@ export type TimeSlotModel = runtime.Types.Result.DefaultSelection<Prisma.$TimeSl
 
 export type AggregateTimeSlot = {
   _count: TimeSlotCountAggregateOutputType | null
-  _avg: TimeSlotAvgAggregateOutputType | null
-  _sum: TimeSlotSumAggregateOutputType | null
   _min: TimeSlotMinAggregateOutputType | null
   _max: TimeSlotMaxAggregateOutputType | null
-}
-
-export type TimeSlotAvgAggregateOutputType = {
-  capacity: number | null
-  price: number | null
-}
-
-export type TimeSlotSumAggregateOutputType = {
-  capacity: number | null
-  price: number | null
 }
 
 export type TimeSlotMinAggregateOutputType = {
@@ -42,9 +30,6 @@ export type TimeSlotMinAggregateOutputType = {
   label: string | null
   startsAt: Date | null
   endsAt: Date | null
-  capacity: number | null
-  price: number | null
-  currency: string | null
   status: $Enums.TicketTypeStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -56,9 +41,6 @@ export type TimeSlotMaxAggregateOutputType = {
   label: string | null
   startsAt: Date | null
   endsAt: Date | null
-  capacity: number | null
-  price: number | null
-  currency: string | null
   status: $Enums.TicketTypeStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -70,9 +52,6 @@ export type TimeSlotCountAggregateOutputType = {
   label: number
   startsAt: number
   endsAt: number
-  capacity: number
-  price: number
-  currency: number
   status: number
   createdAt: number
   updatedAt: number
@@ -80,25 +59,12 @@ export type TimeSlotCountAggregateOutputType = {
 }
 
 
-export type TimeSlotAvgAggregateInputType = {
-  capacity?: true
-  price?: true
-}
-
-export type TimeSlotSumAggregateInputType = {
-  capacity?: true
-  price?: true
-}
-
 export type TimeSlotMinAggregateInputType = {
   id?: true
   eventId?: true
   label?: true
   startsAt?: true
   endsAt?: true
-  capacity?: true
-  price?: true
-  currency?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -110,9 +76,6 @@ export type TimeSlotMaxAggregateInputType = {
   label?: true
   startsAt?: true
   endsAt?: true
-  capacity?: true
-  price?: true
-  currency?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -124,9 +87,6 @@ export type TimeSlotCountAggregateInputType = {
   label?: true
   startsAt?: true
   endsAt?: true
-  capacity?: true
-  price?: true
-  currency?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -171,18 +131,6 @@ export type TimeSlotAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inter
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
-   * Select which fields to average
-  **/
-  _avg?: TimeSlotAvgAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
-   * Select which fields to sum
-  **/
-  _sum?: TimeSlotSumAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
    * Select which fields to find the minimum value
   **/
   _min?: TimeSlotMinAggregateInputType
@@ -213,8 +161,6 @@ export type TimeSlotGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   _count?: TimeSlotCountAggregateInputType | true
-  _avg?: TimeSlotAvgAggregateInputType
-  _sum?: TimeSlotSumAggregateInputType
   _min?: TimeSlotMinAggregateInputType
   _max?: TimeSlotMaxAggregateInputType
 }
@@ -225,15 +171,10 @@ export type TimeSlotGroupByOutputType = {
   label: string
   startsAt: Date
   endsAt: Date
-  capacity: number
-  price: number
-  currency: string
   status: $Enums.TicketTypeStatus
   createdAt: Date
   updatedAt: Date
   _count: TimeSlotCountAggregateOutputType | null
-  _avg: TimeSlotAvgAggregateOutputType | null
-  _sum: TimeSlotSumAggregateOutputType | null
   _min: TimeSlotMinAggregateOutputType | null
   _max: TimeSlotMaxAggregateOutputType | null
 }
@@ -262,13 +203,11 @@ export type TimeSlotWhereInput = {
   label?: Prisma.StringFilter<"TimeSlot"> | string
   startsAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
   endsAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
-  capacity?: Prisma.IntFilter<"TimeSlot"> | number
-  price?: Prisma.IntFilter<"TimeSlot"> | number
-  currency?: Prisma.StringFilter<"TimeSlot"> | string
   status?: Prisma.EnumTicketTypeStatusFilter<"TimeSlot"> | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
+  capacities?: Prisma.TimeSlotCapacityListRelationFilter
   tickets?: Prisma.TimeSlotTicketListRelationFilter
 }
 
@@ -278,13 +217,11 @@ export type TimeSlotOrderByWithRelationInput = {
   label?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
-  capacity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
-  currency?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   event?: Prisma.EventOrderByWithRelationInput
+  capacities?: Prisma.TimeSlotCapacityOrderByRelationAggregateInput
   tickets?: Prisma.TimeSlotTicketOrderByRelationAggregateInput
 }
 
@@ -297,13 +234,11 @@ export type TimeSlotWhereUniqueInput = Prisma.AtLeast<{
   label?: Prisma.StringFilter<"TimeSlot"> | string
   startsAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
   endsAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
-  capacity?: Prisma.IntFilter<"TimeSlot"> | number
-  price?: Prisma.IntFilter<"TimeSlot"> | number
-  currency?: Prisma.StringFilter<"TimeSlot"> | string
   status?: Prisma.EnumTicketTypeStatusFilter<"TimeSlot"> | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
+  capacities?: Prisma.TimeSlotCapacityListRelationFilter
   tickets?: Prisma.TimeSlotTicketListRelationFilter
 }, "id">
 
@@ -313,17 +248,12 @@ export type TimeSlotOrderByWithAggregationInput = {
   label?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
-  capacity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
-  currency?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TimeSlotCountOrderByAggregateInput
-  _avg?: Prisma.TimeSlotAvgOrderByAggregateInput
   _max?: Prisma.TimeSlotMaxOrderByAggregateInput
   _min?: Prisma.TimeSlotMinOrderByAggregateInput
-  _sum?: Prisma.TimeSlotSumOrderByAggregateInput
 }
 
 export type TimeSlotScalarWhereWithAggregatesInput = {
@@ -335,9 +265,6 @@ export type TimeSlotScalarWhereWithAggregatesInput = {
   label?: Prisma.StringWithAggregatesFilter<"TimeSlot"> | string
   startsAt?: Prisma.DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
   endsAt?: Prisma.DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
-  capacity?: Prisma.IntWithAggregatesFilter<"TimeSlot"> | number
-  price?: Prisma.IntWithAggregatesFilter<"TimeSlot"> | number
-  currency?: Prisma.StringWithAggregatesFilter<"TimeSlot"> | string
   status?: Prisma.EnumTicketTypeStatusWithAggregatesFilter<"TimeSlot"> | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"TimeSlot"> | Date | string
@@ -348,13 +275,11 @@ export type TimeSlotCreateInput = {
   label: string
   startsAt: Date | string
   endsAt: Date | string
-  capacity: number
-  price: number
-  currency?: string
   status?: $Enums.TicketTypeStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   event: Prisma.EventCreateNestedOneWithoutTimeSlotsInput
+  capacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTimeSlotInput
   tickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTimeSlotInput
 }
 
@@ -364,12 +289,10 @@ export type TimeSlotUncheckedCreateInput = {
   label: string
   startsAt: Date | string
   endsAt: Date | string
-  capacity: number
-  price: number
-  currency?: string
   status?: $Enums.TicketTypeStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  capacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTimeSlotInput
   tickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTimeSlotInput
 }
 
@@ -378,13 +301,11 @@ export type TimeSlotUpdateInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   event?: Prisma.EventUpdateOneRequiredWithoutTimeSlotsNestedInput
+  capacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTimeSlotNestedInput
   tickets?: Prisma.TimeSlotTicketUpdateManyWithoutTimeSlotNestedInput
 }
 
@@ -394,12 +315,10 @@ export type TimeSlotUncheckedUpdateInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  capacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTimeSlotNestedInput
   tickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTimeSlotNestedInput
 }
 
@@ -409,9 +328,6 @@ export type TimeSlotCreateManyInput = {
   label: string
   startsAt: Date | string
   endsAt: Date | string
-  capacity: number
-  price: number
-  currency?: string
   status?: $Enums.TicketTypeStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -422,9 +338,6 @@ export type TimeSlotUpdateManyMutationInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -436,9 +349,6 @@ export type TimeSlotUncheckedUpdateManyInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -460,17 +370,9 @@ export type TimeSlotCountOrderByAggregateInput = {
   label?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
-  capacity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
-  currency?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type TimeSlotAvgOrderByAggregateInput = {
-  capacity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
 }
 
 export type TimeSlotMaxOrderByAggregateInput = {
@@ -479,9 +381,6 @@ export type TimeSlotMaxOrderByAggregateInput = {
   label?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
-  capacity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
-  currency?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -493,17 +392,9 @@ export type TimeSlotMinOrderByAggregateInput = {
   label?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
-  capacity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
-  currency?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type TimeSlotSumOrderByAggregateInput = {
-  capacity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
 }
 
 export type TimeSlotScalarRelationFilter = {
@@ -553,6 +444,20 @@ export type TimeSlotUncheckedUpdateManyWithoutEventNestedInput = {
   deleteMany?: Prisma.TimeSlotScalarWhereInput | Prisma.TimeSlotScalarWhereInput[]
 }
 
+export type TimeSlotCreateNestedOneWithoutCapacitiesInput = {
+  create?: Prisma.XOR<Prisma.TimeSlotCreateWithoutCapacitiesInput, Prisma.TimeSlotUncheckedCreateWithoutCapacitiesInput>
+  connectOrCreate?: Prisma.TimeSlotCreateOrConnectWithoutCapacitiesInput
+  connect?: Prisma.TimeSlotWhereUniqueInput
+}
+
+export type TimeSlotUpdateOneRequiredWithoutCapacitiesNestedInput = {
+  create?: Prisma.XOR<Prisma.TimeSlotCreateWithoutCapacitiesInput, Prisma.TimeSlotUncheckedCreateWithoutCapacitiesInput>
+  connectOrCreate?: Prisma.TimeSlotCreateOrConnectWithoutCapacitiesInput
+  upsert?: Prisma.TimeSlotUpsertWithoutCapacitiesInput
+  connect?: Prisma.TimeSlotWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TimeSlotUpdateToOneWithWhereWithoutCapacitiesInput, Prisma.TimeSlotUpdateWithoutCapacitiesInput>, Prisma.TimeSlotUncheckedUpdateWithoutCapacitiesInput>
+}
+
 export type TimeSlotCreateNestedOneWithoutTicketsInput = {
   create?: Prisma.XOR<Prisma.TimeSlotCreateWithoutTicketsInput, Prisma.TimeSlotUncheckedCreateWithoutTicketsInput>
   connectOrCreate?: Prisma.TimeSlotCreateOrConnectWithoutTicketsInput
@@ -572,12 +477,10 @@ export type TimeSlotCreateWithoutEventInput = {
   label: string
   startsAt: Date | string
   endsAt: Date | string
-  capacity: number
-  price: number
-  currency?: string
   status?: $Enums.TicketTypeStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  capacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTimeSlotInput
   tickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTimeSlotInput
 }
 
@@ -586,12 +489,10 @@ export type TimeSlotUncheckedCreateWithoutEventInput = {
   label: string
   startsAt: Date | string
   endsAt: Date | string
-  capacity: number
-  price: number
-  currency?: string
   status?: $Enums.TicketTypeStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  capacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTimeSlotInput
   tickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTimeSlotInput
 }
 
@@ -630,12 +531,73 @@ export type TimeSlotScalarWhereInput = {
   label?: Prisma.StringFilter<"TimeSlot"> | string
   startsAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
   endsAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
-  capacity?: Prisma.IntFilter<"TimeSlot"> | number
-  price?: Prisma.IntFilter<"TimeSlot"> | number
-  currency?: Prisma.StringFilter<"TimeSlot"> | string
   status?: Prisma.EnumTicketTypeStatusFilter<"TimeSlot"> | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TimeSlot"> | Date | string
+}
+
+export type TimeSlotCreateWithoutCapacitiesInput = {
+  id?: string
+  label: string
+  startsAt: Date | string
+  endsAt: Date | string
+  status?: $Enums.TicketTypeStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  event: Prisma.EventCreateNestedOneWithoutTimeSlotsInput
+  tickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTimeSlotInput
+}
+
+export type TimeSlotUncheckedCreateWithoutCapacitiesInput = {
+  id?: string
+  eventId: string
+  label: string
+  startsAt: Date | string
+  endsAt: Date | string
+  status?: $Enums.TicketTypeStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTimeSlotInput
+}
+
+export type TimeSlotCreateOrConnectWithoutCapacitiesInput = {
+  where: Prisma.TimeSlotWhereUniqueInput
+  create: Prisma.XOR<Prisma.TimeSlotCreateWithoutCapacitiesInput, Prisma.TimeSlotUncheckedCreateWithoutCapacitiesInput>
+}
+
+export type TimeSlotUpsertWithoutCapacitiesInput = {
+  update: Prisma.XOR<Prisma.TimeSlotUpdateWithoutCapacitiesInput, Prisma.TimeSlotUncheckedUpdateWithoutCapacitiesInput>
+  create: Prisma.XOR<Prisma.TimeSlotCreateWithoutCapacitiesInput, Prisma.TimeSlotUncheckedCreateWithoutCapacitiesInput>
+  where?: Prisma.TimeSlotWhereInput
+}
+
+export type TimeSlotUpdateToOneWithWhereWithoutCapacitiesInput = {
+  where?: Prisma.TimeSlotWhereInput
+  data: Prisma.XOR<Prisma.TimeSlotUpdateWithoutCapacitiesInput, Prisma.TimeSlotUncheckedUpdateWithoutCapacitiesInput>
+}
+
+export type TimeSlotUpdateWithoutCapacitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  label?: Prisma.StringFieldUpdateOperationsInput | string
+  startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  event?: Prisma.EventUpdateOneRequiredWithoutTimeSlotsNestedInput
+  tickets?: Prisma.TimeSlotTicketUpdateManyWithoutTimeSlotNestedInput
+}
+
+export type TimeSlotUncheckedUpdateWithoutCapacitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  label?: Prisma.StringFieldUpdateOperationsInput | string
+  startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTimeSlotNestedInput
 }
 
 export type TimeSlotCreateWithoutTicketsInput = {
@@ -643,13 +605,11 @@ export type TimeSlotCreateWithoutTicketsInput = {
   label: string
   startsAt: Date | string
   endsAt: Date | string
-  capacity: number
-  price: number
-  currency?: string
   status?: $Enums.TicketTypeStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   event: Prisma.EventCreateNestedOneWithoutTimeSlotsInput
+  capacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTimeSlotInput
 }
 
 export type TimeSlotUncheckedCreateWithoutTicketsInput = {
@@ -658,12 +618,10 @@ export type TimeSlotUncheckedCreateWithoutTicketsInput = {
   label: string
   startsAt: Date | string
   endsAt: Date | string
-  capacity: number
-  price: number
-  currency?: string
   status?: $Enums.TicketTypeStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  capacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTimeSlotInput
 }
 
 export type TimeSlotCreateOrConnectWithoutTicketsInput = {
@@ -687,13 +645,11 @@ export type TimeSlotUpdateWithoutTicketsInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   event?: Prisma.EventUpdateOneRequiredWithoutTimeSlotsNestedInput
+  capacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTimeSlotNestedInput
 }
 
 export type TimeSlotUncheckedUpdateWithoutTicketsInput = {
@@ -702,12 +658,10 @@ export type TimeSlotUncheckedUpdateWithoutTicketsInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  capacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTimeSlotNestedInput
 }
 
 export type TimeSlotCreateManyEventInput = {
@@ -715,9 +669,6 @@ export type TimeSlotCreateManyEventInput = {
   label: string
   startsAt: Date | string
   endsAt: Date | string
-  capacity: number
-  price: number
-  currency?: string
   status?: $Enums.TicketTypeStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -728,12 +679,10 @@ export type TimeSlotUpdateWithoutEventInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  capacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTimeSlotNestedInput
   tickets?: Prisma.TimeSlotTicketUpdateManyWithoutTimeSlotNestedInput
 }
 
@@ -742,12 +691,10 @@ export type TimeSlotUncheckedUpdateWithoutEventInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  capacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTimeSlotNestedInput
   tickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTimeSlotNestedInput
 }
 
@@ -756,9 +703,6 @@ export type TimeSlotUncheckedUpdateManyWithoutEventInput = {
   label?: Prisma.StringFieldUpdateOperationsInput | string
   startsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endsAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  capacity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.IntFieldUpdateOperationsInput | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -770,10 +714,12 @@ export type TimeSlotUncheckedUpdateManyWithoutEventInput = {
  */
 
 export type TimeSlotCountOutputType = {
+  capacities: number
   tickets: number
 }
 
 export type TimeSlotCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  capacities?: boolean | TimeSlotCountOutputTypeCountCapacitiesArgs
   tickets?: boolean | TimeSlotCountOutputTypeCountTicketsArgs
 }
 
@@ -790,6 +736,13 @@ export type TimeSlotCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Ext
 /**
  * TimeSlotCountOutputType without action
  */
+export type TimeSlotCountOutputTypeCountCapacitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TimeSlotCapacityWhereInput
+}
+
+/**
+ * TimeSlotCountOutputType without action
+ */
 export type TimeSlotCountOutputTypeCountTicketsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.TimeSlotTicketWhereInput
 }
@@ -801,13 +754,11 @@ export type TimeSlotSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   label?: boolean
   startsAt?: boolean
   endsAt?: boolean
-  capacity?: boolean
-  price?: boolean
-  currency?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
+  capacities?: boolean | Prisma.TimeSlot$capacitiesArgs<ExtArgs>
   tickets?: boolean | Prisma.TimeSlot$ticketsArgs<ExtArgs>
   _count?: boolean | Prisma.TimeSlotCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["timeSlot"]>
@@ -818,9 +769,6 @@ export type TimeSlotSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   label?: boolean
   startsAt?: boolean
   endsAt?: boolean
-  capacity?: boolean
-  price?: boolean
-  currency?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -833,9 +781,6 @@ export type TimeSlotSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   label?: boolean
   startsAt?: boolean
   endsAt?: boolean
-  capacity?: boolean
-  price?: boolean
-  currency?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -848,17 +793,15 @@ export type TimeSlotSelectScalar = {
   label?: boolean
   startsAt?: boolean
   endsAt?: boolean
-  capacity?: boolean
-  price?: boolean
-  currency?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TimeSlotOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "label" | "startsAt" | "endsAt" | "capacity" | "price" | "currency" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["timeSlot"]>
+export type TimeSlotOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "label" | "startsAt" | "endsAt" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["timeSlot"]>
 export type TimeSlotInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
+  capacities?: boolean | Prisma.TimeSlot$capacitiesArgs<ExtArgs>
   tickets?: boolean | Prisma.TimeSlot$ticketsArgs<ExtArgs>
   _count?: boolean | Prisma.TimeSlotCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -873,17 +816,21 @@ export type $TimeSlotPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   name: "TimeSlot"
   objects: {
     event: Prisma.$EventPayload<ExtArgs>
+    capacities: Prisma.$TimeSlotCapacityPayload<ExtArgs>[]
     tickets: Prisma.$TimeSlotTicketPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     eventId: string
+    /**
+     * Display label, e.g. "26 Dec — 4pm Show"
+     */
     label: string
     startsAt: Date
     endsAt: Date
-    capacity: number
-    price: number
-    currency: string
+    /**
+     * Overall status (ACTIVE / INACTIVE / SOLD_OUT computed per-capacity)
+     */
     status: $Enums.TicketTypeStatus
     createdAt: Date
     updatedAt: Date
@@ -1282,6 +1229,7 @@ readonly fields: TimeSlotFieldRefs;
 export interface Prisma__TimeSlotClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   event<T extends Prisma.EventDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EventDefaultArgs<ExtArgs>>): Prisma.Prisma__EventClient<runtime.Types.Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  capacities<T extends Prisma.TimeSlot$capacitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TimeSlot$capacitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimeSlotCapacityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tickets<T extends Prisma.TimeSlot$ticketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TimeSlot$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimeSlotTicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1317,9 +1265,6 @@ export interface TimeSlotFieldRefs {
   readonly label: Prisma.FieldRef<"TimeSlot", 'String'>
   readonly startsAt: Prisma.FieldRef<"TimeSlot", 'DateTime'>
   readonly endsAt: Prisma.FieldRef<"TimeSlot", 'DateTime'>
-  readonly capacity: Prisma.FieldRef<"TimeSlot", 'Int'>
-  readonly price: Prisma.FieldRef<"TimeSlot", 'Int'>
-  readonly currency: Prisma.FieldRef<"TimeSlot", 'String'>
   readonly status: Prisma.FieldRef<"TimeSlot", 'TicketTypeStatus'>
   readonly createdAt: Prisma.FieldRef<"TimeSlot", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"TimeSlot", 'DateTime'>
@@ -1721,6 +1666,30 @@ export type TimeSlotDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Limit how many TimeSlots to delete.
    */
   limit?: number
+}
+
+/**
+ * TimeSlot.capacities
+ */
+export type TimeSlot$capacitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TimeSlotCapacity
+   */
+  select?: Prisma.TimeSlotCapacitySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TimeSlotCapacity
+   */
+  omit?: Prisma.TimeSlotCapacityOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TimeSlotCapacityInclude<ExtArgs> | null
+  where?: Prisma.TimeSlotCapacityWhereInput
+  orderBy?: Prisma.TimeSlotCapacityOrderByWithRelationInput | Prisma.TimeSlotCapacityOrderByWithRelationInput[]
+  cursor?: Prisma.TimeSlotCapacityWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TimeSlotCapacityScalarFieldEnum | Prisma.TimeSlotCapacityScalarFieldEnum[]
 }
 
 /**

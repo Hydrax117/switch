@@ -383,6 +383,8 @@ export type TicketTypeWhereInput = {
   promoCodes?: Prisma.PromoCodeListRelationFilter
   waitlistEntries?: Prisma.WaitlistEntryListRelationFilter
   tableAssignments?: Prisma.TableSeatAssignmentListRelationFilter
+  timeSlotCapacities?: Prisma.TimeSlotCapacityListRelationFilter
+  timeSlotTickets?: Prisma.TimeSlotTicketListRelationFilter
 }
 
 export type TicketTypeOrderByWithRelationInput = {
@@ -415,6 +417,8 @@ export type TicketTypeOrderByWithRelationInput = {
   promoCodes?: Prisma.PromoCodeOrderByRelationAggregateInput
   waitlistEntries?: Prisma.WaitlistEntryOrderByRelationAggregateInput
   tableAssignments?: Prisma.TableSeatAssignmentOrderByRelationAggregateInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityOrderByRelationAggregateInput
+  timeSlotTickets?: Prisma.TimeSlotTicketOrderByRelationAggregateInput
 }
 
 export type TicketTypeWhereUniqueInput = Prisma.AtLeast<{
@@ -450,6 +454,8 @@ export type TicketTypeWhereUniqueInput = Prisma.AtLeast<{
   promoCodes?: Prisma.PromoCodeListRelationFilter
   waitlistEntries?: Prisma.WaitlistEntryListRelationFilter
   tableAssignments?: Prisma.TableSeatAssignmentListRelationFilter
+  timeSlotCapacities?: Prisma.TimeSlotCapacityListRelationFilter
+  timeSlotTickets?: Prisma.TimeSlotTicketListRelationFilter
 }, "id" | "directLinkToken">
 
 export type TicketTypeOrderByWithAggregationInput = {
@@ -539,6 +545,8 @@ export type TicketTypeCreateInput = {
   promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUncheckedCreateInput = {
@@ -570,6 +578,8 @@ export type TicketTypeUncheckedCreateInput = {
   promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUpdateInput = {
@@ -601,6 +611,8 @@ export type TicketTypeUpdateInput = {
   promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateInput = {
@@ -632,6 +644,8 @@ export type TicketTypeUncheckedUpdateInput = {
   promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeCreateManyInput = {
@@ -949,6 +963,34 @@ export type TicketTypeUpdateOneRequiredWithoutWaitlistEntriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TicketTypeUpdateToOneWithWhereWithoutWaitlistEntriesInput, Prisma.TicketTypeUpdateWithoutWaitlistEntriesInput>, Prisma.TicketTypeUncheckedUpdateWithoutWaitlistEntriesInput>
 }
 
+export type TicketTypeCreateNestedOneWithoutTimeSlotCapacitiesInput = {
+  create?: Prisma.XOR<Prisma.TicketTypeCreateWithoutTimeSlotCapacitiesInput, Prisma.TicketTypeUncheckedCreateWithoutTimeSlotCapacitiesInput>
+  connectOrCreate?: Prisma.TicketTypeCreateOrConnectWithoutTimeSlotCapacitiesInput
+  connect?: Prisma.TicketTypeWhereUniqueInput
+}
+
+export type TicketTypeUpdateOneRequiredWithoutTimeSlotCapacitiesNestedInput = {
+  create?: Prisma.XOR<Prisma.TicketTypeCreateWithoutTimeSlotCapacitiesInput, Prisma.TicketTypeUncheckedCreateWithoutTimeSlotCapacitiesInput>
+  connectOrCreate?: Prisma.TicketTypeCreateOrConnectWithoutTimeSlotCapacitiesInput
+  upsert?: Prisma.TicketTypeUpsertWithoutTimeSlotCapacitiesInput
+  connect?: Prisma.TicketTypeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TicketTypeUpdateToOneWithWhereWithoutTimeSlotCapacitiesInput, Prisma.TicketTypeUpdateWithoutTimeSlotCapacitiesInput>, Prisma.TicketTypeUncheckedUpdateWithoutTimeSlotCapacitiesInput>
+}
+
+export type TicketTypeCreateNestedOneWithoutTimeSlotTicketsInput = {
+  create?: Prisma.XOR<Prisma.TicketTypeCreateWithoutTimeSlotTicketsInput, Prisma.TicketTypeUncheckedCreateWithoutTimeSlotTicketsInput>
+  connectOrCreate?: Prisma.TicketTypeCreateOrConnectWithoutTimeSlotTicketsInput
+  connect?: Prisma.TicketTypeWhereUniqueInput
+}
+
+export type TicketTypeUpdateOneRequiredWithoutTimeSlotTicketsNestedInput = {
+  create?: Prisma.XOR<Prisma.TicketTypeCreateWithoutTimeSlotTicketsInput, Prisma.TicketTypeUncheckedCreateWithoutTimeSlotTicketsInput>
+  connectOrCreate?: Prisma.TicketTypeCreateOrConnectWithoutTimeSlotTicketsInput
+  upsert?: Prisma.TicketTypeUpsertWithoutTimeSlotTicketsInput
+  connect?: Prisma.TicketTypeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TicketTypeUpdateToOneWithWhereWithoutTimeSlotTicketsInput, Prisma.TicketTypeUpdateWithoutTimeSlotTicketsInput>, Prisma.TicketTypeUncheckedUpdateWithoutTimeSlotTicketsInput>
+}
+
 export type TicketTypeCreateNestedOneWithoutTableAssignmentsInput = {
   create?: Prisma.XOR<Prisma.TicketTypeCreateWithoutTableAssignmentsInput, Prisma.TicketTypeUncheckedCreateWithoutTableAssignmentsInput>
   connectOrCreate?: Prisma.TicketTypeCreateOrConnectWithoutTableAssignmentsInput
@@ -991,6 +1033,8 @@ export type TicketTypeCreateWithoutEventInput = {
   promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUncheckedCreateWithoutEventInput = {
@@ -1021,6 +1065,8 @@ export type TicketTypeUncheckedCreateWithoutEventInput = {
   promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeCreateOrConnectWithoutEventInput = {
@@ -1105,6 +1151,8 @@ export type TicketTypeCreateWithoutEventSeatsInput = {
   promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUncheckedCreateWithoutEventSeatsInput = {
@@ -1135,6 +1183,8 @@ export type TicketTypeUncheckedCreateWithoutEventSeatsInput = {
   promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeCreateOrConnectWithoutEventSeatsInput = {
@@ -1181,6 +1231,8 @@ export type TicketTypeUpdateWithoutEventSeatsInput = {
   promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateWithoutEventSeatsInput = {
@@ -1211,6 +1263,8 @@ export type TicketTypeUncheckedUpdateWithoutEventSeatsInput = {
   promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeCreateWithoutTicketsInput = {
@@ -1241,6 +1295,8 @@ export type TicketTypeCreateWithoutTicketsInput = {
   promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUncheckedCreateWithoutTicketsInput = {
@@ -1271,6 +1327,8 @@ export type TicketTypeUncheckedCreateWithoutTicketsInput = {
   promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeCreateOrConnectWithoutTicketsInput = {
@@ -1317,6 +1375,8 @@ export type TicketTypeUpdateWithoutTicketsInput = {
   promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateWithoutTicketsInput = {
@@ -1347,6 +1407,8 @@ export type TicketTypeUncheckedUpdateWithoutTicketsInput = {
   promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeCreateWithoutGroupSlotsInput = {
@@ -1377,6 +1439,8 @@ export type TicketTypeCreateWithoutGroupSlotsInput = {
   promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUncheckedCreateWithoutGroupSlotsInput = {
@@ -1407,6 +1471,8 @@ export type TicketTypeUncheckedCreateWithoutGroupSlotsInput = {
   promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeCreateOrConnectWithoutGroupSlotsInput = {
@@ -1453,6 +1519,8 @@ export type TicketTypeUpdateWithoutGroupSlotsInput = {
   promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateWithoutGroupSlotsInput = {
@@ -1483,6 +1551,8 @@ export type TicketTypeUncheckedUpdateWithoutGroupSlotsInput = {
   promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeCreateWithoutPromoCodesInput = {
@@ -1513,6 +1583,8 @@ export type TicketTypeCreateWithoutPromoCodesInput = {
   groupSlots?: Prisma.GroupOrderSlotCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUncheckedCreateWithoutPromoCodesInput = {
@@ -1543,6 +1615,8 @@ export type TicketTypeUncheckedCreateWithoutPromoCodesInput = {
   groupSlots?: Prisma.GroupOrderSlotUncheckedCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeCreateOrConnectWithoutPromoCodesInput = {
@@ -1589,6 +1663,8 @@ export type TicketTypeUpdateWithoutPromoCodesInput = {
   groupSlots?: Prisma.GroupOrderSlotUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateWithoutPromoCodesInput = {
@@ -1619,6 +1695,8 @@ export type TicketTypeUncheckedUpdateWithoutPromoCodesInput = {
   groupSlots?: Prisma.GroupOrderSlotUncheckedUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeCreateWithoutWaitlistEntriesInput = {
@@ -1649,6 +1727,8 @@ export type TicketTypeCreateWithoutWaitlistEntriesInput = {
   groupSlots?: Prisma.GroupOrderSlotCreateNestedManyWithoutTicketTypeInput
   promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUncheckedCreateWithoutWaitlistEntriesInput = {
@@ -1679,6 +1759,8 @@ export type TicketTypeUncheckedCreateWithoutWaitlistEntriesInput = {
   groupSlots?: Prisma.GroupOrderSlotUncheckedCreateNestedManyWithoutTicketTypeInput
   promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeCreateOrConnectWithoutWaitlistEntriesInput = {
@@ -1725,6 +1807,8 @@ export type TicketTypeUpdateWithoutWaitlistEntriesInput = {
   groupSlots?: Prisma.GroupOrderSlotUpdateManyWithoutTicketTypeNestedInput
   promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateWithoutWaitlistEntriesInput = {
@@ -1755,6 +1839,296 @@ export type TicketTypeUncheckedUpdateWithoutWaitlistEntriesInput = {
   groupSlots?: Prisma.GroupOrderSlotUncheckedUpdateManyWithoutTicketTypeNestedInput
   promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
+}
+
+export type TicketTypeCreateWithoutTimeSlotCapacitiesInput = {
+  id?: string
+  name: string
+  description?: string | null
+  price: number
+  currency?: string
+  quantity?: number | null
+  sold?: number
+  salesStart?: Date | string | null
+  salesEnd?: Date | string | null
+  status?: $Enums.TicketTypeStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  minPerOrder?: number | null
+  maxPerOrder?: number | null
+  maxPerUser?: number | null
+  visibility?: $Enums.TicketVisibility
+  accessPasswordHash?: string | null
+  directLinkToken?: string | null
+  isTableType?: boolean
+  tableCapacity?: number | null
+  requiresAssignedSeating?: boolean
+  event: Prisma.EventCreateNestedOneWithoutTicketTypesInput
+  eventSeats?: Prisma.EventSeatCreateNestedManyWithoutTicketTypeInput
+  tickets?: Prisma.TicketCreateNestedManyWithoutTicketTypeInput
+  groupSlots?: Prisma.GroupOrderSlotCreateNestedManyWithoutTicketTypeInput
+  promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
+  waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
+  tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
+}
+
+export type TicketTypeUncheckedCreateWithoutTimeSlotCapacitiesInput = {
+  id?: string
+  eventId: string
+  name: string
+  description?: string | null
+  price: number
+  currency?: string
+  quantity?: number | null
+  sold?: number
+  salesStart?: Date | string | null
+  salesEnd?: Date | string | null
+  status?: $Enums.TicketTypeStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  minPerOrder?: number | null
+  maxPerOrder?: number | null
+  maxPerUser?: number | null
+  visibility?: $Enums.TicketVisibility
+  accessPasswordHash?: string | null
+  directLinkToken?: string | null
+  isTableType?: boolean
+  tableCapacity?: number | null
+  requiresAssignedSeating?: boolean
+  eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutTicketTypeInput
+  tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutTicketTypeInput
+  groupSlots?: Prisma.GroupOrderSlotUncheckedCreateNestedManyWithoutTicketTypeInput
+  promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
+  waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
+  tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
+}
+
+export type TicketTypeCreateOrConnectWithoutTimeSlotCapacitiesInput = {
+  where: Prisma.TicketTypeWhereUniqueInput
+  create: Prisma.XOR<Prisma.TicketTypeCreateWithoutTimeSlotCapacitiesInput, Prisma.TicketTypeUncheckedCreateWithoutTimeSlotCapacitiesInput>
+}
+
+export type TicketTypeUpsertWithoutTimeSlotCapacitiesInput = {
+  update: Prisma.XOR<Prisma.TicketTypeUpdateWithoutTimeSlotCapacitiesInput, Prisma.TicketTypeUncheckedUpdateWithoutTimeSlotCapacitiesInput>
+  create: Prisma.XOR<Prisma.TicketTypeCreateWithoutTimeSlotCapacitiesInput, Prisma.TicketTypeUncheckedCreateWithoutTimeSlotCapacitiesInput>
+  where?: Prisma.TicketTypeWhereInput
+}
+
+export type TicketTypeUpdateToOneWithWhereWithoutTimeSlotCapacitiesInput = {
+  where?: Prisma.TicketTypeWhereInput
+  data: Prisma.XOR<Prisma.TicketTypeUpdateWithoutTimeSlotCapacitiesInput, Prisma.TicketTypeUncheckedUpdateWithoutTimeSlotCapacitiesInput>
+}
+
+export type TicketTypeUpdateWithoutTimeSlotCapacitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.IntFieldUpdateOperationsInput | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sold?: Prisma.IntFieldUpdateOperationsInput | number
+  salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salesEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  minPerOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxPerOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxPerUser?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  visibility?: Prisma.EnumTicketVisibilityFieldUpdateOperationsInput | $Enums.TicketVisibility
+  accessPasswordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  directLinkToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isTableType?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tableCapacity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  requiresAssignedSeating?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  event?: Prisma.EventUpdateOneRequiredWithoutTicketTypesNestedInput
+  eventSeats?: Prisma.EventSeatUpdateManyWithoutTicketTypeNestedInput
+  tickets?: Prisma.TicketUpdateManyWithoutTicketTypeNestedInput
+  groupSlots?: Prisma.GroupOrderSlotUpdateManyWithoutTicketTypeNestedInput
+  promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
+  waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
+  tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
+}
+
+export type TicketTypeUncheckedUpdateWithoutTimeSlotCapacitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.IntFieldUpdateOperationsInput | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sold?: Prisma.IntFieldUpdateOperationsInput | number
+  salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salesEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  minPerOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxPerOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxPerUser?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  visibility?: Prisma.EnumTicketVisibilityFieldUpdateOperationsInput | $Enums.TicketVisibility
+  accessPasswordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  directLinkToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isTableType?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tableCapacity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  requiresAssignedSeating?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutTicketTypeNestedInput
+  tickets?: Prisma.TicketUncheckedUpdateManyWithoutTicketTypeNestedInput
+  groupSlots?: Prisma.GroupOrderSlotUncheckedUpdateManyWithoutTicketTypeNestedInput
+  promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
+  waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
+  tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
+}
+
+export type TicketTypeCreateWithoutTimeSlotTicketsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  price: number
+  currency?: string
+  quantity?: number | null
+  sold?: number
+  salesStart?: Date | string | null
+  salesEnd?: Date | string | null
+  status?: $Enums.TicketTypeStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  minPerOrder?: number | null
+  maxPerOrder?: number | null
+  maxPerUser?: number | null
+  visibility?: $Enums.TicketVisibility
+  accessPasswordHash?: string | null
+  directLinkToken?: string | null
+  isTableType?: boolean
+  tableCapacity?: number | null
+  requiresAssignedSeating?: boolean
+  event: Prisma.EventCreateNestedOneWithoutTicketTypesInput
+  eventSeats?: Prisma.EventSeatCreateNestedManyWithoutTicketTypeInput
+  tickets?: Prisma.TicketCreateNestedManyWithoutTicketTypeInput
+  groupSlots?: Prisma.GroupOrderSlotCreateNestedManyWithoutTicketTypeInput
+  promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
+  waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
+  tableAssignments?: Prisma.TableSeatAssignmentCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+}
+
+export type TicketTypeUncheckedCreateWithoutTimeSlotTicketsInput = {
+  id?: string
+  eventId: string
+  name: string
+  description?: string | null
+  price: number
+  currency?: string
+  quantity?: number | null
+  sold?: number
+  salesStart?: Date | string | null
+  salesEnd?: Date | string | null
+  status?: $Enums.TicketTypeStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  minPerOrder?: number | null
+  maxPerOrder?: number | null
+  maxPerUser?: number | null
+  visibility?: $Enums.TicketVisibility
+  accessPasswordHash?: string | null
+  directLinkToken?: string | null
+  isTableType?: boolean
+  tableCapacity?: number | null
+  requiresAssignedSeating?: boolean
+  eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutTicketTypeInput
+  tickets?: Prisma.TicketUncheckedCreateNestedManyWithoutTicketTypeInput
+  groupSlots?: Prisma.GroupOrderSlotUncheckedCreateNestedManyWithoutTicketTypeInput
+  promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
+  waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
+  tableAssignments?: Prisma.TableSeatAssignmentUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+}
+
+export type TicketTypeCreateOrConnectWithoutTimeSlotTicketsInput = {
+  where: Prisma.TicketTypeWhereUniqueInput
+  create: Prisma.XOR<Prisma.TicketTypeCreateWithoutTimeSlotTicketsInput, Prisma.TicketTypeUncheckedCreateWithoutTimeSlotTicketsInput>
+}
+
+export type TicketTypeUpsertWithoutTimeSlotTicketsInput = {
+  update: Prisma.XOR<Prisma.TicketTypeUpdateWithoutTimeSlotTicketsInput, Prisma.TicketTypeUncheckedUpdateWithoutTimeSlotTicketsInput>
+  create: Prisma.XOR<Prisma.TicketTypeCreateWithoutTimeSlotTicketsInput, Prisma.TicketTypeUncheckedCreateWithoutTimeSlotTicketsInput>
+  where?: Prisma.TicketTypeWhereInput
+}
+
+export type TicketTypeUpdateToOneWithWhereWithoutTimeSlotTicketsInput = {
+  where?: Prisma.TicketTypeWhereInput
+  data: Prisma.XOR<Prisma.TicketTypeUpdateWithoutTimeSlotTicketsInput, Prisma.TicketTypeUncheckedUpdateWithoutTimeSlotTicketsInput>
+}
+
+export type TicketTypeUpdateWithoutTimeSlotTicketsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.IntFieldUpdateOperationsInput | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sold?: Prisma.IntFieldUpdateOperationsInput | number
+  salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salesEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  minPerOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxPerOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxPerUser?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  visibility?: Prisma.EnumTicketVisibilityFieldUpdateOperationsInput | $Enums.TicketVisibility
+  accessPasswordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  directLinkToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isTableType?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tableCapacity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  requiresAssignedSeating?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  event?: Prisma.EventUpdateOneRequiredWithoutTicketTypesNestedInput
+  eventSeats?: Prisma.EventSeatUpdateManyWithoutTicketTypeNestedInput
+  tickets?: Prisma.TicketUpdateManyWithoutTicketTypeNestedInput
+  groupSlots?: Prisma.GroupOrderSlotUpdateManyWithoutTicketTypeNestedInput
+  promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
+  waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
+  tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+}
+
+export type TicketTypeUncheckedUpdateWithoutTimeSlotTicketsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  price?: Prisma.IntFieldUpdateOperationsInput | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sold?: Prisma.IntFieldUpdateOperationsInput | number
+  salesStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  salesEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumTicketTypeStatusFieldUpdateOperationsInput | $Enums.TicketTypeStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  minPerOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxPerOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxPerUser?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  visibility?: Prisma.EnumTicketVisibilityFieldUpdateOperationsInput | $Enums.TicketVisibility
+  accessPasswordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  directLinkToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isTableType?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tableCapacity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  requiresAssignedSeating?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutTicketTypeNestedInput
+  tickets?: Prisma.TicketUncheckedUpdateManyWithoutTicketTypeNestedInput
+  groupSlots?: Prisma.GroupOrderSlotUncheckedUpdateManyWithoutTicketTypeNestedInput
+  promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
+  waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
+  tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeCreateWithoutTableAssignmentsInput = {
@@ -1785,6 +2159,8 @@ export type TicketTypeCreateWithoutTableAssignmentsInput = {
   groupSlots?: Prisma.GroupOrderSlotCreateNestedManyWithoutTicketTypeInput
   promoCodes?: Prisma.PromoCodeCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeUncheckedCreateWithoutTableAssignmentsInput = {
@@ -1815,6 +2191,8 @@ export type TicketTypeUncheckedCreateWithoutTableAssignmentsInput = {
   groupSlots?: Prisma.GroupOrderSlotUncheckedCreateNestedManyWithoutTicketTypeInput
   promoCodes?: Prisma.PromoCodeUncheckedCreateNestedManyWithoutTicketTypeInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedCreateNestedManyWithoutTicketTypeInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedCreateNestedManyWithoutTicketTypeInput
 }
 
 export type TicketTypeCreateOrConnectWithoutTableAssignmentsInput = {
@@ -1861,6 +2239,8 @@ export type TicketTypeUpdateWithoutTableAssignmentsInput = {
   groupSlots?: Prisma.GroupOrderSlotUpdateManyWithoutTicketTypeNestedInput
   promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateWithoutTableAssignmentsInput = {
@@ -1891,6 +2271,8 @@ export type TicketTypeUncheckedUpdateWithoutTableAssignmentsInput = {
   groupSlots?: Prisma.GroupOrderSlotUncheckedUpdateManyWithoutTicketTypeNestedInput
   promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeCreateManyEventInput = {
@@ -1945,6 +2327,8 @@ export type TicketTypeUpdateWithoutEventInput = {
   promoCodes?: Prisma.PromoCodeUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateWithoutEventInput = {
@@ -1975,6 +2359,8 @@ export type TicketTypeUncheckedUpdateWithoutEventInput = {
   promoCodes?: Prisma.PromoCodeUncheckedUpdateManyWithoutTicketTypeNestedInput
   waitlistEntries?: Prisma.WaitlistEntryUncheckedUpdateManyWithoutTicketTypeNestedInput
   tableAssignments?: Prisma.TableSeatAssignmentUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotCapacities?: Prisma.TimeSlotCapacityUncheckedUpdateManyWithoutTicketTypeNestedInput
+  timeSlotTickets?: Prisma.TimeSlotTicketUncheckedUpdateManyWithoutTicketTypeNestedInput
 }
 
 export type TicketTypeUncheckedUpdateManyWithoutEventInput = {
@@ -2013,6 +2399,8 @@ export type TicketTypeCountOutputType = {
   promoCodes: number
   waitlistEntries: number
   tableAssignments: number
+  timeSlotCapacities: number
+  timeSlotTickets: number
 }
 
 export type TicketTypeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2022,6 +2410,8 @@ export type TicketTypeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extens
   promoCodes?: boolean | TicketTypeCountOutputTypeCountPromoCodesArgs
   waitlistEntries?: boolean | TicketTypeCountOutputTypeCountWaitlistEntriesArgs
   tableAssignments?: boolean | TicketTypeCountOutputTypeCountTableAssignmentsArgs
+  timeSlotCapacities?: boolean | TicketTypeCountOutputTypeCountTimeSlotCapacitiesArgs
+  timeSlotTickets?: boolean | TicketTypeCountOutputTypeCountTimeSlotTicketsArgs
 }
 
 /**
@@ -2076,6 +2466,20 @@ export type TicketTypeCountOutputTypeCountTableAssignmentsArgs<ExtArgs extends r
   where?: Prisma.TableSeatAssignmentWhereInput
 }
 
+/**
+ * TicketTypeCountOutputType without action
+ */
+export type TicketTypeCountOutputTypeCountTimeSlotCapacitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TimeSlotCapacityWhereInput
+}
+
+/**
+ * TicketTypeCountOutputType without action
+ */
+export type TicketTypeCountOutputTypeCountTimeSlotTicketsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TimeSlotTicketWhereInput
+}
+
 
 export type TicketTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2107,6 +2511,8 @@ export type TicketTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   promoCodes?: boolean | Prisma.TicketType$promoCodesArgs<ExtArgs>
   waitlistEntries?: boolean | Prisma.TicketType$waitlistEntriesArgs<ExtArgs>
   tableAssignments?: boolean | Prisma.TicketType$tableAssignmentsArgs<ExtArgs>
+  timeSlotCapacities?: boolean | Prisma.TicketType$timeSlotCapacitiesArgs<ExtArgs>
+  timeSlotTickets?: boolean | Prisma.TicketType$timeSlotTicketsArgs<ExtArgs>
   _count?: boolean | Prisma.TicketTypeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["ticketType"]>
 
@@ -2196,6 +2602,8 @@ export type TicketTypeInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   promoCodes?: boolean | Prisma.TicketType$promoCodesArgs<ExtArgs>
   waitlistEntries?: boolean | Prisma.TicketType$waitlistEntriesArgs<ExtArgs>
   tableAssignments?: boolean | Prisma.TicketType$tableAssignmentsArgs<ExtArgs>
+  timeSlotCapacities?: boolean | Prisma.TicketType$timeSlotCapacitiesArgs<ExtArgs>
+  timeSlotTickets?: boolean | Prisma.TicketType$timeSlotTicketsArgs<ExtArgs>
   _count?: boolean | Prisma.TicketTypeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TicketTypeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2215,6 +2623,8 @@ export type $TicketTypePayload<ExtArgs extends runtime.Types.Extensions.Internal
     promoCodes: Prisma.$PromoCodePayload<ExtArgs>[]
     waitlistEntries: Prisma.$WaitlistEntryPayload<ExtArgs>[]
     tableAssignments: Prisma.$TableSeatAssignmentPayload<ExtArgs>[]
+    timeSlotCapacities: Prisma.$TimeSlotCapacityPayload<ExtArgs>[]
+    timeSlotTickets: Prisma.$TimeSlotTicketPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2655,6 +3065,8 @@ export interface Prisma__TicketTypeClient<T, Null = never, ExtArgs extends runti
   promoCodes<T extends Prisma.TicketType$promoCodesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TicketType$promoCodesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PromoCodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   waitlistEntries<T extends Prisma.TicketType$waitlistEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TicketType$waitlistEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WaitlistEntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tableAssignments<T extends Prisma.TicketType$tableAssignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TicketType$tableAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TableSeatAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  timeSlotCapacities<T extends Prisma.TicketType$timeSlotCapacitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TicketType$timeSlotCapacitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimeSlotCapacityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  timeSlotTickets<T extends Prisma.TicketType$timeSlotTicketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TicketType$timeSlotTicketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimeSlotTicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3248,6 +3660,54 @@ export type TicketType$tableAssignmentsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.TableSeatAssignmentScalarFieldEnum | Prisma.TableSeatAssignmentScalarFieldEnum[]
+}
+
+/**
+ * TicketType.timeSlotCapacities
+ */
+export type TicketType$timeSlotCapacitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TimeSlotCapacity
+   */
+  select?: Prisma.TimeSlotCapacitySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TimeSlotCapacity
+   */
+  omit?: Prisma.TimeSlotCapacityOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TimeSlotCapacityInclude<ExtArgs> | null
+  where?: Prisma.TimeSlotCapacityWhereInput
+  orderBy?: Prisma.TimeSlotCapacityOrderByWithRelationInput | Prisma.TimeSlotCapacityOrderByWithRelationInput[]
+  cursor?: Prisma.TimeSlotCapacityWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TimeSlotCapacityScalarFieldEnum | Prisma.TimeSlotCapacityScalarFieldEnum[]
+}
+
+/**
+ * TicketType.timeSlotTickets
+ */
+export type TicketType$timeSlotTicketsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TimeSlotTicket
+   */
+  select?: Prisma.TimeSlotTicketSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TimeSlotTicket
+   */
+  omit?: Prisma.TimeSlotTicketOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TimeSlotTicketInclude<ExtArgs> | null
+  where?: Prisma.TimeSlotTicketWhereInput
+  orderBy?: Prisma.TimeSlotTicketOrderByWithRelationInput | Prisma.TimeSlotTicketOrderByWithRelationInput[]
+  cursor?: Prisma.TimeSlotTicketWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TimeSlotTicketScalarFieldEnum | Prisma.TimeSlotTicketScalarFieldEnum[]
 }
 
 /**

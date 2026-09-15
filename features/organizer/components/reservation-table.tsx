@@ -619,13 +619,13 @@ export function ReservationTable({
                     <td className="px-4 py-3 text-[12.5px]">
                       {ticket.isComplimentary ? (
                         <span className="text-violet-400">Free (Comp)</span>
-                      ) : ticket.payment ? (
+                      ) : ticket.order?.payment ? (
                         <span>
                           {new Intl.NumberFormat('en-NG', {
                             style: 'currency',
-                            currency: ticket.payment.currency,
+                            currency: ticket.order.payment.currency,
                             minimumFractionDigits: 0,
-                          }).format(ticket.payment.amount / 100)}
+                          }).format(ticket.order.payment.amount / 100)}
                         </span>
                       ) : ticket.ticketType.price === 0 ? (
                         <span className="text-emerald-500">Free</span>

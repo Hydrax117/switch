@@ -71,6 +71,7 @@ export const ModelName = {
   EventSeat: 'EventSeat',
   Reservation: 'Reservation',
   Ticket: 'Ticket',
+  Order: 'Order',
   Payment: 'Payment',
   PayoutRequest: 'PayoutRequest',
   EventReview: 'EventReview',
@@ -83,6 +84,7 @@ export const ModelName = {
   PromoCode: 'PromoCode',
   WaitlistEntry: 'WaitlistEntry',
   TimeSlot: 'TimeSlot',
+  TimeSlotCapacity: 'TimeSlotCapacity',
   TimeSlotTicket: 'TimeSlotTicket',
   EventSession: 'EventSession',
   SessionEnrolment: 'SessionEnrolment',
@@ -427,6 +429,7 @@ export const TicketScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
   userId: 'userId',
+  orderId: 'orderId',
   eventSeatId: 'eventSeatId',
   ticketTypeId: 'ticketTypeId',
   ticketNumber: 'ticketNumber',
@@ -441,9 +444,25 @@ export const TicketScalarFieldEnum = {
 export type TicketScalarFieldEnum = (typeof TicketScalarFieldEnum)[keyof typeof TicketScalarFieldEnum]
 
 
+export const OrderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  eventId: 'eventId',
+  reservationId: 'reservationId',
+  totalAmount: 'totalAmount',
+  currency: 'currency',
+  discountAmount: 'discountAmount',
+  promoCodeId: 'promoCodeId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
 export const PaymentScalarFieldEnum = {
   id: 'id',
-  ticketId: 'ticketId',
+  orderId: 'orderId',
   organizerId: 'organizerId',
   userId: 'userId',
   eventId: 'eventId',
@@ -456,8 +475,6 @@ export const PaymentScalarFieldEnum = {
   paystackReference: 'paystackReference',
   paystackTransactionId: 'paystackTransactionId',
   payoutRequestId: 'payoutRequestId',
-  promoCodeId: 'promoCodeId',
-  discountAmount: 'discountAmount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -514,6 +531,7 @@ export const RefundRequestScalarFieldEnum = {
   reviewedBy: 'reviewedBy',
   reviewedAt: 'reviewedAt',
   paystackRefundId: 'paystackRefundId',
+  ticketId: 'ticketId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -640,9 +658,6 @@ export const TimeSlotScalarFieldEnum = {
   label: 'label',
   startsAt: 'startsAt',
   endsAt: 'endsAt',
-  capacity: 'capacity',
-  price: 'price',
-  currency: 'currency',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -651,10 +666,23 @@ export const TimeSlotScalarFieldEnum = {
 export type TimeSlotScalarFieldEnum = (typeof TimeSlotScalarFieldEnum)[keyof typeof TimeSlotScalarFieldEnum]
 
 
+export const TimeSlotCapacityScalarFieldEnum = {
+  id: 'id',
+  timeSlotId: 'timeSlotId',
+  ticketTypeId: 'ticketTypeId',
+  capacity: 'capacity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimeSlotCapacityScalarFieldEnum = (typeof TimeSlotCapacityScalarFieldEnum)[keyof typeof TimeSlotCapacityScalarFieldEnum]
+
+
 export const TimeSlotTicketScalarFieldEnum = {
   id: 'id',
   ticketId: 'ticketId',
   timeSlotId: 'timeSlotId',
+  ticketTypeId: 'ticketTypeId',
   createdAt: 'createdAt'
 } as const
 

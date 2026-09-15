@@ -214,6 +214,7 @@ export type ReservationWhereInput = {
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   eventSeats?: Prisma.EventSeatListRelationFilter
   waitlistEntry?: Prisma.XOR<Prisma.WaitlistEntryNullableScalarRelationFilter, Prisma.WaitlistEntryWhereInput> | null
+  order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null
 }
 
 export type ReservationOrderByWithRelationInput = {
@@ -230,6 +231,7 @@ export type ReservationOrderByWithRelationInput = {
   user?: Prisma.UserOrderByWithRelationInput
   eventSeats?: Prisma.EventSeatOrderByRelationAggregateInput
   waitlistEntry?: Prisma.WaitlistEntryOrderByWithRelationInput
+  order?: Prisma.OrderOrderByWithRelationInput
 }
 
 export type ReservationWhereUniqueInput = Prisma.AtLeast<{
@@ -249,6 +251,7 @@ export type ReservationWhereUniqueInput = Prisma.AtLeast<{
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   eventSeats?: Prisma.EventSeatListRelationFilter
   waitlistEntry?: Prisma.XOR<Prisma.WaitlistEntryNullableScalarRelationFilter, Prisma.WaitlistEntryWhereInput> | null
+  order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null
 }, "id" | "waitlistEntryId">
 
 export type ReservationOrderByWithAggregationInput = {
@@ -292,6 +295,7 @@ export type ReservationCreateInput = {
   user: Prisma.UserCreateNestedOneWithoutReservationsInput
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutReservationInput
   waitlistEntry?: Prisma.WaitlistEntryCreateNestedOneWithoutReservationInput
+  order?: Prisma.OrderCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationUncheckedCreateInput = {
@@ -305,6 +309,7 @@ export type ReservationUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutReservationInput
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationUpdateInput = {
@@ -318,6 +323,7 @@ export type ReservationUpdateInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutReservationsNestedInput
   eventSeats?: Prisma.EventSeatUpdateManyWithoutReservationNestedInput
   waitlistEntry?: Prisma.WaitlistEntryUpdateOneWithoutReservationNestedInput
+  order?: Prisma.OrderUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationUncheckedUpdateInput = {
@@ -331,6 +337,7 @@ export type ReservationUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutReservationNestedInput
+  order?: Prisma.OrderUncheckedUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationCreateManyInput = {
@@ -519,6 +526,22 @@ export type EnumReservationStatusFieldUpdateOperationsInput = {
   set?: $Enums.ReservationStatus
 }
 
+export type ReservationCreateNestedOneWithoutOrderInput = {
+  create?: Prisma.XOR<Prisma.ReservationCreateWithoutOrderInput, Prisma.ReservationUncheckedCreateWithoutOrderInput>
+  connectOrCreate?: Prisma.ReservationCreateOrConnectWithoutOrderInput
+  connect?: Prisma.ReservationWhereUniqueInput
+}
+
+export type ReservationUpdateOneWithoutOrderNestedInput = {
+  create?: Prisma.XOR<Prisma.ReservationCreateWithoutOrderInput, Prisma.ReservationUncheckedCreateWithoutOrderInput>
+  connectOrCreate?: Prisma.ReservationCreateOrConnectWithoutOrderInput
+  upsert?: Prisma.ReservationUpsertWithoutOrderInput
+  disconnect?: Prisma.ReservationWhereInput | boolean
+  delete?: Prisma.ReservationWhereInput | boolean
+  connect?: Prisma.ReservationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReservationUpdateToOneWithWhereWithoutOrderInput, Prisma.ReservationUpdateWithoutOrderInput>, Prisma.ReservationUncheckedUpdateWithoutOrderInput>
+}
+
 export type ReservationCreateNestedOneWithoutWaitlistEntryInput = {
   create?: Prisma.XOR<Prisma.ReservationCreateWithoutWaitlistEntryInput, Prisma.ReservationUncheckedCreateWithoutWaitlistEntryInput>
   connectOrCreate?: Prisma.ReservationCreateOrConnectWithoutWaitlistEntryInput
@@ -561,6 +584,7 @@ export type ReservationCreateWithoutUserInput = {
   event: Prisma.EventCreateNestedOneWithoutReservationsInput
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutReservationInput
   waitlistEntry?: Prisma.WaitlistEntryCreateNestedOneWithoutReservationInput
+  order?: Prisma.OrderCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationUncheckedCreateWithoutUserInput = {
@@ -573,6 +597,7 @@ export type ReservationUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutReservationInput
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationCreateOrConnectWithoutUserInput = {
@@ -626,6 +651,7 @@ export type ReservationCreateWithoutEventInput = {
   user: Prisma.UserCreateNestedOneWithoutReservationsInput
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutReservationInput
   waitlistEntry?: Prisma.WaitlistEntryCreateNestedOneWithoutReservationInput
+  order?: Prisma.OrderCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationUncheckedCreateWithoutEventInput = {
@@ -638,6 +664,7 @@ export type ReservationUncheckedCreateWithoutEventInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutReservationInput
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationCreateOrConnectWithoutEventInput = {
@@ -676,6 +703,7 @@ export type ReservationCreateWithoutEventSeatsInput = {
   event: Prisma.EventCreateNestedOneWithoutReservationsInput
   user: Prisma.UserCreateNestedOneWithoutReservationsInput
   waitlistEntry?: Prisma.WaitlistEntryCreateNestedOneWithoutReservationInput
+  order?: Prisma.OrderCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationUncheckedCreateWithoutEventSeatsInput = {
@@ -688,6 +716,7 @@ export type ReservationUncheckedCreateWithoutEventSeatsInput = {
   waitlistEntryId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationCreateOrConnectWithoutEventSeatsInput = {
@@ -716,6 +745,7 @@ export type ReservationUpdateWithoutEventSeatsInput = {
   event?: Prisma.EventUpdateOneRequiredWithoutReservationsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutReservationsNestedInput
   waitlistEntry?: Prisma.WaitlistEntryUpdateOneWithoutReservationNestedInput
+  order?: Prisma.OrderUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationUncheckedUpdateWithoutEventSeatsInput = {
@@ -728,6 +758,75 @@ export type ReservationUncheckedUpdateWithoutEventSeatsInput = {
   waitlistEntryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  order?: Prisma.OrderUncheckedUpdateOneWithoutReservationNestedInput
+}
+
+export type ReservationCreateWithoutOrderInput = {
+  id?: string
+  status?: $Enums.ReservationStatus
+  expiresAt: Date | string
+  gaHolds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  event: Prisma.EventCreateNestedOneWithoutReservationsInput
+  user: Prisma.UserCreateNestedOneWithoutReservationsInput
+  eventSeats?: Prisma.EventSeatCreateNestedManyWithoutReservationInput
+  waitlistEntry?: Prisma.WaitlistEntryCreateNestedOneWithoutReservationInput
+}
+
+export type ReservationUncheckedCreateWithoutOrderInput = {
+  id?: string
+  eventId: string
+  userId: string
+  status?: $Enums.ReservationStatus
+  expiresAt: Date | string
+  gaHolds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  waitlistEntryId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutReservationInput
+}
+
+export type ReservationCreateOrConnectWithoutOrderInput = {
+  where: Prisma.ReservationWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReservationCreateWithoutOrderInput, Prisma.ReservationUncheckedCreateWithoutOrderInput>
+}
+
+export type ReservationUpsertWithoutOrderInput = {
+  update: Prisma.XOR<Prisma.ReservationUpdateWithoutOrderInput, Prisma.ReservationUncheckedUpdateWithoutOrderInput>
+  create: Prisma.XOR<Prisma.ReservationCreateWithoutOrderInput, Prisma.ReservationUncheckedCreateWithoutOrderInput>
+  where?: Prisma.ReservationWhereInput
+}
+
+export type ReservationUpdateToOneWithWhereWithoutOrderInput = {
+  where?: Prisma.ReservationWhereInput
+  data: Prisma.XOR<Prisma.ReservationUpdateWithoutOrderInput, Prisma.ReservationUncheckedUpdateWithoutOrderInput>
+}
+
+export type ReservationUpdateWithoutOrderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gaHolds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  event?: Prisma.EventUpdateOneRequiredWithoutReservationsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutReservationsNestedInput
+  eventSeats?: Prisma.EventSeatUpdateManyWithoutReservationNestedInput
+  waitlistEntry?: Prisma.WaitlistEntryUpdateOneWithoutReservationNestedInput
+}
+
+export type ReservationUncheckedUpdateWithoutOrderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumReservationStatusFieldUpdateOperationsInput | $Enums.ReservationStatus
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gaHolds?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  waitlistEntryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutReservationNestedInput
 }
 
 export type ReservationCreateWithoutWaitlistEntryInput = {
@@ -740,6 +839,7 @@ export type ReservationCreateWithoutWaitlistEntryInput = {
   event: Prisma.EventCreateNestedOneWithoutReservationsInput
   user: Prisma.UserCreateNestedOneWithoutReservationsInput
   eventSeats?: Prisma.EventSeatCreateNestedManyWithoutReservationInput
+  order?: Prisma.OrderCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationUncheckedCreateWithoutWaitlistEntryInput = {
@@ -752,6 +852,7 @@ export type ReservationUncheckedCreateWithoutWaitlistEntryInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   eventSeats?: Prisma.EventSeatUncheckedCreateNestedManyWithoutReservationInput
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutReservationInput
 }
 
 export type ReservationCreateOrConnectWithoutWaitlistEntryInput = {
@@ -780,6 +881,7 @@ export type ReservationUpdateWithoutWaitlistEntryInput = {
   event?: Prisma.EventUpdateOneRequiredWithoutReservationsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutReservationsNestedInput
   eventSeats?: Prisma.EventSeatUpdateManyWithoutReservationNestedInput
+  order?: Prisma.OrderUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationUncheckedUpdateWithoutWaitlistEntryInput = {
@@ -792,6 +894,7 @@ export type ReservationUncheckedUpdateWithoutWaitlistEntryInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutReservationNestedInput
+  order?: Prisma.OrderUncheckedUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationCreateManyUserInput = {
@@ -815,6 +918,7 @@ export type ReservationUpdateWithoutUserInput = {
   event?: Prisma.EventUpdateOneRequiredWithoutReservationsNestedInput
   eventSeats?: Prisma.EventSeatUpdateManyWithoutReservationNestedInput
   waitlistEntry?: Prisma.WaitlistEntryUpdateOneWithoutReservationNestedInput
+  order?: Prisma.OrderUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationUncheckedUpdateWithoutUserInput = {
@@ -827,6 +931,7 @@ export type ReservationUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutReservationNestedInput
+  order?: Prisma.OrderUncheckedUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationUncheckedUpdateManyWithoutUserInput = {
@@ -861,6 +966,7 @@ export type ReservationUpdateWithoutEventInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutReservationsNestedInput
   eventSeats?: Prisma.EventSeatUpdateManyWithoutReservationNestedInput
   waitlistEntry?: Prisma.WaitlistEntryUpdateOneWithoutReservationNestedInput
+  order?: Prisma.OrderUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationUncheckedUpdateWithoutEventInput = {
@@ -873,6 +979,7 @@ export type ReservationUncheckedUpdateWithoutEventInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   eventSeats?: Prisma.EventSeatUncheckedUpdateManyWithoutReservationNestedInput
+  order?: Prisma.OrderUncheckedUpdateOneWithoutReservationNestedInput
 }
 
 export type ReservationUncheckedUpdateManyWithoutEventInput = {
@@ -931,6 +1038,7 @@ export type ReservationSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   eventSeats?: boolean | Prisma.Reservation$eventSeatsArgs<ExtArgs>
   waitlistEntry?: boolean | Prisma.Reservation$waitlistEntryArgs<ExtArgs>
+  order?: boolean | Prisma.Reservation$orderArgs<ExtArgs>
   _count?: boolean | Prisma.ReservationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reservation"]>
 
@@ -982,6 +1090,7 @@ export type ReservationInclude<ExtArgs extends runtime.Types.Extensions.Internal
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   eventSeats?: boolean | Prisma.Reservation$eventSeatsArgs<ExtArgs>
   waitlistEntry?: boolean | Prisma.Reservation$waitlistEntryArgs<ExtArgs>
+  order?: boolean | Prisma.Reservation$orderArgs<ExtArgs>
   _count?: boolean | Prisma.ReservationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReservationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1002,6 +1111,7 @@ export type $ReservationPayload<ExtArgs extends runtime.Types.Extensions.Interna
     user: Prisma.$UserPayload<ExtArgs>
     eventSeats: Prisma.$EventSeatPayload<ExtArgs>[]
     waitlistEntry: Prisma.$WaitlistEntryPayload<ExtArgs> | null
+    order: Prisma.$OrderPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1417,6 +1527,7 @@ export interface Prisma__ReservationClient<T, Null = never, ExtArgs extends runt
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   eventSeats<T extends Prisma.Reservation$eventSeatsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Reservation$eventSeatsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventSeatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   waitlistEntry<T extends Prisma.Reservation$waitlistEntryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Reservation$waitlistEntryArgs<ExtArgs>>): Prisma.Prisma__WaitlistEntryClient<runtime.Types.Result.GetResult<Prisma.$WaitlistEntryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  order<T extends Prisma.Reservation$orderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Reservation$orderArgs<ExtArgs>>): Prisma.Prisma__OrderClient<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1896,6 +2007,25 @@ export type Reservation$waitlistEntryArgs<ExtArgs extends runtime.Types.Extensio
    */
   include?: Prisma.WaitlistEntryInclude<ExtArgs> | null
   where?: Prisma.WaitlistEntryWhereInput
+}
+
+/**
+ * Reservation.order
+ */
+export type Reservation$orderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
 }
 
 /**

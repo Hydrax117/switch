@@ -118,6 +118,12 @@ export type Reservation = Prisma.ReservationModel
  */
 export type Ticket = Prisma.TicketModel
 /**
+ * Model Order
+ * An Order groups all tickets purchased in a single checkout session.
+ * One Order → one Paystack charge → one Payment → many Tickets.
+ */
+export type Order = Prisma.OrderModel
+/**
  * Model Payment
  * 
  */
@@ -177,6 +183,12 @@ export type WaitlistEntry = Prisma.WaitlistEntryModel
  * 
  */
 export type TimeSlot = Prisma.TimeSlotModel
+/**
+ * Model TimeSlotCapacity
+ * Per-ticket-type capacity for a time slot.
+ * e.g. "26 Dec 4pm show" has 500 VIP spots and 500 Regular spots.
+ */
+export type TimeSlotCapacity = Prisma.TimeSlotCapacityModel
 /**
  * Model TimeSlotTicket
  * 
