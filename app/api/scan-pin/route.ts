@@ -1,9 +1,12 @@
 /**
- * POST /api/scan-pin   — generate (or rotate) a scan PIN for an event
- * DELETE /api/scan-pin — revoke the scan PIN for an event
+ * POST /api/scan-pin   — generate (or rotate) a scan PIN for an event or time slot
+ * DELETE /api/scan-pin — revoke the scan PIN for an event or time slot
  *
  * Both require the caller to be the organizer of the event (or ADMIN).
- * Body: { eventId: string }
+ * Body: { eventId: string; timeSlotId?: string }
+ *
+ * If timeSlotId is provided, the PIN is scoped to that show only.
+ * If timeSlotId is omitted, the PIN works for any show at the event.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -31,18 +34,35 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null)
   const eventId = body?.eventId as string | undefined
+  const timeSlotId = body?.timeSlotId as string | undefined
+
   if (!eventId) return NextResponse.json({ error: 'eventId required' }, { status: 400 })
 
   const organizerId = await resolveOrganizer(eventId, session.userId, session.role)
   if (!organizerId) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
-  const pin = await createScanPin(eventId, organizerId)
-  const ttl = await getScanPinTtl(eventId)
+  // If timeSlotId provided, verify it belongs to this event
+  if (timeSlotId) {
+    const slot = await db.timeSlot.findUnique({
+      where: { id: timeSlotId },
+      select: { eventId: true, label: true },
+    })
+    if (!slot || slot.eventId !== eventId) {
+      return NextResponse.json({ error: 'Time slot not found or unauthorized' }, { status: 404 })
+    }
+  }
+
+  const pin = await createScanPin(eventId, organizerId, timeSlotId)
+  const ttl = await getScanPinTtl(eventId, timeSlotId)
 
   // Format pin as XXX-XXX for readability
   const formatted = `${pin.slice(0, 3)}-${pin.slice(3)}`
 
-  return NextResponse.json({ pin: formatted, ttlSeconds: ttl })
+  return NextResponse.json({
+    pin: formatted,
+    ttlSeconds: ttl,
+    scope: timeSlotId ? 'time-slot' : 'event-wide',
+  })
 }
 
 export async function DELETE(req: NextRequest) {
@@ -51,11 +71,24 @@ export async function DELETE(req: NextRequest) {
 
   const body = await req.json().catch(() => null)
   const eventId = body?.eventId as string | undefined
+  const timeSlotId = body?.timeSlotId as string | undefined
+
   if (!eventId) return NextResponse.json({ error: 'eventId required' }, { status: 400 })
 
   const organizerId = await resolveOrganizer(eventId, session.userId, session.role)
   if (!organizerId) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
-  await revokeScanPin(eventId)
+  // If timeSlotId provided, verify it belongs to this event
+  if (timeSlotId) {
+    const slot = await db.timeSlot.findUnique({
+      where: { id: timeSlotId },
+      select: { eventId: true },
+    })
+    if (!slot || slot.eventId !== eventId) {
+      return NextResponse.json({ error: 'Time slot not found or unauthorized' }, { status: 404 })
+    }
+  }
+
+  await revokeScanPin(eventId, timeSlotId)
   return NextResponse.json({ revoked: true })
 }
