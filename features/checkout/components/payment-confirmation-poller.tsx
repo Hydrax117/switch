@@ -68,7 +68,7 @@ interface Props {
 }
 
 const POLL_INTERVAL_MS = 2_000
-const POLL_TIMEOUT_MS  = 90_000
+const POLL_TIMEOUT_MS  = 120_000  // Increased from 90s to 120s to allow for webhook delays
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -83,6 +83,7 @@ export function PaymentConfirmationPoller({
     initiallyConfirmed && initialData ? initialData : null
   )
   const [timedOut, setTimedOut] = useState(false)
+  const [isRetrying, setIsRetrying] = useState(false)
 
   const poll = useCallback(async () => {
     const started = Date.now()
@@ -127,6 +128,13 @@ export function PaymentConfirmationPoller({
     void poll()
   }, [initiallyConfirmed, poll])
 
+  const handleRetry = () => {
+    setIsRetrying(true)
+    setTimedOut(false)
+    setConfirmedData(null)
+    void poll().then(() => setIsRetrying(false))
+  }
+
   // ── Pending ────────────────────────────────────────────────────────────────
   if (!confirmedData && !timedOut) {
     return (
@@ -153,18 +161,22 @@ export function PaymentConfirmationPoller({
           Payment confirmation delayed
         </h1>
         <p className="text-muted-foreground mt-2 max-w-sm text-[14px]">
-          If your payment went through, your tickets will appear in your dashboard shortly.
-          If you were charged and don&apos;t see tickets within 10 minutes, please contact
-          support.
+          We&apos;re still processing your payment. This usually completes within 2 minutes.
+          <br />
+          <br />
+          Your payment has been charged. Tickets will appear in your dashboard once confirmed.
+          If you don&apos;t see them within 10 minutes, please contact support with your booking
+          reference.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Link
-            href="/dashboard/tickets"
-            className="from-brand-600 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 px-5 py-2.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+          <button
+            onClick={handleRetry}
+            disabled={isRetrying}
+            className="from-brand-600 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 px-5 py-2.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            Check my tickets
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+            {isRetrying ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+            {isRetrying ? 'Checking...' : 'Check my tickets'}
+          </button>
           <Link
             href={`/events/${eventSlug}`}
             className="border-border hover:bg-muted flex items-center justify-center rounded-xl border px-5 py-2.5 text-[14px] font-medium transition-colors"
