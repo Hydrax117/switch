@@ -65,7 +65,12 @@ export async function POST(req: NextRequest) {
       await handleTransferFailed(event.data)
     }
   } catch (err) {
-    console.error('[webhook/paystack] handler error:', err)
+    console.error('[webhook/paystack] handler error:', {
+      error: err instanceof Error ? err.message : String(err),
+      eventType: event.event,
+      reference: event.data?.reference,
+      stack: err instanceof Error ? err.stack : undefined,
+    })
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 
@@ -153,10 +158,45 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
 
   if (!reservation || reservation.status === ReservationStatus.COMPLETED) return
 
-  const slotSelections  = (meta.slotSelections  as SlotSelection[]  | undefined) ?? []
-  const gaSelections    = (meta.gaSelections    as TicketSelection[] | undefined) ?? []
+  // Parse slotSelections - Paystack may have serialized it as a string
+  let slotSelections = (meta.slotSelections as SlotSelection[] | undefined) ?? []
+  if (typeof meta.slotSelections === 'string') {
+    try {
+      slotSelections = JSON.parse(meta.slotSelections) as SlotSelection[]
+    } catch (e) {
+      console.error('[webhook/paystack] Failed to parse slotSelections', {
+        reference,
+        slotSelectionsRaw: meta.slotSelections,
+      })
+    }
+  }
+
+  // Parse gaSelections - same treatment
+  let gaSelections = (meta.gaSelections as TicketSelection[] | undefined) ?? []
+  if (typeof meta.gaSelections === 'string') {
+    try {
+      gaSelections = JSON.parse(meta.gaSelections) as TicketSelection[]
+    } catch (e) {
+      console.error('[webhook/paystack] Failed to parse gaSelections', {
+        reference,
+        gaSelectionsRaw: meta.gaSelections,
+      })
+    }
+  }
+
   const isTimeSlotOrder = slotSelections.length > 0
   const isGAOrder       = !isTimeSlotOrder && gaSelections.length > 0
+
+  // Debug: log what type of order we're processing
+  console.log('[webhook/paystack] order type detected', {
+    reference,
+    reservationId,
+    isTimeSlotOrder,
+    isGAOrder,
+    slotSelectionsCount: slotSelections.length,
+    gaSelectionsCount: gaSelections.length,
+    hasReservation: !!reservation,
+  })
 
   if (isTimeSlotOrder) {
     await handleTimeSlotChargeSuccess({
@@ -227,6 +267,15 @@ async function handleTimeSlotChargeSuccess({
   promoCodeId:           string | undefined
   discountAmount:        number
 }) {
+  // Validate that we have slot selections — this is required for time-slot orders
+  if (!slotSelections || slotSelections.length === 0) {
+    console.error('[webhook/paystack] handleTimeSlotChargeSuccess missing slotSelections', {
+      reference,
+      reservationId: reservation.id,
+    })
+    throw new Error('INVALID_SLOT_SELECTIONS')
+  }
+
   await db.$transaction(async (tx) => {
     const feePercent = resolveFeePercent(reservation.event.organizer.feePercent)
     const feeAmount  = Math.round(amountPaid * (feePercent / 100))
@@ -270,7 +319,7 @@ async function handleTimeSlotChargeSuccess({
           qrCode:       generateQrCode(),
         })
 
-        await tx.$executeRaw`
+        const insertResult = await tx.$executeRaw`
           INSERT INTO "time_slot_tickets"
             ("id", "ticketId", "timeSlotId", "ticketTypeId", "createdAt")
           VALUES (
@@ -282,6 +331,12 @@ async function handleTimeSlotChargeSuccess({
           )
           ON CONFLICT ("ticketId", "timeSlotId") DO NOTHING
         `
+        if (insertResult === 0) {
+          console.warn('[webhook/paystack] time_slot_tickets insert returned 0', {
+            ticketId: ticket.id,
+            timeSlotId: sel.timeSlotId,
+          })
+        }
       }
 
       await tx.ticketType.update({
