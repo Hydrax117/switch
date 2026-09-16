@@ -95,26 +95,40 @@ function StatCell({
 
 function TimeSlotRow({ slot }: { slot: TimeSlotInventory }) {
   const pct =
-    slot.capacity === 0 ? 0 : Math.min(100, Math.round((slot.booked / slot.capacity) * 100))
-  const isFull = slot.available === 0
+    slot.totalCapacity === 0 ? 0 : Math.min(100, Math.round((slot.totalBooked / slot.totalCapacity) * 100))
+  const isFull = slot.totalAvailable === 0
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-950 p-3">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-zinc-100">{slot.label}</p>
-        <p className="text-[11.5px] text-zinc-500">
-          {formatTime(slot.startsAt)} – {formatTime(slot.endsAt)}
-        </p>
-        <CapacityBar used={slot.booked} total={slot.capacity} />
+    <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
+      <div className="flex items-center justify-between gap-4 mb-2">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-zinc-100">{slot.label}</p>
+          <p className="text-[11.5px] text-zinc-500">
+            {formatTime(slot.startsAt)} – {formatTime(slot.endsAt)}
+          </p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className={`text-sm font-semibold ${isFull ? 'text-red-400' : 'text-emerald-400'}`}>
+            {isFull ? 'Full' : `${slot.totalAvailable} left`}
+          </p>
+          <p className="text-[11.5px] text-zinc-500">
+            {slot.totalBooked}/{slot.totalCapacity}
+          </p>
+        </div>
       </div>
-      <div className="shrink-0 text-right">
-        <p className={`text-sm font-semibold ${isFull ? 'text-red-400' : 'text-emerald-400'}`}>
-          {isFull ? 'Full' : `${slot.available} left`}
-        </p>
-        <p className="text-[11.5px] text-zinc-500">
-          {slot.booked}/{slot.capacity}
-        </p>
-      </div>
+      <CapacityBar used={slot.totalBooked} total={slot.totalCapacity} />
+      {slot.capacities.length > 1 && (
+        <div className="mt-2 space-y-1">
+          {slot.capacities.map((cap) => (
+            <div key={cap.ticketTypeId} className="flex items-center justify-between text-[11px]">
+              <span className="text-zinc-500">{cap.ticketTypeName}</span>
+              <span className={cap.available === 0 ? 'text-red-400' : 'text-zinc-400'}>
+                {cap.booked}/{cap.capacity}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

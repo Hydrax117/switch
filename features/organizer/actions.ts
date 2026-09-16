@@ -8,7 +8,7 @@ import { EventStatus, SeatingType, TicketTypeStatus, AuditAction, AuditEntityTyp
 import { writeAuditLog } from '@/lib/audit'
 import { advanceWaitlist } from '@/features/waitlist/actions'
 import { sendTicketCancelled, sendTicketConfirmationEmail } from '@/lib/email'
-import { hashPassword, comparePassword, generateToken, generateTicketNumber, generateQrCode } from '@/lib/crypto-utils'
+import { hashPassword, generateToken, generateTicketNumber, generateQrCode } from '@/lib/crypto-utils'
 import { deleteStorageFiles } from '@/lib/supabase'
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
@@ -1425,15 +1425,134 @@ export async function upsertTicketType(input: {
   }
 }
 
-// ─── Time Slot actions — delegated to features/time-slots/actions.ts ──────────
-// The canonical implementations live there (they use the new TimeSlotCapacity
-// schema). Re-export them here so existing imports from organizer/actions keep
-// working while components can also import directly from time-slots/actions.
+// ─── Time Slot actions (inline — avoids dynamic import in 'use server') ───────
 
-export {
-  upsertTimeSlot,
-  deleteTimeSlot,
-} from '@/features/time-slots/actions'
+const upsertTimeSlotInlineSchema = z.object({
+  eventId:    z.string().min(1),
+  timeSlotId: z.string().optional(),
+  label:      z.string().min(1).max(120),
+  startsAt:   z.string().datetime(),
+  endsAt:     z.string().datetime(),
+  capacities: z.array(z.object({
+    ticketTypeId: z.string().min(1),
+    capacity:     z.number().int().min(1),
+  })).min(1),
+})
+
+export async function upsertTimeSlot(input: unknown): Promise<
+  { success: true; timeSlotId: string } | { success: false; error: string }
+> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'UNAUTHENTICATED' }
+
+  const parsed = upsertTimeSlotInlineSchema.safeParse(input)
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
+
+  const { eventId, timeSlotId, label, startsAt, endsAt, capacities } = parsed.data
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const event = await db.event.findUnique({
+    where: { id: eventId, organizerId: organizer.id },
+    select: { id: true },
+  })
+  if (!event) return { success: false, error: 'Event not found' }
+
+  for (const cap of capacities) {
+    const tt = await db.ticketType.findUnique({
+      where: { id: cap.ticketTypeId },
+      select: { eventId: true },
+    })
+    if (!tt || tt.eventId !== eventId) {
+      return { success: false, error: 'Invalid ticket type for this event' }
+    }
+  }
+
+  if (new Date(startsAt) >= new Date(endsAt)) {
+    return { success: false, error: 'Start time must be before end time' }
+  }
+
+  try {
+    const result = await db.$transaction(async (tx) => {
+      let slot: { id: string }
+      if (timeSlotId) {
+        slot = await tx.timeSlot.update({
+          where: { id: timeSlotId, eventId },
+          data: { label, startsAt: new Date(startsAt), endsAt: new Date(endsAt) },
+          select: { id: true },
+        })
+      } else {
+        slot = await tx.timeSlot.create({
+          data: { eventId, label, startsAt: new Date(startsAt), endsAt: new Date(endsAt), status: TicketTypeStatus.ACTIVE },
+          select: { id: true },
+        })
+      }
+
+      for (const cap of capacities) {
+        await tx.$executeRaw`
+          INSERT INTO "time_slot_capacities"
+            ("id", "timeSlotId", "ticketTypeId", "capacity", "createdAt", "updatedAt")
+          VALUES (gen_random_uuid()::text, ${slot.id}, ${cap.ticketTypeId}, ${cap.capacity}, NOW(), NOW())
+          ON CONFLICT ("timeSlotId", "ticketTypeId")
+          DO UPDATE SET "capacity" = EXCLUDED."capacity", "updatedAt" = NOW()
+        `
+      }
+
+      const keepIds = capacities.map((c) => c.ticketTypeId)
+      if (keepIds.length > 0) {
+        await tx.$executeRaw`
+          DELETE FROM "time_slot_capacities"
+          WHERE "timeSlotId" = ${slot.id}
+            AND "ticketTypeId" != ALL(${keepIds}::text[])
+        `
+      }
+      return slot
+    })
+
+    revalidatePath(`/dashboard/events/${eventId}`)
+    return { success: true, timeSlotId: result.id }
+  } catch (err) {
+    console.error('[upsertTimeSlot] error:', err)
+    return { success: false, error: 'Failed to save time slot. Please try again.' }
+  }
+}
+
+export async function deleteTimeSlot(
+  timeSlotId: string,
+  eventId: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  const session = await getSession()
+  if (!session) return { success: false, error: 'UNAUTHENTICATED' }
+
+  const organizer = await db.organizer.findUnique({
+    where: { userId: session.userId },
+    select: { id: true },
+  })
+  if (!organizer) return { success: false, error: 'Not an organizer' }
+
+  const slot = await db.timeSlot.findUnique({
+    where: { id: timeSlotId, eventId },
+    select: {
+      id: true,
+      event: { select: { organizerId: true } },
+      _count: { select: { tickets: true } },
+    },
+  })
+  if (!slot || slot.event.organizerId !== organizer.id) {
+    return { success: false, error: 'Time slot not found' }
+  }
+  if (slot._count.tickets > 0) {
+    return { success: false, error: 'Cannot delete a slot with confirmed tickets' }
+  }
+
+  await db.timeSlot.delete({ where: { id: timeSlotId } })
+  revalidatePath(`/dashboard/events/${eventId}`)
+  return { success: true }
+}
 
 // ─── Upsert Event Session ─────────────────────────────────────────────────────
 

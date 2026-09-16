@@ -120,7 +120,7 @@ export function PaymentConfirmationPoller({
         // network hiccup — keep trying
       }
     }
-  }, [reservationId, isGA])
+  }, [reservationId, orderType])
 
   useEffect(() => {
     if (initiallyConfirmed) return
