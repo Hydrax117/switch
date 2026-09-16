@@ -28,6 +28,8 @@ interface SessionConfigTabProps {
 const inputCls =
   'w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-[13px] text-zinc-100 placeholder:text-zinc-500 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/40 disabled:opacity-50'
 
+const selectCls = inputCls + ' [color-scheme:dark]'
+
 const labelCls = 'block text-[11.5px] font-medium text-zinc-400 mb-1'
 
 const INCLUSION_LABELS: Record<string, string> = {
@@ -164,7 +166,7 @@ export function SessionConfigTab({ eventId, sessions: initial }: SessionConfigTa
             </div>
             <div>
               <label className={labelCls}>Inclusion Mode</label>
-              <select className={inputCls} value={form.inclusionMode} onChange={(e) => setForm((p) => ({ ...p, inclusionMode: e.target.value }))} disabled={isPending}>
+              <select className={selectCls} value={form.inclusionMode} onChange={(e) => setForm((p) => ({ ...p, inclusionMode: e.target.value }))} disabled={isPending}>
                 {Object.entries(INCLUSION_LABELS).map(([val, label]) => (
                   <option key={val} value={val}>{label}</option>
                 ))}

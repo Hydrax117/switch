@@ -142,6 +142,43 @@ h6 {
   background: var(--muted-foreground);
 }
 
+/* ─── Native Select & Dropdown Styling ───────────────────────────────────────
+   Ensures dropdown options are readable in both light and dark modes
+   ─────────────────────────────────────────────────────────────────────────── */
+select,
+optgroup,
+option {
+  background-color: var(--surface);
+  color: var(--foreground);
+}
+
+/* Light mode specific — ensure dark text on white dropdown */
+.light select,
+.light optgroup,
+.light option {
+  background-color: #ffffff;
+  color: #111111;
+}
+
+/* Dark mode specific — ensure light text on dark dropdown */
+.dark select,
+.dark optgroup,
+.dark option {
+  background-color: #111110;
+  color: #fafaf9;
+}
+
+/* Selected option styling */
+select option:checked {
+  background: var(--color-brand-500, #2563eb);
+  color: white;
+}
+
+select option:hover {
+  background-color: var(--surface-2);
+  color: var(--foreground);
+}
+
 /* ─── Focus Ring ─────────────────────────────────────────────────────────────*/
 :focus-visible {
   outline: 2px solid var(--color-brand-500);

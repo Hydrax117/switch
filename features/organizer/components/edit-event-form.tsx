@@ -120,7 +120,7 @@ export function EditEventForm({ event, categories }: EditEventFormProps) {
         {/* Category + Seating type */}
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Category">
-            <select name="categoryId" defaultValue={event.categoryId ?? ''} className={inputCls}>
+            <select name="categoryId" defaultValue={event.categoryId ?? ''} className={selectCls}>
               <option value="">No category</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -135,7 +135,7 @@ export function EditEventForm({ event, categories }: EditEventFormProps) {
               name="seatingType"
               required
               defaultValue={event.seatingType}
-              className={inputCls}
+              className={selectCls}
             >
               <option value="GENERAL_ADMISSION">General Admission</option>
               <option value="RESERVED">Reserved Seating</option>
@@ -269,6 +269,8 @@ const inputCls = cn(
   'text-[14px] text-foreground placeholder:text-muted-foreground',
   'outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20'
 )
+
+const selectCls = cn(inputCls, '[color-scheme:light]')
 
 function Field({
   label,

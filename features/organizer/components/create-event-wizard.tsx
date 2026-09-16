@@ -426,7 +426,7 @@ function StepBasicDetails({
           <select
             value={form.categoryId}
             onChange={(e) => set('categoryId', e.target.value)}
-            className={inputCls(false)}
+            className={selectCls(false)}
           >
             <option value="">Select category</option>
             {categories.map((c) => (
@@ -441,7 +441,7 @@ function StepBasicDetails({
           <select
             value={form.seatingType}
             onChange={(e) => set('seatingType', e.target.value)}
-            className={inputCls(!!errors.seatingType)}
+            className={selectCls(!!errors.seatingType)}
           >
             <option value="GENERAL_ADMISSION">General Admission</option>
             <option value="RESERVED">Reserved Seating</option>
@@ -818,6 +818,12 @@ const inputCls = (hasError: boolean) =>
     hasError
       ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20'
       : 'border-border focus:border-brand-500 focus:ring-brand-500/20'
+  )
+
+const selectCls = (hasError: boolean) =>
+  cn(
+    inputCls(hasError),
+    '[color-scheme:light]' // Force light mode for select dropdown in all themes
   )
 
 function Field({
