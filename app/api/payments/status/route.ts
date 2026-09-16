@@ -104,13 +104,13 @@ export async function GET(req: NextRequest) {
         ts."label"      AS "slotLabel"
       FROM "tickets" t
       JOIN "ticket_types" tt ON tt."id" = t."ticketTypeId"
-      LEFT JOIN "time_slot_tickets" tst ON tst."ticketId" = t."id"
+      INNER JOIN "time_slot_tickets" tst ON tst."ticketId" = t."id"
       LEFT JOIN "time_slots" ts ON ts."id" = tst."timeSlotId"
       WHERE t."eventId"  = ${reservation.eventId}
         AND t."userId"   = ${session.userId}
-        AND t."issuedAt" >= ${reservation.createdAt}
+        AND t."issuedAt" >= ${new Date(reservation.createdAt.getTime() - 60000)}
         AND t."status"   = 'ACTIVE'
-      ORDER BY ts."startsAt", tt."name"
+      ORDER BY COALESCE(ts."startsAt", t."issuedAt"), tt."name"
     `
 
     // Group by slotLabel + ticketTypeName for display
