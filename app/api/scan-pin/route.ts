@@ -52,17 +52,25 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const pin = await createScanPin(eventId, organizerId, timeSlotId)
-  const ttl = await getScanPinTtl(eventId, timeSlotId)
+  try {
+    const pin = await createScanPin(eventId, organizerId, timeSlotId)
+    const ttl = await getScanPinTtl(eventId, timeSlotId)
 
-  // Format pin as XXX-XXX for readability
-  const formatted = `${pin.slice(0, 3)}-${pin.slice(3)}`
+    // Format pin as XXX-XXX for readability
+    const formatted = `${pin.slice(0, 3)}-${pin.slice(3)}`
 
-  return NextResponse.json({
-    pin: formatted,
-    ttlSeconds: ttl,
-    scope: timeSlotId ? 'time-slot' : 'event-wide',
-  })
+    return NextResponse.json({
+      pin: formatted,
+      ttlSeconds: ttl,
+      scope: timeSlotId ? 'time-slot' : 'event-wide',
+    })
+  } catch (error) {
+    console.error('[scan-pin POST] Redis error:', error instanceof Error ? error.message : error)
+    return NextResponse.json(
+      { error: 'Failed to generate PIN. Please try again.' },
+      { status: 503 } // Service Unavailable
+    )
+  }
 }
 
 export async function DELETE(req: NextRequest) {
@@ -89,6 +97,14 @@ export async function DELETE(req: NextRequest) {
     }
   }
 
-  await revokeScanPin(eventId, timeSlotId)
-  return NextResponse.json({ revoked: true })
+  try {
+    await revokeScanPin(eventId, timeSlotId)
+    return NextResponse.json({ revoked: true })
+  } catch (error) {
+    console.error('[scan-pin DELETE] Redis error:', error instanceof Error ? error.message : error)
+    return NextResponse.json(
+      { error: 'Failed to revoke PIN. Please try again.' },
+      { status: 503 } // Service Unavailable
+    )
+  }
 }

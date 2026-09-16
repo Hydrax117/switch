@@ -35,12 +35,28 @@ function createRedisClient(): Redis {
   const client = new Redis(url, {
     maxRetriesPerRequest: 3,
     lazyConnect: true,
-    enableOfflineQueue: false,
+    enableOfflineQueue: true, // Allow queueing commands during temporary disconnections
+    enableReadyCheck: true,
+    retryStrategy: (times: number) => {
+      const delay = Math.min(times * 50, 2000) // Cap retry delay at 2 seconds
+      return delay
+    },
+    reconnectOnError: (err: Error) => {
+      // Reconnect on most errors
+      if (err.message.includes('READONLY')) return true
+      if (err.message.includes('ECONNREFUSED')) return true
+      if (err.message.includes('ETIMEDOUT')) return true
+      return false
+    },
     ...(isTls && tlsHostname ? { tls: { servername: tlsHostname } } : {}),
   })
 
   client.on('error', (err) => {
     console.error('[Redis] connection error:', err.message)
+  })
+
+  client.on('reconnecting', () => {
+    console.warn('[Redis] reconnecting after connection loss')
   })
 
   return client
