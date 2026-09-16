@@ -534,9 +534,7 @@ function StepLocation({ form, set, errors, isVirtual }: StepProps & { isVirtual:
         <p className="text-muted-foreground text-[13px] mt-1">Where is your event happening?</p>
       </div>
 
-      <VenuePicker />
-
-      <Field label="Venue Name" error={errors.venue_name}>
+      <Field label="Venue Name" required error={errors.venue_name}>
         <input
           value={form.venue_name}
           onChange={(e) => set('venue_name', e.target.value)}
@@ -557,7 +555,7 @@ function StepLocation({ form, set, errors, isVirtual }: StepProps & { isVirtual:
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="City" error={errors.venue_city}>
+        <Field label="City" required error={errors.venue_city}>
           <input
             value={form.venue_city}
             onChange={(e) => set('venue_city', e.target.value)}
@@ -572,7 +570,7 @@ function StepLocation({ form, set, errors, isVirtual }: StepProps & { isVirtual:
             value={form.venue_state}
             onChange={(e) => set('venue_state', e.target.value)}
             maxLength={100}
-            placeholder="e.g. Lagos"
+            placeholder="e.g. Lagos State"
             className={inputCls(false)}
           />
         </Field>
@@ -815,7 +813,7 @@ function PreviewScreen({
 const inputCls = (hasError: boolean) =>
   cn(
     'w-full rounded-xl border bg-surface px-3.5 py-2.5',
-    'text-[14px] text-foreground placeholder:text-muted-foreground',
+    'text-[14px] text-foreground placeholder:text-foreground placeholder:opacity-60',
     'outline-none transition-colors focus:ring-2',
     hasError
       ? 'border-red-500/60 focus:border-red-500 focus:ring-red-500/20'
@@ -837,7 +835,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-[13px] font-medium">
+      <label className="block text-[13px] font-medium text-foreground">
         {label}
         {required && <span className="ml-0.5 text-red-500">*</span>}
       </label>
