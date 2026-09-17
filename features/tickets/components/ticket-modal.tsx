@@ -2,8 +2,10 @@
 
 import * as Dialog from '@radix-ui/react-dialog'
 import Image from 'next/image'
-import { X, Calendar, MapPin, Tag, Hash } from 'lucide-react'
+import { X, Calendar, MapPin, Tag, Hash, Download } from 'lucide-react'
 import { format } from 'date-fns'
+import { toPng } from 'html-to-image'
+import { useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { TicketQr } from './ticket-qr'
 
@@ -78,6 +80,32 @@ const STATUS_CONFIG: Record<
 export function TicketModal({ ticket, open, onClose }: TicketModalProps) {
   const statusCfg = STATUS_CONFIG[ticket.status] ?? STATUS_CONFIG.ACTIVE
   const isValid = ticket.status === 'ACTIVE'
+  const ticketRef = useRef<HTMLDivElement>(null)
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  const handleDownloadTicket = async () => {
+    if (!ticketRef.current) return
+
+    try {
+      setIsDownloading(true)
+      const dataUrl = await toPng(ticketRef.current, {
+        cacheBust: true,
+        pixelRatio: 2,
+      })
+
+      // Create a temporary anchor element to trigger download
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = `ticket-${ticket.ticketNumber}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      console.error('Failed to download ticket:', error)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
 
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
@@ -105,8 +133,19 @@ export function TicketModal({ ticket, open, onClose }: TicketModalProps) {
             <span className="sr-only">Close</span>
           </Dialog.Close>
 
+          {/* Download button */}
+          <button
+            onClick={handleDownloadTicket}
+            disabled={isDownloading}
+            className="absolute -top-11 right-12 flex h-9 w-9 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/20 transition-all hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Download ticket as image"
+          >
+            <Download className="h-4 w-4" />
+            <span className="sr-only">Download ticket</span>
+          </button>
+
           {/* ── Physical ticket shell ── */}
-          <div className="ticket-paper overflow-hidden rounded-3xl">
+          <div ref={ticketRef} className="ticket-paper overflow-hidden rounded-3xl">
 
             {/* ── TOP: event image banner ── */}
             <div className="relative h-[165px] w-full overflow-hidden">
