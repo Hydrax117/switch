@@ -25,6 +25,12 @@ export interface TicketModalData {
     startsAt: Date
     venue: { name: string; city: string } | null
   }
+  timeSlot?: {
+    id: string
+    label: string
+    startsAt: Date
+    endsAt: Date
+  }
   eventSeat: { seat: { label: string } } | null
 }
 
@@ -190,15 +196,25 @@ export function TicketModal({ ticket, open, onClose }: TicketModalProps) {
 
             {/* ── MIDDLE: event details in two columns ── */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-4 px-5 pt-5 pb-4">
+              {/* Show title if available */}
+              {ticket.timeSlot && (
+                <TicketField
+                  label="Show"
+                  icon={Calendar}
+                  value={ticket.timeSlot.label}
+                  wide
+                />
+              )}
+              
               <TicketField
                 label="Date"
                 icon={Calendar}
-                value={format(ticket.event.startsAt, 'MMM d, yyyy')}
+                value={format(ticket.timeSlot?.startsAt ?? ticket.event.startsAt, 'MMM d, yyyy')}
               />
               <TicketField
                 label="Time"
                 icon={Calendar}
-                value={format(ticket.event.startsAt, 'h:mm a')}
+                value={format(ticket.timeSlot?.startsAt ?? ticket.event.startsAt, 'h:mm a')}
               />
               {ticket.event.venue && (
                 <TicketField

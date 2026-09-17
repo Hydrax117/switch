@@ -37,6 +37,13 @@ export interface EventData {
   venue: Venue | null
 }
 
+export interface TimeSlotData {
+  id: string
+  label: string
+  startsAt: Date
+  endsAt: Date
+}
+
 export interface TicketWithDetails {
   id: string
   ticketNumber: string
@@ -52,6 +59,7 @@ export interface TicketWithDetails {
   ticketType: TicketType
   event: EventData
   eventSeat: EventSeatData | null
+  timeSlotTickets: Array<{ timeSlot: TimeSlotData }>
 }
 
 export interface TicketListFilters {

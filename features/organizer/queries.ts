@@ -189,6 +189,14 @@ export async function getUserTickets(userId: string, filters?: { status?: string
     id: string
     seat: { id: string; label: string; number: number | null }
   } | null
+  timeSlotTickets: Array<{
+    timeSlot: {
+      id: string
+      label: string
+      startsAt: Date
+      endsAt: Date
+    }
+  }>
 }>> {
   // Validate status is a valid TicketStatus if provided
   const validStatuses = ['ACTIVE', 'USED', 'REFUNDED', 'CANCELLED', 'EXPIRED']
@@ -231,6 +239,19 @@ export async function getUserTickets(userId: string, filters?: { status?: string
           id: true,
           seat: { select: { id: true, label: true, number: true } },
         },
+      },
+      timeSlotTickets: {
+        select: {
+          timeSlot: {
+            select: {
+              id: true,
+              label: true,
+              startsAt: true,
+              endsAt: true,
+            },
+          },
+        },
+        take: 1,
       },
     },
     orderBy: { issuedAt: 'desc' },
