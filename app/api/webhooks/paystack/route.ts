@@ -215,18 +215,20 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
     })
   }
 
-  // ── Confirmation email (non-blocking) ─────────────────────────────────────
-  db.ticket.findMany({
-    where: { eventId: reservation.eventId, userId, status: TicketStatus.ACTIVE },
-    select: {
-      ticketNumber: true,
-      qrCode:       true,
-      ticketType:   { select: { name: true } },
-      eventSeat:    { select: { seat: { select: { label: true } } } },
-    },
-    orderBy: { issuedAt: 'asc' },
-  }).then((tickets) =>
-    sendTicketConfirmationEmail({
+  // ── Confirmation email (awaited for reliable delivery) ──────────────────────
+  try {
+    const tickets = await db.ticket.findMany({
+      where: { eventId: reservation.eventId, userId, status: TicketStatus.ACTIVE },
+      select: {
+        ticketNumber: true,
+        qrCode:       true,
+        ticketType:   { select: { name: true } },
+        eventSeat:    { select: { seat: { select: { label: true } } } },
+      },
+      orderBy: { issuedAt: 'asc' },
+    })
+    
+    await sendTicketConfirmationEmail({
       userId,
       eventTitle:   reservation.event.title,
       eventDate:    reservation.event.startsAt,
@@ -240,7 +242,10 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
         seatLabel:      t.eventSeat?.seat?.label ?? null,
       })),
     })
-  ).catch((err) => console.error('[webhook/paystack] email error:', err))
+  } catch (err) {
+    console.error('[webhook/paystack] email error:', err)
+    // Don't throw — order is already confirmed; email failure shouldn't fail the payment
+  }
 }
 
 // ─── Time-slot order handler ──────────────────────────────────────────────────

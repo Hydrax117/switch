@@ -1009,23 +1009,28 @@ export async function issueComplimentaryTicket(input: {
       return newTicket
     })
 
-    // Send confirmation email non-blocking
-    sendTicketConfirmationEmail({
-      userId: recipient.id,
-      eventTitle: event.title,
-      eventDate: event.startsAt,
-      eventSlug: event.slug,
-      ticketCount: 1,
-      reservationId: ticket.id,
-      tickets: [
-        {
-          ticketNumber,
-          qrCode,
-          ticketTypeName: ticketType.name,
-          seatLabel: null,
-        },
-      ],
-    }).catch(console.error)
+    // Send confirmation email (awaited for reliable delivery)
+    try {
+      await sendTicketConfirmationEmail({
+        userId: recipient.id,
+        eventTitle: event.title,
+        eventDate: event.startsAt,
+        eventSlug: event.slug,
+        ticketCount: 1,
+        reservationId: ticket.id,
+        tickets: [
+          {
+            ticketNumber,
+            qrCode,
+            ticketTypeName: ticketType.name,
+            seatLabel: null,
+          },
+        ],
+      })
+    } catch (err) {
+      console.error('[issueComplimentaryTicket] email error:', err)
+      // Don't throw — ticket is already issued; email failure shouldn't fail the operation
+    }
 
     revalidatePath(`/dashboard/events/${input.eventId}/reservations`)
     return { success: true, ticketId: ticket.id }

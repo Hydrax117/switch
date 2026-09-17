@@ -477,17 +477,19 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
       userId
     )
 
-    // Send confirmation email (non-blocking — don't fail the order if email fails)
-    db.ticket.findMany({
-      where: { id: { in: ticketIds } },
-      select: {
-        ticketNumber: true,
-        qrCode: true,
-        ticketType: { select: { name: true } },
-        eventSeat: { select: { seat: { select: { label: true } } } },
-      },
-    }).then((tickets) =>
-      sendTicketConfirmationEmail({
+    // Send confirmation email (awaited for reliable delivery)
+    try {
+      const tickets = await db.ticket.findMany({
+        where: { id: { in: ticketIds } },
+        select: {
+          ticketNumber: true,
+          qrCode: true,
+          ticketType: { select: { name: true } },
+          eventSeat: { select: { seat: { select: { label: true } } } },
+        },
+      })
+      
+      await sendTicketConfirmationEmail({
         userId,
         eventTitle: reservation.event.title,
         eventDate: reservation.event.startsAt,
@@ -501,7 +503,10 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
           seatLabel: t.eventSeat?.seat?.label ?? null,
         })),
       })
-    ).catch((err) => console.error('[confirmOrder] email error:', err))
+    } catch (err) {
+      console.error('[confirmOrder] email error:', err)
+      // Don't throw — order is already confirmed; email failure shouldn't fail the operation
+    }
 
     return { success: true, ticketIds }
   } catch (err) {
@@ -710,9 +715,9 @@ export async function submitRsvp(input: unknown): Promise<SubmitRsvpResult> {
       return createdTicketIds
     })
 
-    // 5. Post-transaction: send confirmation email non-blocking
-    db.ticket
-      .findMany({
+    // 5. Post-transaction: send confirmation email (awaited for reliable delivery)
+    try {
+      const tickets = await db.ticket.findMany({
         where: { id: { in: ticketIds } },
         select: {
           ticketNumber: true,
@@ -720,29 +725,32 @@ export async function submitRsvp(input: unknown): Promise<SubmitRsvpResult> {
           ticketType: { select: { name: true } },
         },
       })
-      .then((tickets) =>
-        db.event.findUnique({
-          where: { id: eventId },
-          select: { title: true, startsAt: true, slug: true },
-        }).then((evt) => {
-          if (!evt) return
-          return sendTicketConfirmationEmail({
-            userId,
-            eventTitle: evt.title,
-            eventDate: evt.startsAt,
-            eventSlug: evt.slug,
-            ticketCount: ticketIds.length,
-            reservationId: `rsvp-${ticketIds[0]}`,
-            tickets: tickets.map((t) => ({
-              ticketNumber: t.ticketNumber,
-              qrCode: t.qrCode,
-              ticketTypeName: t.ticketType.name,
-              seatLabel: null,
-            })),
-          })
+      
+      const evt = await db.event.findUnique({
+        where: { id: eventId },
+        select: { title: true, startsAt: true, slug: true },
+      })
+      
+      if (evt) {
+        await sendTicketConfirmationEmail({
+          userId,
+          eventTitle: evt.title,
+          eventDate: evt.startsAt,
+          eventSlug: evt.slug,
+          ticketCount: ticketIds.length,
+          reservationId: `rsvp-${ticketIds[0]}`,
+          tickets: tickets.map((t) => ({
+            ticketNumber: t.ticketNumber,
+            qrCode: t.qrCode,
+            ticketTypeName: t.ticketType.name,
+            seatLabel: null,
+          })),
         })
-      )
-      .catch(console.error)
+      }
+    } catch (err) {
+      console.error('[guestCheckout] email error:', err)
+      // Don't throw — order is already confirmed; email failure shouldn't fail the operation
+    }
 
     // 6. Schedule event reminder (non-blocking stub — worker implemented in Task 9)
     db.event

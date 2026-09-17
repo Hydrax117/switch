@@ -70,6 +70,9 @@ export async function sendTicketConfirmationEmail(params: {
     minute: '2-digit',
   })
 
+  // For bulk orders (10+ tickets), use ZIP download instead of attachments
+  const isBulkOrder = params.ticketCount >= 10
+
   // Generate QR data URLs for each ticket (max 6 shown inline)
   const ticketsToShow = params.tickets.slice(0, 6)
   const qrDataUrls = await Promise.all(
@@ -82,6 +85,75 @@ export async function sendTicketConfirmationEmail(params: {
       })
     )
   )
+
+  // Generate attachments or ZIP based on order size
+  let attachments: Array<{ filename: string; content: Buffer }> = []
+  let zipDownloadUrl: string | null = null
+  let zipExpiresAt: Date | null = null
+
+  if (isBulkOrder) {
+    // Generate ZIP file for bulk orders
+    try {
+      const { generateTicketZip, uploadTicketZipToStorage } = await import(
+        '@/lib/ticket-zip-generator'
+      )
+
+      const zip = await generateTicketZip({
+        tickets: params.tickets.map((t) => ({
+          ticketNumber: t.ticketNumber,
+          qrCode: t.qrCode,
+          eventTitle: params.eventTitle,
+          eventDate: params.eventDate,
+          ticketType: t.ticketTypeName,
+          seatLabel: t.seatLabel,
+        })),
+        eventTitle: params.eventTitle,
+        reservationId: params.reservationId,
+      })
+
+      const upload = await uploadTicketZipToStorage({
+        zipBuffer: zip.zipBuffer,
+        filename: zip.filename,
+        userId: params.userId,
+        reservationId: params.reservationId,
+      })
+
+      zipDownloadUrl = upload.downloadUrl
+      zipExpiresAt = upload.expiresAt
+
+      console.log('[sendTicketConfirmationEmail] Bulk order ZIP created', {
+        ticketCount: params.ticketCount,
+        zipSize: `${(zip.zipBuffer.length / 1024).toFixed(2)}KB`,
+      })
+    } catch (err) {
+      console.error('[sendTicketConfirmationEmail] Failed to generate bulk ZIP:', err)
+      // Fall back to individual attachments if ZIP fails
+    }
+  }
+
+  // For non-bulk orders, generate individual PNG attachments
+  if (!isBulkOrder || (isBulkOrder && !zipDownloadUrl)) {
+    try {
+      const { generateTicketImages } = await import('@/lib/ticket-image-generator')
+      const ticketImages = await generateTicketImages(
+        params.tickets.map((t) => ({
+          ticketNumber: t.ticketNumber,
+          qrCode: t.qrCode,
+          eventTitle: params.eventTitle,
+          eventDate: params.eventDate,
+          ticketType: t.ticketTypeName,
+          seatLabel: t.seatLabel,
+        }))
+      )
+      attachments = ticketImages.map((img) => ({
+        filename: img.filename,
+        content: img.content,
+      }))
+    } catch (err) {
+      console.error('[sendTicketConfirmationEmail] Failed to generate ticket images:', err)
+      // Continue without attachments — the email should still send
+    }
+  }
 
   const ticketRows = ticketsToShow
     .map(
@@ -116,11 +188,8 @@ export async function sendTicketConfirmationEmail(params: {
 
   const extraCount = params.tickets.length - ticketsToShow.length
 
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to: user.email,
-    subject: `Your tickets for ${params.eventTitle} — ${APP_NAME}`,
-    html: `
+  // Build email HTML
+  let emailHtml = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -168,6 +237,40 @@ export async function sendTicketConfirmationEmail(params: {
 
           <tr><td style="height:16px;"></td></tr>
 
+          ${
+            zipDownloadUrl
+              ? `
+          <!-- Bulk Download Block -->
+          <tr>
+            <td style="background:#18181b;border-radius:12px;padding:20px;margin-bottom:16px;">
+              <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;font-weight:600;">Download All Tickets</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;">Your tickets are ready as a single ZIP file. Download all ${params.ticketCount} tickets at once.</p>
+              <a href="${zipDownloadUrl}"
+                 style="display:inline-block;background:#10b981;color:#fff;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">
+                Download ZIP (All Tickets) →
+              </a>
+              <p style="margin:12px 0 0;font-size:11px;color:#71717a;">
+                Link expires on ${zipExpiresAt?.toLocaleDateString('en-NG')}
+              </p>
+            </td>
+          </tr>
+
+          <tr><td style="height:16px;"></td></tr>
+          `
+              : `
+          <!-- Attachment Info -->
+          <tr>
+            <td style="background:#18181b;border-radius:12px;padding:12px;margin-bottom:16px;">
+              <p style="margin:0;font-size:11px;color:#71717a;text-align:center;">
+                Your tickets are attached as PNG images. You can print or display them at the venue.
+              </p>
+            </td>
+          </tr>
+
+          <tr><td style="height:16px;"></td></tr>
+          `
+          }
+
           <!-- CTA -->
           <tr>
             <td align="center">
@@ -197,7 +300,14 @@ export async function sendTicketConfirmationEmail(params: {
     </tr>
   </table>
 </body>
-</html>`,
+</html>`
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: user.email,
+    subject: `Your tickets for ${params.eventTitle} — ${APP_NAME}`,
+    html: emailHtml,
+    ...(attachments.length > 0 && { attachments }),
   })
 
   if (error) {
