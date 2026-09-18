@@ -247,7 +247,7 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
     },
   }
 
-  const imageResponse = new ImageResponse(element as Parameters<typeof ImageResponse>[0], {
+  const imageResponse = new ImageResponse(element as import('react').ReactElement, {
     width: 400,
     height: 620,
   })
