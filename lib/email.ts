@@ -58,7 +58,6 @@ export async function sendTicketConfirmationEmail(params: {
   })
   if (!user) return
 
-  const QRCode = await import('qrcode')
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://useswitch.net'
 
   const dateStr = params.eventDate.toLocaleDateString('en-NG', {
@@ -70,21 +69,8 @@ export async function sendTicketConfirmationEmail(params: {
     minute: '2-digit',
   })
 
-  // For bulk orders (10+ tickets), use ZIP download instead of attachments
-  const isBulkOrder = params.ticketCount >= 10
-
-  // Generate QR data URLs for each ticket (max 6 shown inline)
-  const ticketsToShow = params.tickets.slice(0, 6)
-  const qrDataUrls = await Promise.all(
-    ticketsToShow.map((t) =>
-      QRCode.default.toDataURL(t.qrCode, {
-        width: 160,
-        margin: 1,
-        color: { dark: '#000000', light: '#ffffff' },
-        errorCorrectionLevel: 'M',
-      })
-    )
-  )
+  // For bulk orders (5+ tickets), use ZIP download instead of individual attachments
+  const isBulkOrder = params.ticketCount >= 5
 
   // Generate attachments or ZIP based on order size
   let attachments: Array<{ filename: string; content: Buffer }> = []
@@ -92,7 +78,7 @@ export async function sendTicketConfirmationEmail(params: {
   let zipExpiresAt: Date | null = null
 
   if (isBulkOrder) {
-    // Generate ZIP file for bulk orders
+    // Generate ZIP file for bulk orders (5+)
     try {
       const { generateTicketZip, uploadTicketZipToStorage } = await import(
         '@/lib/ticket-zip-generator'
@@ -131,7 +117,7 @@ export async function sendTicketConfirmationEmail(params: {
     }
   }
 
-  // For non-bulk orders, generate individual PNG attachments
+  // For non-bulk orders or if ZIP creation failed, generate individual PNG attachments
   if (!isBulkOrder || (isBulkOrder && !zipDownloadUrl)) {
     try {
       const { generateTicketImages } = await import('@/lib/ticket-image-generator')
@@ -155,41 +141,8 @@ export async function sendTicketConfirmationEmail(params: {
     }
   }
 
-  const ticketRows = ticketsToShow
-    .map(
-      (t, i) => `
-      <tr>
-        <td style="padding:16px 0;border-bottom:1px solid #27272a;">
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="vertical-align:top;padding-right:16px;">
-                <p style="margin:0 0 2px;font-size:14px;font-weight:600;color:#fafafa;">
-                  ${t.ticketTypeName}${t.seatLabel ? ` · Seat ${t.seatLabel}` : ''}
-                </p>
-                <p style="margin:0;font-size:11px;font-family:monospace;color:#71717a;letter-spacing:0.05em;">
-                  ${t.ticketNumber}
-                </p>
-              </td>
-              <td style="vertical-align:top;text-align:right;width:84px;">
-                <img
-                  src="${qrDataUrls[i]}"
-                  width="76"
-                  height="76"
-                  alt="QR code for ${t.ticketNumber}"
-                  style="border-radius:6px;display:block;margin-left:auto;"
-                />
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>`
-    )
-    .join('')
-
-  const extraCount = params.tickets.length - ticketsToShow.length
-
   // Build email HTML
-  let emailHtml = `
+  const emailHtml = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -218,20 +171,30 @@ export async function sendTicketConfirmationEmail(params: {
 
           <tr><td style="height:12px;"></td></tr>
 
-          <!-- Tickets -->
+          <!-- Booking Details -->
           <tr>
             <td style="background:#18181b;border-radius:12px;padding:20px;">
               <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;">
-                Your ticket${params.ticketCount !== 1 ? 's' : ''} (${params.ticketCount})
+                Booking details
               </p>
-              <table width="100%" cellpadding="0" cellspacing="0">
-                ${ticketRows}
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+                <tr>
+                  <td style="padding:8px 0;color:#a1a1aa;font-size:13px;">
+                    <strong style="color:#fafafa;">Tickets ordered:</strong>
+                  </td>
+                  <td style="padding:8px 0;color:#fafafa;font-size:13px;text-align:right;">
+                    ${params.ticketCount}
+                  </td>
+                </tr>
+                <tr style="border-top:1px solid #27272a;">
+                  <td style="padding:8px 0;color:#a1a1aa;font-size:13px;">
+                    <strong style="color:#fafafa;">Reference:</strong>
+                  </td>
+                  <td style="padding:8px 0;color:#fafafa;font-size:11px;font-family:monospace;text-align:right;letter-spacing:0.05em;">
+                    ${params.reservationId}
+                  </td>
+                </tr>
               </table>
-              ${
-                extraCount > 0
-                  ? `<p style="margin:12px 0 0;font-size:12px;color:#71717a;">+ ${extraCount} more ticket${extraCount !== 1 ? 's' : ''} — view all in your dashboard</p>`
-                  : ''
-              }
             </td>
           </tr>
 
@@ -243,14 +206,14 @@ export async function sendTicketConfirmationEmail(params: {
           <!-- Bulk Download Block -->
           <tr>
             <td style="background:#18181b;border-radius:12px;padding:20px;margin-bottom:16px;">
-              <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;font-weight:600;">Download All Tickets</p>
-              <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;">Your tickets are ready as a single ZIP file. Download all ${params.ticketCount} tickets at once.</p>
+              <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;font-weight:600;">Download your tickets</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;">All ${params.ticketCount} ticket${params.ticketCount !== 1 ? 's are' : ' is'} ready as a single ZIP file.</p>
               <a href="${zipDownloadUrl}"
                  style="display:inline-block;background:#10b981;color:#fff;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">
-                Download ZIP (All Tickets) →
+                Download ZIP →
               </a>
               <p style="margin:12px 0 0;font-size:11px;color:#71717a;">
-                Link expires on ${zipExpiresAt?.toLocaleDateString('en-NG')}
+                Download link expires on ${zipExpiresAt?.toLocaleDateString('en-NG')}
               </p>
             </td>
           </tr>
@@ -262,7 +225,7 @@ export async function sendTicketConfirmationEmail(params: {
           <tr>
             <td style="background:#18181b;border-radius:12px;padding:12px;margin-bottom:16px;">
               <p style="margin:0;font-size:11px;color:#71717a;text-align:center;">
-                Your tickets are attached as PNG images. You can print or display them at the venue.
+                Your ${params.ticketCount} ticket${params.ticketCount !== 1 ? 's are' : ' is'} attached as PNG file${params.ticketCount !== 1 ? 's' : ''}. You can print or display at the venue.
               </p>
             </td>
           </tr>
@@ -285,12 +248,9 @@ export async function sendTicketConfirmationEmail(params: {
 
           <!-- Footer -->
           <tr>
-            <td>
-              <p style="margin:0;font-size:12px;color:#52525b;text-align:center;">
-                Booking ref: <span style="font-family:monospace;">${params.reservationId}</span>
-              </p>
-              <p style="margin:6px 0 0;font-size:11px;color:#3f3f46;text-align:center;">
-                Present your QR code at the entrance. Keep this email safe.
+            <td style="text-align:center;">
+              <p style="margin:0;font-size:11px;color:#3f3f46;">
+                Bring your ticket(s) to the venue. Keep this email safe.
               </p>
             </td>
           </tr>
