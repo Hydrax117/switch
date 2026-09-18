@@ -435,22 +435,14 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
 
   // Dynamic imports to keep these out of the client bundle
   const puppeteer = await import('puppeteer-core')
+  const chromium = await import('@sparticuz/chromium')
 
-  // On Vercel (production/preview), use the serverless-optimised Chromium binary.
-  // Locally, fall back to the system Chrome/Chromium installed by puppeteer-core.
-  let executablePath: string
-  let args: string[]
-
-  if (process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL) {
-    const chromium = await import('@sparticuz/chromium')
-    executablePath = await chromium.default.executablePath()
-    args = chromium.default.args
-  } else {
-    // Local dev — use the bundled chromium from puppeteer
-    const localPuppeteer = await import('puppeteer')
-    executablePath = localPuppeteer.default.executablePath()
-    args = ['--no-sandbox', '--disable-setuid-sandbox']
-  }
+  // On Vercel/Lambda use the serverless Chromium binary.
+  // Locally, @sparticuz/chromium still works but falls back to a local Chrome
+  // if CHROME_EXECUTABLE_PATH is set, otherwise uses its own bundled binary.
+  const executablePath = process.env.CHROME_EXECUTABLE_PATH
+    ?? await chromium.default.executablePath()
+  const args = chromium.default.args
 
   const browser = await puppeteer.default.launch({
     args,
