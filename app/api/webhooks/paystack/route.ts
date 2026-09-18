@@ -231,21 +231,29 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
             qrCode:       true,
             ticketType:   { select: { name: true } },
             eventSeat:    { select: { seat: { select: { label: true } } } },
+            timeSlotTickets: {
+              select: {
+                timeSlot: { select: { label: true, startsAt: true } },
+              },
+              take: 1,
+            },
           },
           orderBy: { issuedAt: 'asc' },
         })
       : []
 
     if (tickets.length > 0) {
+      const firstSlot = tickets[0]?.timeSlotTickets[0]?.timeSlot
       await sendTicketConfirmationEmail({
         userId,
         eventTitle:    reservation.event.title,
-        eventDate:     reservation.event.startsAt,
+        eventDate:     firstSlot?.startsAt ?? reservation.event.startsAt,
         eventSlug:     reservation.event.slug,
         eventImageUrl: reservation.event.imageUrl ?? undefined,
         eventVenue:    reservation.event.venue
           ? `${reservation.event.venue.name}, ${reservation.event.venue.city}`
           : undefined,
+        showLabel:     firstSlot?.label ?? undefined,
         ticketCount:   tickets.length,
         reservationId,
         tickets: tickets.map((t) => ({

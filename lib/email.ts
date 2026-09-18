@@ -43,6 +43,7 @@ export async function sendTicketConfirmationEmail(params: {
   eventSlug: string
   eventImageUrl?: string
   eventVenue?: string
+  showLabel?: string
   ticketCount: number
   reservationId: string
   tickets: Array<{
@@ -94,6 +95,7 @@ export async function sendTicketConfirmationEmail(params: {
           eventDate: params.eventDate,
           eventImageUrl: params.eventImageUrl,
           eventVenue: params.eventVenue,
+          showLabel: params.showLabel,
           ticketType: t.ticketTypeName,
           seatLabel: t.seatLabel,
         })),
@@ -133,6 +135,7 @@ export async function sendTicketConfirmationEmail(params: {
           eventDate: params.eventDate,
           eventImageUrl: params.eventImageUrl,
           eventVenue: params.eventVenue,
+          showLabel: params.showLabel,
           ticketType: t.ticketTypeName,
           seatLabel: t.seatLabel,
         }))

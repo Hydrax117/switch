@@ -26,6 +26,7 @@ export interface TicketData {
   eventDate: Date
   eventImageUrl?: string | null
   eventVenue?: string | null
+  showLabel?: string | null
   ticketType: string
   seatLabel?: string | null
   ticketId?: string
@@ -191,6 +192,7 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
           background: 'white',
         }}
       >
+        {ticket.showLabel && detailField('SHOW', ticket.showLabel, '🎭', true)}
         {detailField('DATE', dateStr, '📅')}
         {detailField('TIME', timeStr, '🕐')}
         {ticket.eventVenue && detailField('VENUE', ticket.eventVenue, '📍', true)}
