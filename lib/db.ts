@@ -18,6 +18,14 @@ function createPrismaClient(): PrismaClient {
   const raw = process.env.DATABASE_URL
   if (!raw) throw new Error('DATABASE_URL is not set')
 
+  // Log hostname for debugging — remove once confirmed working
+  try {
+    const u = new URL(raw)
+    console.log('[db] Connecting to:', u.hostname, 'port:', u.port)
+  } catch {
+    console.error('[db] DATABASE_URL is not a valid URL:', raw.slice(0, 30))
+  }
+
   // Strip Prisma-only URL params that confuse the pg driver
   let connectionString = raw
   try {
