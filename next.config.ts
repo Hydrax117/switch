@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // Tell Turbopack/webpack not to bundle these packages — let Node.js resolve
   // them at runtime. The Prisma generated client uses import.meta.url and
   // must run in Node.js, not inside the Next.js bundle.
-  serverExternalPackages: ['@prisma/client', '@prisma/adapter-pg', 'bcryptjs'],
+  serverExternalPackages: ['@prisma/client', '@prisma/adapter-pg', 'bcryptjs', 'node-html-to-image', 'puppeteer', 'puppeteer-core'],
 
   // Image optimization: allow common CDN and hosting domains
   images: {
