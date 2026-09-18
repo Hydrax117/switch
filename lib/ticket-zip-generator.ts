@@ -6,8 +6,6 @@
  */
 import 'server-only'
 import AdmZip from 'adm-zip'
-import { v4 as uuidv4 } from 'crypto'
-import { randomBytes } from 'crypto'
 import type { TicketData } from './ticket-image-generator'
 import { generateTicketImage } from './ticket-image-generator'
 
