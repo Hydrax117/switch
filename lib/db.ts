@@ -7,6 +7,9 @@
  *
  * DIRECT_URL (session-mode, port 5432) is only for prisma migrate CLI —
  * never for runtime queries.
+ *
+ * ?pgbouncer=true is a Prisma-only hint — the pg driver doesn't understand it
+ * and can misparse the URL. We strip it before building the Pool.
  */
 import 'server-only'
 import { Pool } from 'pg'
@@ -15,23 +18,28 @@ import { PrismaPg } from '@prisma/adapter-pg'
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
 
-function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL
-  if (!connectionString) throw new Error('DATABASE_URL is not set')
+function buildPool(): Pool {
+  const raw = process.env.DATABASE_URL
+  if (!raw) throw new Error('DATABASE_URL is not set')
 
-  // Create a pg.Pool explicitly — this avoids any URL parsing ambiguity
-  // in the PrismaPg adapter and gives us full control over pool settings.
-  const pool = new Pool({
+  // Parse the URL, strip Prisma-only params, rebuild cleanly
+  const url = new URL(raw)
+  url.searchParams.delete('pgbouncer')
+  url.searchParams.delete('connection_limit')
+  url.searchParams.delete('pool_timeout')
+  const connectionString = url.toString()
+
+  return new Pool({
     connectionString,
     max: 5,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 10_000,
-    ssl: connectionString.includes('sslmode=require') || connectionString.includes('supabase')
-      ? { rejectUnauthorized: false }
-      : undefined,
+    ssl: { rejectUnauthorized: false },
   })
+}
 
-  const adapter = new PrismaPg(pool)
+function createPrismaClient(): PrismaClient {
+  const adapter = new PrismaPg(buildPool())
   return new PrismaClient({ adapter })
 }
 
