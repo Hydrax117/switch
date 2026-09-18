@@ -1,13 +1,14 @@
 /**
  * Server-side ticket image generation using Handlebars templates.
  *
- * Generates PNG images of tickets using Handlebars for templating
- * and qrcode library for generating QR codes.
+ * Generates PNG images of tickets using Handlebars for templating,
+ * qrcode for QR codes, and node-html-to-image for server-side HTML→PNG.
  * These PNGs can be attached to emails or downloaded directly.
  */
 import 'server-only'
 import QRCode from 'qrcode'
 import Handlebars from 'handlebars'
+import nodeHtmlToImage from 'node-html-to-image'
 
 // ─── Handlebars Template for Ticket HTML ──────────────────────────────────────
 
@@ -425,64 +426,23 @@ async function generateTicketHtml(ticket: TicketData): Promise<string> {
 // ─── Generate ticket image as PNG buffer ──────────────────────────────────────
 
 /**
- * Generates a PNG image of a ticket using Handlebars template.
- * Returns a buffer that can be saved to disk or attached to an email.
- *
- * The process:
- * 1. Render Handlebars template with ticket data
- * 2. Generate QR code as PNG data URL
- * 3. Convert HTML to PNG using html-to-image
- * 4. Return as buffer
+ * Generates a PNG image of a ticket using node-html-to-image (server-side).
+ * Returns a buffer that can be attached to an email.
  */
 export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
-  try {
-    // Generate HTML using Handlebars
-    const html = await generateTicketHtml(ticket)
+  const html = await generateTicketHtml(ticket)
 
-    // Dynamic import of html-to-image (heavy dependency)
-    const { toPng } = await import('html-to-image')
+  const result = await nodeHtmlToImage({
+    html,
+    puppeteerArgs: {
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    },
+    type: 'png',
+  })
 
-    // Create temporary container for rendering
-    const container = typeof document !== 'undefined'
-      ? document.createElement('div')
-      : null
-
-    if (container) {
-      container.innerHTML = html
-      document.body.appendChild(container)
-
-      try {
-        // Convert HTML to PNG
-        const pngDataUrl = await toPng(container, {
-          cacheBust: true,
-          pixelRatio: 2,
-        })
-
-        // Convert data URL to buffer
-        const base64 = pngDataUrl.replace(/^data:image\/png;base64,/, '')
-        return Buffer.from(base64, 'base64')
-      } finally {
-        document.body.removeChild(container)
-      }
-    }
-
-    // Fallback for Node.js environment (server-side)
-    // Return QR code only as PNG
-    const qrPngBuffer = await QRCode.toBuffer(ticket.qrCode, {
-      errorCorrectionLevel: 'M',
-      width: 200,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#ffffff',
-      },
-    })
-
-    return qrPngBuffer
-  } catch (error) {
-    console.error('[generateTicketImage] Failed to generate ticket PNG:', error)
-    throw new Error('Failed to generate ticket image')
-  }
+  // node-html-to-image returns Buffer | Buffer[] — handle both
+  const buffer = Array.isArray(result) ? result[0]! : result
+  return buffer as Buffer
 }
 
 /**

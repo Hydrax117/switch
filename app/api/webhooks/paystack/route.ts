@@ -22,7 +22,6 @@ import {
   PaymentStatus,
   PayoutStatus,
   ReservationStatus,
-  TicketStatus,
 } from '@/app/generated/prisma/client'
 import { randomBytes } from 'crypto'
 
@@ -217,31 +216,41 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
 
   // ── Confirmation email (awaited for reliable delivery) ──────────────────────
   try {
-    const tickets = await db.ticket.findMany({
-      where: { eventId: reservation.eventId, userId, status: TicketStatus.ACTIVE },
-      select: {
-        ticketNumber: true,
-        qrCode:       true,
-        ticketType:   { select: { name: true } },
-        eventSeat:    { select: { seat: { select: { label: true } } } },
-      },
-      orderBy: { issuedAt: 'asc' },
+    // Scope to this transaction's order only — not all user tickets for the event
+    const order = await db.order.findFirst({
+      where: { reservationId, userId },
+      select: { id: true },
     })
-    
-    await sendTicketConfirmationEmail({
-      userId,
-      eventTitle:   reservation.event.title,
-      eventDate:    reservation.event.startsAt,
-      eventSlug:    reservation.event.slug,
-      ticketCount:  tickets.length,
-      reservationId,
-      tickets: tickets.map((t) => ({
-        ticketNumber:   t.ticketNumber,
-        qrCode:         t.qrCode,
-        ticketTypeName: t.ticketType.name,
-        seatLabel:      t.eventSeat?.seat?.label ?? null,
-      })),
-    })
+
+    const tickets = order
+      ? await db.ticket.findMany({
+          where: { orderId: order.id },
+          select: {
+            ticketNumber: true,
+            qrCode:       true,
+            ticketType:   { select: { name: true } },
+            eventSeat:    { select: { seat: { select: { label: true } } } },
+          },
+          orderBy: { issuedAt: 'asc' },
+        })
+      : []
+
+    if (tickets.length > 0) {
+      await sendTicketConfirmationEmail({
+        userId,
+        eventTitle:   reservation.event.title,
+        eventDate:    reservation.event.startsAt,
+        eventSlug:    reservation.event.slug,
+        ticketCount:  tickets.length,
+        reservationId,
+        tickets: tickets.map((t) => ({
+          ticketNumber:   t.ticketNumber,
+          qrCode:         t.qrCode,
+          ticketTypeName: t.ticketType.name,
+          seatLabel:      t.eventSeat?.seat?.label ?? null,
+        })),
+      })
+    }
   } catch (err) {
     console.error('[webhook/paystack] email error:', err)
     // Don't throw — order is already confirmed; email failure shouldn't fail the payment
