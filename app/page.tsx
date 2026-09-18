@@ -6,6 +6,9 @@ import { CategoriesSection } from '@/components/sections/categories-section'
 import { EventsSection } from '@/components/sections/events-section'
 import { OrganizerCta } from '@/components/sections/organizer-cta'
 
+// Always render at request time — the page fetches live DB data
+export const dynamic = 'force-dynamic'
+
 export default function HomePage() {
   return (
     <div className="relative flex min-h-screen flex-col">
