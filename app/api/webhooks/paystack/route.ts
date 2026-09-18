@@ -148,7 +148,8 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
       },
       event: {
         select: {
-          id: true, slug: true, title: true, startsAt: true,
+          id: true, slug: true, title: true, startsAt: true, imageUrl: true,
+          venue: { select: { name: true, city: true } },
           organizer: { select: { id: true, feePercent: true } },
         },
       },
@@ -238,10 +239,14 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
     if (tickets.length > 0) {
       await sendTicketConfirmationEmail({
         userId,
-        eventTitle:   reservation.event.title,
-        eventDate:    reservation.event.startsAt,
-        eventSlug:    reservation.event.slug,
-        ticketCount:  tickets.length,
+        eventTitle:    reservation.event.title,
+        eventDate:     reservation.event.startsAt,
+        eventSlug:     reservation.event.slug,
+        eventImageUrl: reservation.event.imageUrl ?? undefined,
+        eventVenue:    reservation.event.venue
+          ? `${reservation.event.venue.name}, ${reservation.event.venue.city}`
+          : undefined,
+        ticketCount:   tickets.length,
         reservationId,
         tickets: tickets.map((t) => ({
           ticketNumber:   t.ticketNumber,

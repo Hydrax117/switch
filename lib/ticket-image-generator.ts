@@ -3,19 +3,29 @@
  *
  * Pure JS — no Chrome, no native binaries. Works on Vercel serverless
  * and locally. Generates PNG buffers suitable for email attachments.
+ *
+ * Design matches the in-app ticket modal:
+ *   - Event banner image (or gradient) with title + Valid badge
+ *   - Details section: Date, Time, Ticket Type, Seat, Venue
+ *   - Ticket number strip
+ *   - Dashed perforation line with side notches
+ *   - Large QR code + "SCAN AT ENTRANCE" label
+ *   - Short ticket ID at bottom
  */
 import 'server-only'
 import QRCode from 'qrcode'
 import { ImageResponse } from '@vercel/og'
+import type { ReactElement } from 'react'
 
-// ─── Ticket Data Type ─────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface TicketData {
   ticketNumber: string
   qrCode: string
   eventTitle: string
   eventDate: Date
-  eventVenue?: string
+  eventImageUrl?: string | null
+  eventVenue?: string | null
   ticketType: string
   seatLabel?: string | null
   ticketId?: string
@@ -24,26 +34,19 @@ export interface TicketData {
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; dot: string; text: string; bg: string; border: string }
-> = {
-  ACTIVE:    { label: 'Valid',      dot: '#10b981', text: '#059669', bg: '#f0fdf4', border: '#86efac' },
-  USED:      { label: 'Used',       dot: '#a1a1aa', text: '#71717a', bg: '#f4f4f5', border: '#d4d4d8' },
-  CANCELLED: { label: 'Cancelled',  dot: '#ef4444', text: '#b91c1c', bg: '#fef2f2', border: '#fecaca' },
-  REFUNDED:  { label: 'Refunded',   dot: '#f59e0b', text: '#b45309', bg: '#fffbeb', border: '#fcd34d' },
-  EXPIRED:   { label: 'Expired',    dot: '#a1a1aa', text: '#71717a', bg: '#f4f4f5', border: '#d4d4d8' },
-}
+const STATUS = {
+  ACTIVE:    { label: 'Valid',      dot: '#10b981', text: '#065f46', bg: '#ecfdf5', border: '#6ee7b7' },
+  USED:      { label: 'Used',       dot: '#a1a1aa', text: '#52525b', bg: '#f4f4f5', border: '#d4d4d8' },
+  CANCELLED: { label: 'Cancelled',  dot: '#ef4444', text: '#991b1b', bg: '#fef2f2', border: '#fca5a5' },
+  REFUNDED:  { label: 'Refunded',   dot: '#f59e0b', text: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
+  EXPIRED:   { label: 'Expired',    dot: '#a1a1aa', text: '#52525b', bg: '#f4f4f5', border: '#d4d4d8' },
+} as const
 
-// ─── Generate ticket PNG buffer ───────────────────────────────────────────────
+// ─── Generate ticket PNG ──────────────────────────────────────────────────────
 
-/**
- * Generates a 400×620 PNG of a ticket using @vercel/og (Satori).
- * Returns a Buffer suitable for email attachments.
- */
 export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
-  const status = ticket.status ?? 'ACTIVE'
-  const s = STATUS_CONFIG[status] ?? STATUS_CONFIG.ACTIVE!
+  const status = (ticket.status ?? 'ACTIVE') as keyof typeof STATUS
+  const s = STATUS[status] ?? STATUS.ACTIVE
   const isValid = status === 'ACTIVE'
 
   const dateStr = ticket.eventDate.toLocaleDateString('en-NG', {
@@ -53,254 +56,326 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
     hour: '2-digit', minute: '2-digit', hour12: true,
   })
 
-  // QR code as data URL embedded in the image
   const qrDataUrl = await QRCode.toDataURL(ticket.qrCode, {
     errorCorrectionLevel: 'M',
-    width: 180,
-    margin: 1,
+    width: 200,
+    margin: 2,
     color: { dark: '#000000', light: '#ffffff' },
   })
 
   const shortId = (ticket.ticketId ?? ticket.qrCode).slice(0, 8).toUpperCase()
 
-  // Satori expects React element objects — we use the tw-like inline style objects
-  const element = {
-    type: 'div',
-    props: {
-      style: {
+  // ─── Satori element tree ───────────────────────────────────────────────────
+  // Satori only supports flex layout. All children in arrays must be objects.
+
+  const element = (
+    <div
+      style={{
         display: 'flex',
-        flexDirection: 'column' as const,
+        flexDirection: 'column',
         width: '400px',
-        background: 'white',
+        background: '#ffffff',
         borderRadius: '24px',
         overflow: 'hidden',
-        fontFamily: 'sans-serif',
-      },
-      children: [
-        // ── Header ──────────────────────────────────────────────────────────
-        {
-          type: 'div',
-          props: {
-            style: {
-              display: 'flex',
-              flexDirection: 'column' as const,
-              justifyContent: 'flex-end',
-              height: '160px',
-              background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
-              padding: '0 20px 16px',
-              position: 'relative' as const,
-            },
-            children: [
-              // Status badge
-              {
-                type: 'div',
-                props: {
-                  style: {
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    position: 'absolute' as const,
-                    top: '14px',
-                    right: '14px',
-                    background: s.bg,
-                    color: s.text,
-                    border: `1px solid ${s.border}`,
-                    padding: '4px 10px',
-                    borderRadius: '9999px',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                  },
-                  children: [
-                    {
-                      type: 'div',
-                      props: {
-                        style: {
-                          width: '6px', height: '6px', borderRadius: '50%',
-                          background: s.dot, marginRight: '4px',
-                        },
-                      },
-                    },
-                    { type: 'span', props: { children: s.label } },
-                  ],
-                },
-              },
-              // Event title
-              {
-                type: 'div',
-                props: {
-                  style: {
-                    color: 'white',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    lineHeight: '1.3',
-                  },
-                  children: ticket.eventTitle,
-                },
-              },
-            ],
-          },
-        },
+        fontFamily: '"Inter", "Helvetica Neue", Arial, sans-serif',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+      }}
+    >
+      {/* ── Header: event banner ── */}
+      <div
+        style={{
+          display: 'flex',
+          position: 'relative',
+          height: '170px',
+          width: '100%',
+          overflow: 'hidden',
+          background: ticket.eventImageUrl
+            ? 'transparent'
+            : 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+        }}
+      >
+        {/* Event banner image */}
+        {ticket.eventImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={ticket.eventImageUrl}
+            alt=""
+            style={{
+              position: 'absolute',
+              top: 0, left: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+            }}
+          />
+        )}
 
-        // ── Details grid ────────────────────────────────────────────────────
-        {
-          type: 'div',
-          props: {
-            style: {
-              display: 'flex',
-              flexWrap: 'wrap' as const,
-              padding: '20px',
-              gap: '16px',
-            },
-            children: [
-              field('Date', dateStr),
-              field('Time', timeStr),
-              ...(ticket.eventVenue ? [field('Venue', ticket.eventVenue, true)] : []),
-              field('Type', ticket.ticketType),
-              ...(ticket.seatLabel ? [field('Seat', ticket.seatLabel)] : []),
-            ],
-          },
-        },
+        {/* Dark gradient overlay for text readability */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.05) 100%)',
+            display: 'flex',
+          }}
+        />
 
-        // ── Ticket number strip ──────────────────────────────────────────────
-        {
-          type: 'div',
-          props: {
-            style: {
+        {/* Top shine line */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0,
+            height: '1px',
+            background: 'rgba(255,255,255,0.3)',
+            display: 'flex',
+          }}
+        />
+
+        {/* Status badge — top right */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '14px',
+            right: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: s.bg,
+            color: s.text,
+            border: `1.5px solid ${s.border}`,
+            borderRadius: '9999px',
+            padding: '4px 12px',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.03em',
+          }}
+        >
+          <div
+            style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              background: s.dot,
               display: 'flex',
-              alignItems: 'center',
-              margin: '0 20px 16px',
-              background: 'rgba(244,244,245,0.8)',
-              border: '1px solid rgba(212,212,212,0.8)',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              fontFamily: 'monospace',
+            }}
+          />
+          <span>{s.label}</span>
+        </div>
+
+        {/* Event title — bottom left */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '14px',
+            left: '20px',
+            right: '20px',
+            display: 'flex',
+            color: 'white',
+            fontSize: '18px',
+            fontWeight: 700,
+            lineHeight: '1.3',
+            textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          }}
+        >
+          {ticket.eventTitle}
+        </div>
+      </div>
+
+      {/* ── Details section ── */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          padding: '20px 20px 12px',
+          gap: '16px 20px',
+          background: 'white',
+        }}
+      >
+        {detailField('DATE', dateStr, '📅')}
+        {detailField('TIME', timeStr, '🕐')}
+        {ticket.eventVenue && detailField('VENUE', ticket.eventVenue, '📍', true)}
+        {detailField('TICKET TYPE', ticket.ticketType, '🏷')}
+        {ticket.seatLabel && detailField('SEAT', ticket.seatLabel, '💺')}
+      </div>
+
+      {/* ── Ticket number strip ── */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          margin: '4px 20px 0',
+          background: '#f4f4f5',
+          border: '1px solid #e4e4e7',
+          borderRadius: '10px',
+          padding: '9px 14px',
+        }}
+      >
+        <span style={{ color: '#a1a1aa', fontSize: '13px', fontWeight: 600 }}>#</span>
+        <span
+          style={{
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: '12px',
+            letterSpacing: '0.12em',
+            color: '#71717a',
+          }}
+        >
+          {ticket.ticketNumber}
+        </span>
+      </div>
+
+      {/* ── Perforation ── */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          position: 'relative',
+          margin: '20px 0',
+        }}
+      >
+        {/* Left notch */}
+        <div
+          style={{
+            position: 'absolute',
+            left: '-14px',
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            background: '#f9fafb',
+            border: '1px solid #e5e7eb',
+            display: 'flex',
+          }}
+        />
+        {/* Right notch */}
+        <div
+          style={{
+            position: 'absolute',
+            right: '-14px',
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            background: '#f9fafb',
+            border: '1px solid #e5e7eb',
+            display: 'flex',
+          }}
+        />
+        {/* Dashed line */}
+        <div
+          style={{
+            flex: 1,
+            marginLeft: '20px',
+            marginRight: '20px',
+            height: '1px',
+            backgroundImage: 'repeating-linear-gradient(90deg, #d4d4d8 0, #d4d4d8 5px, transparent 5px, transparent 10px)',
+            display: 'flex',
+          }}
+        />
+      </div>
+
+      {/* ── QR code stub ── */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '0 20px 28px',
+          gap: '12px',
+          opacity: isValid ? 1 : 0.4,
+        }}
+      >
+        {/* QR frame */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px',
+            background: '#fafafa',
+            border: '1.5px solid #e4e4e7',
+            borderRadius: '16px',
+            padding: '20px',
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrDataUrl}
+            alt="QR"
+            style={{ width: '190px', height: '190px', borderRadius: '4px' }}
+          />
+          <span
+            style={{
               fontSize: '11px',
-              color: '#71717a',
-              letterSpacing: '0.1em',
-            },
-            children: `# ${ticket.ticketNumber}`,
-          },
-        },
+              fontWeight: 600,
+              letterSpacing: '0.15em',
+              color: '#a1a1aa',
+              textTransform: 'uppercase',
+            }}
+          >
+            {isValid ? 'Scan at entrance' : 'Ticket invalid'}
+          </span>
+        </div>
 
-        // ── Perforation line ─────────────────────────────────────────────────
-        {
-          type: 'div',
-          props: {
-            style: {
-              display: 'flex',
-              alignItems: 'center',
-              margin: '4px 0',
-              height: '1px',
-              background: 'repeating-linear-gradient(90deg,#d4d4d8 0,#d4d4d8 4px,transparent 4px,transparent 8px)',
-              marginLeft: '20px',
-              marginRight: '20px',
-            },
-          },
-        },
+        {/* Short ID */}
+        <span
+          style={{
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: '10px',
+            letterSpacing: '0.2em',
+            color: '#d4d4d8',
+            textTransform: 'uppercase',
+            marginTop: '4px',
+          }}
+        >
+          {shortId}
+        </span>
+      </div>
+    </div>
+  )
 
-        // ── QR code section ──────────────────────────────────────────────────
-        {
-          type: 'div',
-          props: {
-            style: {
-              display: 'flex',
-              flexDirection: 'column' as const,
-              alignItems: 'center',
-              padding: '20px 20px 28px',
-              gap: '8px',
-              opacity: isValid ? 1 : 0.4,
-            },
-            children: [
-              {
-                type: 'img',
-                props: {
-                  src: qrDataUrl,
-                  width: 170,
-                  height: 170,
-                  style: { borderRadius: '8px' },
-                },
-              },
-              {
-                type: 'div',
-                props: {
-                  style: { fontSize: '11px', color: '#71717a', letterSpacing: '0.05em' },
-                  children: isValid ? 'Scan at entrance' : 'Ticket invalid',
-                },
-              },
-              {
-                type: 'div',
-                props: {
-                  style: {
-                    fontFamily: 'monospace',
-                    fontSize: '9px',
-                    color: '#d4d4d8',
-                    letterSpacing: '0.2em',
-                    marginTop: '4px',
-                  },
-                  children: shortId,
-                },
-              },
-            ],
-          },
-        },
-      ],
-    },
-  }
-
-  const imageResponse = new ImageResponse(element as import('react').ReactElement, {
+  const imageResponse = new ImageResponse(element as ReactElement, {
     width: 400,
-    height: 620,
+    height: 680,
   })
 
-  // ImageResponse is a Web Response — read its body as ArrayBuffer then Buffer
   const arrayBuffer = await imageResponse.arrayBuffer()
   return Buffer.from(arrayBuffer)
 }
 
-// ─── Field helper ─────────────────────────────────────────────────────────────
+// ─── Detail field helper ──────────────────────────────────────────────────────
 
-function field(label: string, value: string, wide = false) {
-  return {
-    type: 'div',
-    props: {
-      style: {
+function detailField(label: string, value: string, _icon: string, wide = false) {
+  return (
+    <div
+      style={{
         display: 'flex',
-        flexDirection: 'column' as const,
+        flexDirection: 'column',
         gap: '4px',
-        width: wide ? '100%' : '45%',
-      },
-      children: [
-        {
-          type: 'span',
-          props: {
-            style: {
-              fontSize: '10px',
-              textTransform: 'uppercase' as const,
-              letterSpacing: '0.1em',
-              color: '#a1a1aa',
-              fontWeight: 'bold',
-            },
-            children: label,
-          },
-        },
-        {
-          type: 'span',
-          props: {
-            style: { fontSize: '13px', color: '#27272a' },
-            children: value,
-          },
-        },
-      ],
-    },
-  }
+        width: wide ? '100%' : '46%',
+        minWidth: '0',
+      }}
+    >
+      <span
+        style={{
+          fontSize: '9.5px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          color: '#a1a1aa',
+        }}
+      >
+        {label}
+      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <span style={{ fontSize: '13px', color: '#27272a', fontWeight: 500 }}>
+          {value}
+        </span>
+      </div>
+    </div>
+  )
 }
 
 // ─── Generate multiple ticket images ─────────────────────────────────────────
 
-/**
- * Generates PNG images for multiple tickets.
- * Returns an array of { filename, content, mimeType }.
- */
 export async function generateTicketImages(
   tickets: TicketData[]
 ): Promise<Array<{ filename: string; content: Buffer; mimeType: string }>> {

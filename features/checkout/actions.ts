@@ -390,7 +390,7 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
           seat: { select: { id: true } },
         },
       },
-      event: { select: { id: true, slug: true, title: true, startsAt: true, isFree: true } },
+      event: { select: { id: true, slug: true, title: true, startsAt: true, isFree: true, imageUrl: true, venue: { select: { name: true, city: true } } } },
     },
   })
 
@@ -491,16 +491,20 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
       
       await sendTicketConfirmationEmail({
         userId,
-        eventTitle: reservation.event.title,
-        eventDate: reservation.event.startsAt,
-        eventSlug: reservation.event.slug,
-        ticketCount: ticketIds.length,
+        eventTitle:    reservation.event.title,
+        eventDate:     reservation.event.startsAt,
+        eventSlug:     reservation.event.slug,
+        eventImageUrl: reservation.event.imageUrl ?? undefined,
+        eventVenue:    reservation.event.venue
+          ? `${reservation.event.venue.name}, ${reservation.event.venue.city}`
+          : undefined,
+        ticketCount:   ticketIds.length,
         reservationId,
         tickets: tickets.map((t) => ({
-          ticketNumber: t.ticketNumber,
-          qrCode: t.qrCode,
+          ticketNumber:   t.ticketNumber,
+          qrCode:         t.qrCode,
           ticketTypeName: t.ticketType.name,
-          seatLabel: t.eventSeat?.seat?.label ?? null,
+          seatLabel:      t.eventSeat?.seat?.label ?? null,
         })),
       })
     } catch (err) {
@@ -728,22 +732,26 @@ export async function submitRsvp(input: unknown): Promise<SubmitRsvpResult> {
       
       const evt = await db.event.findUnique({
         where: { id: eventId },
-        select: { title: true, startsAt: true, slug: true },
+        select: { title: true, startsAt: true, slug: true, imageUrl: true, venue: { select: { name: true, city: true } } },
       })
       
       if (evt) {
         await sendTicketConfirmationEmail({
           userId,
-          eventTitle: evt.title,
-          eventDate: evt.startsAt,
-          eventSlug: evt.slug,
-          ticketCount: ticketIds.length,
+          eventTitle:    evt.title,
+          eventDate:     evt.startsAt,
+          eventSlug:     evt.slug,
+          eventImageUrl: evt.imageUrl ?? undefined,
+          eventVenue:    evt.venue
+            ? `${evt.venue.name}, ${evt.venue.city}`
+            : undefined,
+          ticketCount:   ticketIds.length,
           reservationId: `rsvp-${ticketIds[0]}`,
           tickets: tickets.map((t) => ({
-            ticketNumber: t.ticketNumber,
-            qrCode: t.qrCode,
+            ticketNumber:   t.ticketNumber,
+            qrCode:         t.qrCode,
             ticketTypeName: t.ticketType.name,
-            seatLabel: null,
+            seatLabel:      null,
           })),
         })
       }
