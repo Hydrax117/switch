@@ -486,9 +486,13 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
           qrCode: true,
           ticketType: { select: { name: true } },
           eventSeat: { select: { seat: { select: { label: true } } } },
+          timeSlotTickets: {
+            select: { timeSlot: { select: { label: true, startsAt: true } } },
+            take: 1,
+          },
         },
       })
-      
+
       await sendTicketConfirmationEmail({
         userId,
         eventTitle:    reservation.event.title,
@@ -500,12 +504,17 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
           : undefined,
         ticketCount:   ticketIds.length,
         reservationId,
-        tickets: tickets.map((t) => ({
-          ticketNumber:   t.ticketNumber,
-          qrCode:         t.qrCode,
-          ticketTypeName: t.ticketType.name,
-          seatLabel:      t.eventSeat?.seat?.label ?? null,
-        })),
+        tickets: tickets.map((t) => {
+          const slot = t.timeSlotTickets[0]?.timeSlot
+          return {
+            ticketNumber:   t.ticketNumber,
+            qrCode:         t.qrCode,
+            ticketTypeName: t.ticketType.name,
+            seatLabel:      t.eventSeat?.seat?.label ?? null,
+            showLabel:      slot?.label ?? null,
+            showDate:       slot?.startsAt ?? null,
+          }
+        }),
       })
     } catch (err) {
       console.error('[confirmOrder] email error:', err)

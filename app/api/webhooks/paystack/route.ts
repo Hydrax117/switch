@@ -243,25 +243,28 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
       : []
 
     if (tickets.length > 0) {
-      const firstSlot = tickets[0]?.timeSlotTickets[0]?.timeSlot
       await sendTicketConfirmationEmail({
         userId,
         eventTitle:    reservation.event.title,
-        eventDate:     firstSlot?.startsAt ?? reservation.event.startsAt,
+        eventDate:     reservation.event.startsAt,
         eventSlug:     reservation.event.slug,
         eventImageUrl: reservation.event.imageUrl ?? undefined,
         eventVenue:    reservation.event.venue
           ? `${reservation.event.venue.name}, ${reservation.event.venue.city}`
           : undefined,
-        showLabel:     firstSlot?.label ?? undefined,
         ticketCount:   tickets.length,
         reservationId,
-        tickets: tickets.map((t) => ({
-          ticketNumber:   t.ticketNumber,
-          qrCode:         t.qrCode,
-          ticketTypeName: t.ticketType.name,
-          seatLabel:      t.eventSeat?.seat?.label ?? null,
-        })),
+        tickets: tickets.map((t) => {
+          const slot = t.timeSlotTickets[0]?.timeSlot
+          return {
+            ticketNumber:   t.ticketNumber,
+            qrCode:         t.qrCode,
+            ticketTypeName: t.ticketType.name,
+            seatLabel:      t.eventSeat?.seat?.label ?? null,
+            showLabel:      slot?.label ?? null,
+            showDate:       slot?.startsAt ?? null,
+          }
+        }),
       })
     }
   } catch (err) {

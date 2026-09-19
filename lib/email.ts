@@ -43,7 +43,6 @@ export async function sendTicketConfirmationEmail(params: {
   eventSlug: string
   eventImageUrl?: string
   eventVenue?: string
-  showLabel?: string
   ticketCount: number
   reservationId: string
   tickets: Array<{
@@ -51,6 +50,8 @@ export async function sendTicketConfirmationEmail(params: {
     qrCode: string
     ticketTypeName: string
     seatLabel?: string | null
+    showLabel?: string | null
+    showDate?: Date | null
   }>
 }): Promise<void> {
   // Look up the user's email
@@ -92,10 +93,10 @@ export async function sendTicketConfirmationEmail(params: {
           ticketNumber: t.ticketNumber,
           qrCode: t.qrCode,
           eventTitle: params.eventTitle,
-          eventDate: params.eventDate,
+          eventDate: t.showDate ?? params.eventDate,
           eventImageUrl: params.eventImageUrl,
           eventVenue: params.eventVenue,
-          showLabel: params.showLabel,
+          showLabel: t.showLabel,
           ticketType: t.ticketTypeName,
           seatLabel: t.seatLabel,
         })),
@@ -132,10 +133,10 @@ export async function sendTicketConfirmationEmail(params: {
           ticketNumber: t.ticketNumber,
           qrCode: t.qrCode,
           eventTitle: params.eventTitle,
-          eventDate: params.eventDate,
+          eventDate: t.showDate ?? params.eventDate,
           eventImageUrl: params.eventImageUrl,
           eventVenue: params.eventVenue,
-          showLabel: params.showLabel,
+          showLabel: t.showLabel,
           ticketType: t.ticketTypeName,
           seatLabel: t.seatLabel,
         }))
