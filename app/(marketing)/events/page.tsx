@@ -54,14 +54,14 @@ export default async function EventsPage({ searchParams }: PageProps) {
         <EventsHero />
 
         {/* ── Filters ── */}
-        <div className="border-border/40 border-b pb-6">
+        <div className="border-border/40 border-b pb-4 sm:pb-6">
           <div className="mx-auto max-w-[1120px] px-5 pt-2 sm:px-8">
             <EventFiltersBar categories={categories} activeFilters={filters} />
           </div>
         </div>
 
         {/* ── Content ── */}
-        <div className="py-14">
+        <div className="py-8 sm:py-14">
           <Suspense fallback={<EventsGridSkeleton />}>
             <EventsGridLoader filters={filters} />
           </Suspense>
