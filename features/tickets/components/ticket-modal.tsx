@@ -124,6 +124,7 @@ export function TicketModal({ ticket, open, onClose }: TicketModalProps) {
         <Dialog.Content
           className={cn(
             'fixed left-1/2 top-1/2 z-50 w-full max-w-[360px] -translate-x-1/2 -translate-y-1/2',
+            'flex max-h-[calc(100dvh-2rem)] flex-col px-4',
             'focus:outline-none',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
@@ -134,22 +135,28 @@ export function TicketModal({ ticket, open, onClose }: TicketModalProps) {
         >
           <Dialog.Title className="sr-only">{ticket.event.title} — Ticket</Dialog.Title>
 
-          {/* Close */}
-          <Dialog.Close className="absolute -top-11 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/20 transition-all hover:bg-white/20">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </Dialog.Close>
+          {/* Action buttons row — always visible above ticket */}
+          <div className="mb-3 flex shrink-0 items-center justify-end gap-2">
+            {/* Download button */}
+            <button
+              onClick={handleDownloadTicket}
+              disabled={isDownloading}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/20 transition-all hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Download ticket as image"
+            >
+              <Download className="h-4 w-4" />
+              <span className="sr-only">Download ticket</span>
+            </button>
 
-          {/* Download button */}
-          <button
-            onClick={handleDownloadTicket}
-            disabled={isDownloading}
-            className="absolute -top-11 right-12 flex h-9 w-9 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/20 transition-all hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Download ticket as image"
-          >
-            <Download className="h-4 w-4" />
-            <span className="sr-only">Download ticket</span>
-          </button>
+            {/* Close */}
+            <Dialog.Close className="flex h-9 w-9 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/20 transition-all hover:bg-white/20">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Dialog.Close>
+          </div>
+
+          {/* Scrollable ticket area */}
+          <div className="min-h-0 overflow-y-auto rounded-3xl">
 
           {/* ── Physical ticket shell ── */}
           <div ref={ticketRef} className="ticket-paper overflow-hidden rounded-3xl">
@@ -273,6 +280,7 @@ export function TicketModal({ ticket, open, onClose }: TicketModalProps) {
               </p>
             </div>
           </div>
+          </div>{/* end scrollable wrapper */}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
