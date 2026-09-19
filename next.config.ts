@@ -70,8 +70,8 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co https://images.unsplash.com https://avatars.githubusercontent.com https://*.s3.amazonaws.com https://*.cloudfront.net https://utfs.io",
               // Fonts served from self
               "font-src 'self'",
-              // API calls: self + Paystack
-              "connect-src 'self' https://api.paystack.co https://*.supabase.co",
+              // API calls: self + Paystack + Sentry tunnel
+              "connect-src 'self' https://api.paystack.co https://*.supabase.co https://*.sentry.io",
               // Paystack checkout iframe + Google Maps embed
               'frame-src https://checkout.paystack.com https://maps.google.com https://www.google.com',
               // Workers / service workers
@@ -109,7 +109,7 @@ export default withSentryConfig(nextConfig, {
   // This can increase your server load as well as your hosting bill.
   // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
   // side errors will fail.
-  // tunnelRoute: "/monitoring",
+  tunnelRoute: '/monitoring',
 
   webpack: {
     // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
