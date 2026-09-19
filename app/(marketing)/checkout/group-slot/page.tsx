@@ -10,9 +10,6 @@ import { GroupSlotCheckoutClient } from './group-slot-checkout-client'
 
 export const metadata: Metadata = { title: 'Complete Payment — Group Booking' }
 
-// Always render at request time — depends on searchParams and live DB data
-export const dynamic = 'force-dynamic'
-
 interface PageProps {
   searchParams: Promise<{
     slotId?: string
