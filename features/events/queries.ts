@@ -1,5 +1,5 @@
 import 'server-only'
-import { cacheLife, cacheTag } from 'next/cache'
+import { unstable_cache } from 'next/dist/server/web/spec-extension/unstable-cache'
 import { db } from '@/lib/db'
 import type { EventFilters, EventListItem, EventsPage, EventDetail } from './types'
 import { EventStatus } from '@/app/generated/prisma/client'
@@ -51,57 +51,77 @@ const eventListSelect = {
 
 // ─── Get paginated events ─────────────────────────────────────────────────────
 
-// Cache event listing queries for 60 seconds per unique filter combination.
-// "use cache" automatically derives the cache key from function arguments.
-// Tagged with 'events' so publish/unpublish/delete busts all entries at once.
-export async function getEvents(filters: EventFilters = {}): Promise<EventsPage> {
-  'use cache'
-  cacheLife('minutes')
-  cacheTag('events')
-
+// Build a stable string key from filters — omit falsy values so
+// {} and {page:1} produce the same cache key.
+function filtersToKey(filters: EventFilters): string {
   const { category, city, search, dateFrom, dateTo, free, page = 1, limit = PAGE_SIZE } = filters
-
-  const where = {
-    status: EventStatus.PUBLISHED,
-    ...(category && { category: { slug: category } }),
-    ...(city && {
-      venue: { city: { contains: city, mode: 'insensitive' as const } },
-    }),
-    ...(search && {
-      OR: [
-        { title: { contains: search, mode: 'insensitive' as const } },
-        { description: { contains: search, mode: 'insensitive' as const } },
-        { venue: { name: { contains: search, mode: 'insensitive' as const } } },
-      ],
-    }),
-    ...(dateFrom || dateTo
-      ? {
-          startsAt: {
-            ...(dateFrom && { gte: new Date(dateFrom) }),
-            ...(dateTo && { lte: new Date(dateTo) }),
-          },
-        }
-      : { startsAt: { gte: new Date() } }),
-    ...(free === true && { ticketTypes: { some: { price: 0 } } }),
-  }
-
-  const [events, total] = await Promise.all([
-    db.event.findMany({
-      where,
-      select: eventListSelect,
-      orderBy: { startsAt: 'asc' },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    db.event.count({ where }),
-  ])
-
-  return {
-    events: events as EventListItem[],
-    total,
+  return JSON.stringify({
+    ...(category && { category }),
+    ...(city     && { city }),
+    ...(search   && { search }),
+    ...(dateFrom && { dateFrom }),
+    ...(dateTo   && { dateTo }),
+    ...(free     && { free }),
     page,
-    totalPages: Math.ceil(total / limit),
-  }
+    limit,
+  })
+}
+
+// Cache event listing queries for 60 seconds per unique filter combination.
+// Tagged with 'events' so publish/unpublish/delete busts all entries at once.
+const _getEventsCached = unstable_cache(
+  async function __getEvents(filtersJson: string): Promise<EventsPage> {
+    const filters: EventFilters = JSON.parse(filtersJson)
+    const { category, city, search, dateFrom, dateTo, free, page = 1, limit = PAGE_SIZE } = filters
+
+    const where = {
+      status: EventStatus.PUBLISHED,
+      ...(category && { category: { slug: category } }),
+      ...(city && {
+        venue: { city: { contains: city, mode: 'insensitive' as const } },
+      }),
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' as const } },
+          { description: { contains: search, mode: 'insensitive' as const } },
+          { venue: { name: { contains: search, mode: 'insensitive' as const } } },
+        ],
+      }),
+      ...(dateFrom || dateTo
+        ? {
+            startsAt: {
+              ...(dateFrom && { gte: new Date(dateFrom) }),
+              ...(dateTo   && { lte: new Date(dateTo) }),
+            },
+          }
+        : { startsAt: { gte: new Date() } }),
+      ...(free === true && { ticketTypes: { some: { price: 0 } } }),
+    }
+
+    const [events, total] = await Promise.all([
+      db.event.findMany({
+        where,
+        select: eventListSelect,
+        orderBy: { startsAt: 'asc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      db.event.count({ where }),
+    ])
+
+    return {
+      events: events as EventListItem[],
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    }
+  },
+  ['events-list'],
+  { revalidate: 60, tags: ['events'] }
+)
+
+export function getEvents(filters: EventFilters = {}): Promise<EventsPage> {
+  return _getEventsCached(filtersToKey(filters))
 }
 
 // ─── Shared full include for a single event ───────────────────────────────────
@@ -195,52 +215,56 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
 // ─── Get all categories ───────────────────────────────────────────────────────
 
 // Categories change rarely — cache for 1 hour, bust via 'categories' tag.
-export async function getCategories() {
-  'use cache'
-  cacheLife('hours')
-  cacheTag('categories')
-
-  return db.category.findMany({
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      color: true,
-      imageUrl: true,
-      _count: {
-        select: {
-          events: {
-            where: {
-              status: EventStatus.PUBLISHED,
-              startsAt: { gte: new Date() },
+export const getCategories = unstable_cache(
+  async function _getCategories() {
+    return db.category.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        color: true,
+        imageUrl: true,
+        _count: {
+          select: {
+            events: {
+              where: {
+                status: EventStatus.PUBLISHED,
+                startsAt: { gte: new Date() },
+              },
             },
           },
         },
       },
-    },
-    orderBy: { name: 'asc' },
-  })
-}
+      orderBy: { name: 'asc' },
+    })
+  },
+  ['categories'],
+  { revalidate: 3600, tags: ['categories'] }
+)
 
 // ─── Get featured / upcoming events (used on homepage) ───────────────────────
 
 // Cache for 2 minutes — homepage data is not real-time critical.
 // Tagged so it can be invalidated when an event is published/updated.
-export async function getUpcomingEvents(limit = 6): Promise<EventListItem[]> {
-  'use cache'
-  cacheLife('minutes')
-  cacheTag('upcoming-events', 'events')
+const _getUpcomingEvents = unstable_cache(
+  async function __getUpcomingEvents(limit: number): Promise<EventListItem[]> {
+    const events = await db.event.findMany({
+      where: {
+        status: EventStatus.PUBLISHED,
+        startsAt: { gte: new Date() },
+      },
+      select: eventListSelect,
+      orderBy: { startsAt: 'asc' },
+      take: limit,
+    })
+    return events as EventListItem[]
+  },
+  ['upcoming-events'],
+  { revalidate: 120, tags: ['upcoming-events', 'events'] }
+)
 
-  const events = await db.event.findMany({
-    where: {
-      status: EventStatus.PUBLISHED,
-      startsAt: { gte: new Date() },
-    },
-    select: eventListSelect,
-    orderBy: { startsAt: 'asc' },
-    take: limit,
-  })
-  return events as EventListItem[]
+export function getUpcomingEvents(limit = 6): Promise<EventListItem[]> {
+  return _getUpcomingEvents(limit)
 }
 
 // ─── Get events by category ───────────────────────────────────────────────────

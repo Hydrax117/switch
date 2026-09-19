@@ -7,6 +7,9 @@ import { EventsSection } from '@/components/sections/events-section'
 import { OrganizerCta } from '@/components/sections/organizer-cta'
 import { getUpcomingEvents } from '@/features/events'
 
+// Revalidate every 2 minutes — matches the upstream query cache TTL.
+export const revalidate = 120
+
 export default async function HomePage() {
   // Fetch once at the page level — 9 covers the hero (9 posters) and
   // events section (7 cards). Both child components receive the data as props

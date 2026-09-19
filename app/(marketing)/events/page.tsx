@@ -10,6 +10,9 @@ import { EventsGridSkeleton } from '@/features/events/components/events-grid-ske
 import { EventsHero } from '@/features/events/components/events-hero'
 import { siteConfig } from '@/config/site'
 
+// Revalidate every 60 seconds — matches the getEvents cache TTL.
+export const revalidate = 60
+
 export const metadata: Metadata = {
   title: 'Discover Events — SWITCH',
   description:
