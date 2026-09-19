@@ -5,11 +5,19 @@ import { HeroSectionWrapper } from '@/components/sections/hero-section-wrapper'
 import { CategoriesSection } from '@/components/sections/categories-section'
 import { EventsSection } from '@/components/sections/events-section'
 import { OrganizerCta } from '@/components/sections/organizer-cta'
+import { getUpcomingEvents } from '@/features/events'
+import type { EventListItem } from '@/features/events/types'
 
-// Always render at request time — the page fetches live DB data
-export const dynamic = 'force-dynamic'
+// ISR: revalidate every 2 minutes — matches the upstream query caches.
+// Removes the per-request DB hit that caused 8s p95 under load.
+export const revalidate = 120
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch once at the page level — 9 covers the hero (9 posters) and
+  // events section (7 cards). Both child components receive the data as props
+  // so no duplicate DB queries fire per request.
+  const events = await getUpcomingEvents(9)
+
   return (
     <div className="relative flex min-h-screen flex-col">
       {/* Header sits over the dark hero */}
@@ -19,7 +27,7 @@ export default function HomePage() {
       <main className="flex-1">
         {/* Dark cinematic hero with event artwork */}
         <Suspense>
-          <HeroSectionWrapper />
+          <HeroSectionWrapper events={events} />
         </Suspense>
         {/* Typographic category strip */}
         <Suspense>
@@ -27,7 +35,7 @@ export default function HomePage() {
         </Suspense>
         {/* Editorial event grid */}
         <Suspense>
-          <EventsSection />
+          <EventsSection events={events} />
         </Suspense>
         {/* Organizer CTA */}
         <OrganizerCta />

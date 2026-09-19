@@ -1,15 +1,20 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { getUpcomingEvents } from '@/features/events'
 import { EventCard } from '@/features/events/components/event-card'
 import { FeaturedEventCard } from '@/features/events/components/featured-event-card'
+import type { EventListItem } from '@/features/events/types'
 
-export async function EventsSection() {
-  const events = await getUpcomingEvents(7)
+interface EventsSectionProps {
+  events: EventListItem[]
+}
 
-  if (!events.length) return null
+export async function EventsSection({ events }: EventsSectionProps) {
+  // Slice to 7 for this section — the page fetched 9 (hero uses up to 9 posters)
+  const displayEvents = events.slice(0, 7)
 
-  const [first, ...rest] = events
+  if (!displayEvents.length) return null
+
+  const [first, ...rest] = displayEvents
   const hasHero = Boolean(first?.imageUrl)
 
   return (
@@ -60,7 +65,7 @@ export async function EventsSection() {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3">
-            {events.map((event, i) => (
+            {displayEvents.map((event, i) => (
               <EventCard key={event.id} event={event} index={i} />
             ))}
           </div>

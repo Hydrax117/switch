@@ -217,17 +217,28 @@ export const getCategories = unstable_cache(
 
 // ─── Get featured / upcoming events (used on homepage) ───────────────────────
 
-export async function getUpcomingEvents(limit = 6): Promise<EventListItem[]> {
-  const events = await db.event.findMany({
-    where: {
-      status: EventStatus.PUBLISHED,
-      startsAt: { gte: new Date() },
-    },
-    select: eventListSelect,
-    orderBy: { startsAt: 'asc' },
-    take: limit,
-  })
-  return events as EventListItem[]
+// Cache for 2 minutes — homepage data is not real-time critical.
+// Tagged so it can be invalidated when an event is published/updated.
+const _getUpcomingEvents = unstable_cache(
+  async function __getUpcomingEvents(limit: number): Promise<EventListItem[]> {
+    const events = await db.event.findMany({
+      where: {
+        status: EventStatus.PUBLISHED,
+        startsAt: { gte: new Date() },
+      },
+      select: eventListSelect,
+      orderBy: { startsAt: 'asc' },
+      take: limit,
+    })
+    return events as EventListItem[]
+  },
+  ['upcoming-events'],
+  { revalidate: 120, tags: ['upcoming-events', 'events'] }
+)
+
+export function getUpcomingEvents(limit = 6): Promise<EventListItem[]> {
+  // Pass limit as part of the cache key so different limits are cached separately
+  return _getUpcomingEvents(limit)
 }
 
 // ─── Get events by category ───────────────────────────────────────────────────

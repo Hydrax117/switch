@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
@@ -253,6 +253,7 @@ export async function publishEvent(eventId: string): Promise<ActionResult> {
 
   revalidatePath('/dashboard/events')
   revalidatePath(`/events/${event.slug}`)
+  updateTag('upcoming-events')
   return { success: true, data: undefined }
 }
 
@@ -272,6 +273,7 @@ export async function unpublishEvent(eventId: string): Promise<ActionResult> {
   })
 
   revalidatePath('/dashboard/events')
+  updateTag('upcoming-events')
   return { success: true, data: undefined }
 }
 
@@ -539,6 +541,7 @@ export async function cancelEvent(eventId: string): Promise<ActionResult> {
   revalidatePath('/dashboard/events')
   revalidatePath(`/dashboard/events/${eventId}`)
   revalidatePath(`/events/${event.slug}`)
+  updateTag('upcoming-events')
   return { success: true, data: undefined }
 }
 
@@ -585,6 +588,7 @@ export async function deleteEvent(eventId: string): Promise<ActionResult> {
 
   revalidatePath('/dashboard/events')
   revalidatePath(`/events/${event.slug}`)
+  updateTag('upcoming-events')
   return { success: true, data: undefined }
 }
 
