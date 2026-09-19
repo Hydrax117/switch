@@ -51,50 +51,78 @@ const eventListSelect = {
 
 // ─── Get paginated events ─────────────────────────────────────────────────────
 
-export async function getEvents(filters: EventFilters = {}): Promise<EventsPage> {
+// Build a stable string key from filters for use as the unstable_cache key.
+// Undefined/false values are omitted so {page:1} and {} produce the same key.
+function filtersToKey(filters: EventFilters): string {
   const { category, city, search, dateFrom, dateTo, free, page = 1, limit = PAGE_SIZE } = filters
-
-  const where = {
-    status: EventStatus.PUBLISHED,
-    ...(category && { category: { slug: category } }),
-    ...(city && {
-      venue: { city: { contains: city, mode: 'insensitive' as const } },
-    }),
-    ...(search && {
-      OR: [
-        { title: { contains: search, mode: 'insensitive' as const } },
-        { description: { contains: search, mode: 'insensitive' as const } },
-        { venue: { name: { contains: search, mode: 'insensitive' as const } } },
-      ],
-    }),
-    ...(dateFrom || dateTo
-      ? {
-          startsAt: {
-            ...(dateFrom && { gte: new Date(dateFrom) }),
-            ...(dateTo && { lte: new Date(dateTo) }),
-          },
-        }
-      : { startsAt: { gte: new Date() } }),
-    ...(free === true && { ticketTypes: { some: { price: 0 } } }),
-  }
-
-  const [events, total] = await Promise.all([
-    db.event.findMany({
-      where,
-      select: eventListSelect,
-      orderBy: { startsAt: 'asc' },
-      skip: (page - 1) * limit,
-      take: limit,
-    }),
-    db.event.count({ where }),
-  ])
-
-  return {
-    events: events as EventListItem[],
-    total,
+  return JSON.stringify({
+    ...(category   && { category }),
+    ...(city       && { city }),
+    ...(search     && { search }),
+    ...(dateFrom   && { dateFrom }),
+    ...(dateTo     && { dateTo }),
+    ...(free       && { free }),
     page,
-    totalPages: Math.ceil(total / limit),
-  }
+    limit,
+  })
+}
+
+// Cache event listing queries for 60 seconds.
+// Each unique filter combination gets its own cache entry.
+// Tagged with 'events' so publish/unpublish/delete busts all entries at once.
+const _getEventsCached = unstable_cache(
+  async function __getEvents(filtersJson: string): Promise<EventsPage> {
+    const filters: EventFilters = JSON.parse(filtersJson)
+    const { category, city, search, dateFrom, dateTo, free, page = 1, limit = PAGE_SIZE } = filters
+
+    const where = {
+      status: EventStatus.PUBLISHED,
+      ...(category && { category: { slug: category } }),
+      ...(city && {
+        venue: { city: { contains: city, mode: 'insensitive' as const } },
+      }),
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' as const } },
+          { description: { contains: search, mode: 'insensitive' as const } },
+          { venue: { name: { contains: search, mode: 'insensitive' as const } } },
+        ],
+      }),
+      ...(dateFrom || dateTo
+        ? {
+            startsAt: {
+              ...(dateFrom && { gte: new Date(dateFrom) }),
+              ...(dateTo && { lte: new Date(dateTo) }),
+            },
+          }
+        : { startsAt: { gte: new Date() } }),
+      ...(free === true && { ticketTypes: { some: { price: 0 } } }),
+    }
+
+    const [events, total] = await Promise.all([
+      db.event.findMany({
+        where,
+        select: eventListSelect,
+        orderBy: { startsAt: 'asc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      db.event.count({ where }),
+    ])
+
+    return {
+      events: events as EventListItem[],
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    }
+  },
+  ['events-list'],
+  { revalidate: 60, tags: ['events'] }
+)
+
+export function getEvents(filters: EventFilters = {}): Promise<EventsPage> {
+  return _getEventsCached(filtersToKey(filters))
 }
 
 // ─── Shared full include for a single event ───────────────────────────────────

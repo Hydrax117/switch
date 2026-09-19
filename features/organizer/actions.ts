@@ -254,6 +254,7 @@ export async function publishEvent(eventId: string): Promise<ActionResult> {
   revalidatePath('/dashboard/events')
   revalidatePath(`/events/${event.slug}`)
   updateTag('upcoming-events')
+  updateTag('events')
   return { success: true, data: undefined }
 }
 
@@ -274,6 +275,7 @@ export async function unpublishEvent(eventId: string): Promise<ActionResult> {
 
   revalidatePath('/dashboard/events')
   updateTag('upcoming-events')
+  updateTag('events')
   return { success: true, data: undefined }
 }
 
@@ -542,6 +544,7 @@ export async function cancelEvent(eventId: string): Promise<ActionResult> {
   revalidatePath(`/dashboard/events/${eventId}`)
   revalidatePath(`/events/${event.slug}`)
   updateTag('upcoming-events')
+  updateTag('events')
   return { success: true, data: undefined }
 }
 
@@ -589,6 +592,7 @@ export async function deleteEvent(eventId: string): Promise<ActionResult> {
   revalidatePath('/dashboard/events')
   revalidatePath(`/events/${event.slug}`)
   updateTag('upcoming-events')
+  updateTag('events')
   return { success: true, data: undefined }
 }
 
