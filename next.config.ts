@@ -1,6 +1,11 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  // Cache Components — enables the "use cache" directive, cacheLife, cacheTag.
+  // This is the Next.js 16 caching model; replaces unstable_cache, revalidate
+  // segment config, and force-dynamic.
+  cacheComponents: true,
+
   // Turbopack is the default bundler in Next.js 16; no extra flag needed.
 
   // Tell Turbopack/webpack not to bundle these packages — let Node.js resolve

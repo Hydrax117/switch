@@ -6,11 +6,6 @@ import { CategoriesSection } from '@/components/sections/categories-section'
 import { EventsSection } from '@/components/sections/events-section'
 import { OrganizerCta } from '@/components/sections/organizer-cta'
 import { getUpcomingEvents } from '@/features/events'
-import type { EventListItem } from '@/features/events/types'
-
-// ISR: revalidate every 2 minutes — matches the upstream query caches.
-// Removes the per-request DB hit that caused 8s p95 under load.
-export const revalidate = 120
 
 export default async function HomePage() {
   // Fetch once at the page level — 9 covers the hero (9 posters) and

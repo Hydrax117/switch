@@ -10,11 +10,6 @@ import { EventsGridSkeleton } from '@/features/events/components/events-grid-ske
 import { EventsHero } from '@/features/events/components/events-hero'
 import { siteConfig } from '@/config/site'
 
-// ISR: revalidate every 60 seconds — matches the getEvents cache TTL.
-// The page shell (header, filters bar) is served from Vercel's edge cache;
-// the EventsGridLoader streams in via Suspense with its own cached data.
-export const revalidate = 60
-
 export const metadata: Metadata = {
   title: 'Discover Events — SWITCH',
   description:
