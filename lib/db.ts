@@ -18,14 +18,6 @@ function createPrismaClient(): PrismaClient {
   const raw = process.env.DATABASE_URL
   if (!raw) throw new Error('DATABASE_URL is not set')
 
-  // Log hostname for debugging — remove once confirmed working
-  try {
-    const u = new URL(raw)
-    console.log('[db] Connecting to:', u.hostname, 'port:', u.port)
-  } catch {
-    console.error('[db] DATABASE_URL is not a valid URL:', raw.slice(0, 30))
-  }
-
   // Strip Prisma-only URL params that confuse the pg driver
   let connectionString = raw
   try {
@@ -38,9 +30,11 @@ function createPrismaClient(): PrismaClient {
     // URL parse failed — use raw string and hope pg handles it
   }
 
+  // PgBouncer transaction mode multiplexes at the proxy level — keep the
+  // per-instance pool small to avoid exhausting PgBouncer's server_pool_size.
   const pool = new Pool({
     connectionString,
-    max: 5,
+    max: 2,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 10_000,
     ssl: { rejectUnauthorized: false },

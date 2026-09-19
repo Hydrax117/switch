@@ -4,7 +4,6 @@ import * as Dialog from '@radix-ui/react-dialog'
 import Image from 'next/image'
 import { X, Calendar, MapPin, Tag, Hash, Download } from 'lucide-react'
 import { format } from 'date-fns'
-import { toPng } from 'html-to-image'
 import { useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { TicketQr } from './ticket-qr'
@@ -94,6 +93,8 @@ export function TicketModal({ ticket, open, onClose }: TicketModalProps) {
 
     try {
       setIsDownloading(true)
+      // Dynamically import html-to-image so it's not bundled in the initial JS
+      const { toPng } = await import('html-to-image')
       const dataUrl = await toPng(ticketRef.current, {
         cacheBust: true,
         pixelRatio: 2,

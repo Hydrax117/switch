@@ -1,4 +1,5 @@
 import 'server-only'
+import { unstable_cache } from 'next/cache'
 import { db } from '@/lib/db'
 import type { EventFilters, EventListItem, EventsPage, EventDetail } from './types'
 import { EventStatus } from '@/app/generated/prisma/client'
@@ -186,28 +187,33 @@ export async function getEventBySlug(slug: string): Promise<EventDetail | null> 
 
 // ─── Get all categories ───────────────────────────────────────────────────────
 
-export async function getCategories() {
-  return db.category.findMany({
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      color: true,
-      imageUrl: true,
-      _count: {
-        select: {
-          events: {
-            where: {
-              status: EventStatus.PUBLISHED,
-              startsAt: { gte: new Date() },
+// Categories change rarely — cache for 1 hour, invalidate via 'categories' tag.
+export const getCategories = unstable_cache(
+  async function _getCategories() {
+    return db.category.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        color: true,
+        imageUrl: true,
+        _count: {
+          select: {
+            events: {
+              where: {
+                status: EventStatus.PUBLISHED,
+                startsAt: { gte: new Date() },
+              },
             },
           },
         },
       },
-    },
-    orderBy: { name: 'asc' },
-  })
-}
+      orderBy: { name: 'asc' },
+    })
+  },
+  ['categories'],
+  { revalidate: 3600, tags: ['categories'] }
+)
 
 // ─── Get featured / upcoming events (used on homepage) ───────────────────────
 

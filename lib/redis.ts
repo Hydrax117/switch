@@ -64,9 +64,9 @@ function createRedisClient(): Redis {
 
 export const redis = globalForRedis.redis ?? createRedisClient()
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForRedis.redis = redis
-}
+// Always persist to the global so every warm serverless invocation reuses
+// the same connection instead of opening a new one per instance.
+globalForRedis.redis = redis
 
 // ─── Seat lock helpers ────────────────────────────────────────────────────────
 
