@@ -96,141 +96,92 @@ export async function getEvents(filters: EventFilters = {}): Promise<EventsPage>
   }
 }
 
+// ─── Shared full include for a single event ───────────────────────────────────
+
+function buildEventDetailInclude(eventId: string) {
+  return {
+    organizer: {
+      select: { id: true, name: true, slug: true, logoUrl: true },
+    },
+    venue: {
+      select: { id: true, name: true, address: true, city: true, state: true, country: true },
+    },
+    category: {
+      select: { id: true, name: true, slug: true, color: true },
+    },
+    ticketTypes: {
+      where: { status: { not: 'INACTIVE' as const } },
+      orderBy: { price: 'asc' as const },
+    },
+    speakers: {
+      orderBy: { position: 'asc' as const },
+      select: { id: true, name: true, role: true, avatarUrl: true, position: true },
+    },
+    images: {
+      select: { id: true, url: true, position: true },
+      orderBy: { position: 'asc' as const },
+    },
+    seatMap: {
+      include: {
+        sections: {
+          orderBy: { name: 'asc' as const },
+          include: {
+            rows: {
+              orderBy: [{ position: 'asc' as const }, { label: 'asc' as const }],
+              include: {
+                seats: {
+                  orderBy: [{ number: 'asc' as const }, { label: 'asc' as const }],
+                  include: {
+                    // Filter to only this event's EventSeat records
+                    eventSeats: {
+                      where: { eventId },
+                      select: { id: true, status: true, price: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    scheduleItems: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        hostName: true,
+        speakerId: true,
+        startsAt: true,
+        endsAt: true,
+        position: true,
+      },
+      orderBy: { position: 'asc' as const },
+    },
+    _count: {
+      select: { tickets: true, eventSeats: true },
+    },
+  }
+}
+
 // ─── Get single event by slug ─────────────────────────────────────────────────
 
 export async function getEventBySlug(slug: string): Promise<EventDetail | null> {
-  const event = await db.event.findUnique({
+  // Step 1: cheap slug → id resolution (no joins)
+  const stub = await db.event.findUnique({
     where: { slug },
-    include: {
-      organizer: {
-        select: { id: true, name: true, slug: true, logoUrl: true },
-      },
-      venue: {
-        select: { id: true, name: true, address: true, city: true, state: true, country: true },
-      },
-      category: {
-        select: { id: true, name: true, slug: true, color: true },
-      },
-      ticketTypes: {
-        where: { status: { not: 'INACTIVE' } },
-        orderBy: { price: 'asc' },
-      },
-      speakers: {
-        orderBy: { position: 'asc' as const },
-        select: { id: true, name: true, role: true, avatarUrl: true, position: true },
-      },
-      images: {
-        select: { id: true, url: true, position: true },
-        orderBy: { position: 'asc' as const },
-      },
-      seatMap: {
-        include: {
-          sections: {
-            orderBy: { name: 'asc' },
-            include: {
-              rows: {
-                orderBy: [{ position: 'asc' }, { label: 'asc' }],
-                include: {
-                  seats: {
-                    orderBy: [{ number: 'asc' }, { label: 'asc' }],
-                    include: {
-                      // Only fetch the EventSeat record that belongs to THIS event
-                      eventSeats: {
-                        where: { eventId: undefined }, // replaced below
-                        select: {
-                          id: true,
-                          status: true,
-                          price: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      _count: {
-        select: { tickets: true, eventSeats: true },
-      },
-    },
+    select: { id: true },
   })
 
-  if (!event) return null
+  if (!stub) return null
 
-  // Re-fetch with correct eventId filter now that we have the event.id
-  const eventWithSeats = await db.event.findUnique({
-    where: { id: event.id },
-    include: {
-      organizer: {
-        select: { id: true, name: true, slug: true, logoUrl: true },
-      },
-      venue: {
-        select: { id: true, name: true, address: true, city: true, state: true, country: true },
-      },
-      category: {
-        select: { id: true, name: true, slug: true, color: true },
-      },
-      ticketTypes: {
-        where: { status: { not: 'INACTIVE' } },
-        orderBy: { price: 'asc' },
-      },
-      speakers: {
-        orderBy: { position: 'asc' as const },
-        select: { id: true, name: true, role: true, avatarUrl: true, position: true },
-      },
-      images: {
-        select: { id: true, url: true, position: true },
-        orderBy: { position: 'asc' as const },
-      },
-      seatMap: {
-        include: {
-          sections: {
-            orderBy: { name: 'asc' },
-            include: {
-              rows: {
-                orderBy: [{ position: 'asc' }, { label: 'asc' }],
-                include: {
-                  seats: {
-                    orderBy: [{ number: 'asc' }, { label: 'asc' }],
-                    include: {
-                      eventSeats: {
-                        where: { eventId: event.id },
-                        select: {
-                          id: true,
-                          status: true,
-                          price: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      _count: {
-        select: { tickets: true, eventSeats: true },
-      },
-      scheduleItems: {
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          hostName: true,
-          speakerId: true,
-          startsAt: true,
-          endsAt: true,
-          position: true,
-        },
-        orderBy: { position: 'asc' as const },
-      },
-    },
+  // Step 2: single full fetch with the correct eventId filter from the start
+  const event = await db.event.findUnique({
+    where: { id: stub.id },
+    include: buildEventDetailInclude(stub.id),
   })
 
-  return eventWithSeats as unknown as EventDetail
+  return event as unknown as EventDetail
 }
 
 // ─── Get all categories ───────────────────────────────────────────────────────

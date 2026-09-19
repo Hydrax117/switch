@@ -552,19 +552,26 @@ async function handleReservedChargeSuccess({
         qrCode:       generateQrCode(),
         eventSeatId:  eventSeat.id as string,
       })
+    }
 
-      await tx.eventSeat.update({
-        where: { id: eventSeat.id as string },
-        data:  { status: EventSeatStatus.SOLD },
-      })
+    // Batch-update all sold seats in one query
+    await tx.eventSeat.updateMany({
+      where: { id: { in: reservation.eventSeats.map((s) => s.id as string) } },
+      data:  { status: EventSeatStatus.SOLD },
+    })
 
+    // Group sold-count increments by ticketTypeId then batch
+    const soldByType = new Map<string, number>()
+    for (const eventSeat of reservation.eventSeats) {
       if (eventSeat.ticketTypeId) {
-        await tx.ticketType.update({
-          where: { id: eventSeat.ticketTypeId },
-          data:  { sold: { increment: 1 } },
-        })
+        soldByType.set(eventSeat.ticketTypeId, (soldByType.get(eventSeat.ticketTypeId) ?? 0) + 1)
       }
     }
+    await Promise.all(
+      Array.from(soldByType).map(([id, count]) =>
+        tx.ticketType.update({ where: { id }, data: { sold: { increment: count } } })
+      )
+    )
 
     if (promoCodeId) {
       const updated = await tx.$executeRaw`

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { unstable_cache } from 'next/cache'
 import { HeaderWithSession } from '@/components/layout/header-with-session'
 import { SiteFooter } from '@/components/layout/site-footer'
 import { getSession } from '@/lib/session'
@@ -27,9 +28,17 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+// Cache the expensive getEventBySlug fetch so generateMetadata and the page
+// component share a single DB round-trip per request / revalidation window.
+const getCachedEvent = unstable_cache(
+  (slug: string) => getEventBySlug(slug),
+  ['event-by-slug'],
+  { revalidate: 60, tags: ['events'] }
+)
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const event = await getEventBySlug(slug)
+  const event = await getCachedEvent(slug)
   if (!event) return { title: 'Event Not Found' }
 
   const description = event.description
@@ -57,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function EventDetailPage({ params }: PageProps) {
   const { slug } = await params
 
-  const [session, event] = await Promise.all([getSession(), getEventBySlug(slug)])
+  const [session, event] = await Promise.all([getSession(), getCachedEvent(slug)])
 
   if (!event) notFound()
 
