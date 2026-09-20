@@ -86,6 +86,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Preconnect to image CDN origins so poster/event images don't wait on DNS+TLS */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://utfs.io" />
+      </head>
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
         <ThemeProvider
           attribute="class"

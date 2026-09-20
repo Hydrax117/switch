@@ -32,7 +32,22 @@ const nextConfig: NextConfig = {
 
   // Experimental features
   experimental: {
-    // Typesafe server actions
+    // Tree-shake icon and UI library imports — prevents entire packages from
+    // landing in the client bundle when only a few exports are used.
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-separator',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      'date-fns',
+    ],
   },
 
   // Typed routes — disabled until all routes are implemented

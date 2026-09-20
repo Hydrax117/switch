@@ -11,11 +11,14 @@
  * emits <link rel="preload"> for them — but now those preloads appear
  * in the SSR HTML because the parent (HeroShell) is a Server Component
  * that can inline the <Image> preload hints.
+ *
+ * framer-motion is NOT imported here — reduced-motion is handled purely
+ * via CSS @media (prefers-reduced-motion) in globals.css, keeping this
+ * component's JS footprint minimal.
  */
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useReducedMotion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { EventListItem } from '@/features/events/types'
@@ -73,7 +76,6 @@ function Poster({
   delay = 0,
   loadImage = true,
 }: PosterSlot & { event: EventListItem | undefined; delay?: number; loadImage?: boolean }) {
-  const shouldReduce = useReducedMotion()
   const [hovered, setHovered] = useState(false)
 
   if (!event) return null
@@ -86,7 +88,8 @@ function Poster({
         width: w,
         height: h,
         position: 'absolute',
-        animationDelay: shouldReduce ? undefined : `${delay}ms`,
+        // CSS handles reduced-motion via @media (prefers-reduced-motion) in globals.css
+        animationDelay: `${delay}ms`,
       }}
       aria-label={event.title}
       onMouseEnter={() => setHovered(true)}
