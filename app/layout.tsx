@@ -11,10 +11,15 @@ const inter = Inter({
   display: 'swap',
 })
 
+// JetBrains Mono is used only in dashboard/ticket/checkout pages.
+// preload: false stops Next.js from emitting a <link rel="preload"> for it
+// in every page's <head>, removing it from the critical font path on the
+// homepage while still making it available when those routes load.
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-geist-mono',
   display: 'swap',
+  preload: false,
 })
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
