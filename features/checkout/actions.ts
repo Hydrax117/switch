@@ -504,6 +504,8 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
           : reservation.event.venueName
           ? [reservation.event.venueName, reservation.event.venueCity].filter(Boolean).join(', ')
           : undefined,
+        ticketCount:   ticketIds.length,
+        reservationId,
         tickets: tickets.map((t) => {
           const slot = t.timeSlotTickets[0]?.timeSlot
           return {
