@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: false,
         reason: 'WRONG_TIMESLOT',
-        detail: `Doors for "${slot.label}" open at ${doorsOpen.toLocaleTimeString()}`,
+        detail: `Doors for "${slot.label}" open at ${doorsOpen.toLocaleTimeString('en-NG', { timeZone: 'Africa/Lagos', hour: '2-digit', minute: '2-digit', hour12: true })}`,
       })
     }
 

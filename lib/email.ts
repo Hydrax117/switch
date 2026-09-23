@@ -64,7 +64,8 @@ export async function sendTicketConfirmationEmail(params: {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://useswitch.net'
 
-  const dateStr = params.eventDate.toLocaleDateString('en-NG', {
+  const dateStr = params.eventDate.toLocaleString('en-NG', {
+    timeZone: 'Africa/Lagos',
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -591,6 +592,7 @@ export async function sendEventReminder(params: {
   const ticketsUrl = `${appUrl}/dashboard/tickets`
 
   const dateStr = params.eventStartsAt.toLocaleString('en-NG', {
+    timeZone: 'Africa/Lagos',
     weekday: 'long',
     year: 'numeric',
     month: 'long',

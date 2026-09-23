@@ -51,9 +51,11 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
   const isValid = status === 'ACTIVE'
 
   const dateStr = ticket.eventDate.toLocaleDateString('en-NG', {
+    timeZone: 'Africa/Lagos',
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
   })
   const timeStr = ticket.eventDate.toLocaleTimeString('en-NG', {
+    timeZone: 'Africa/Lagos',
     hour: '2-digit', minute: '2-digit', hour12: true,
   })
 

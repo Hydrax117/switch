@@ -390,7 +390,7 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
           seat: { select: { id: true } },
         },
       },
-      event: { select: { id: true, slug: true, title: true, startsAt: true, isFree: true, imageUrl: true, venue: { select: { name: true, city: true } } } },
+      event: { select: { id: true, slug: true, title: true, startsAt: true, isFree: true, imageUrl: true, venue: { select: { name: true, city: true } }, venueName: true, venueCity: true } },
     },
   })
 
@@ -501,9 +501,9 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
         eventImageUrl: reservation.event.imageUrl ?? undefined,
         eventVenue:    reservation.event.venue
           ? `${reservation.event.venue.name}, ${reservation.event.venue.city}`
+          : reservation.event.venueName
+          ? [reservation.event.venueName, reservation.event.venueCity].filter(Boolean).join(', ')
           : undefined,
-        ticketCount:   ticketIds.length,
-        reservationId,
         tickets: tickets.map((t) => {
           const slot = t.timeSlotTickets[0]?.timeSlot
           return {
@@ -741,7 +741,7 @@ export async function submitRsvp(input: unknown): Promise<SubmitRsvpResult> {
       
       const evt = await db.event.findUnique({
         where: { id: eventId },
-        select: { title: true, startsAt: true, slug: true, imageUrl: true, venue: { select: { name: true, city: true } } },
+        select: { title: true, startsAt: true, slug: true, imageUrl: true, venue: { select: { name: true, city: true } }, venueName: true, venueCity: true },
       })
       
       if (evt) {
@@ -753,6 +753,8 @@ export async function submitRsvp(input: unknown): Promise<SubmitRsvpResult> {
           eventImageUrl: evt.imageUrl ?? undefined,
           eventVenue:    evt.venue
             ? `${evt.venue.name}, ${evt.venue.city}`
+            : evt.venueName
+            ? [evt.venueName, evt.venueCity].filter(Boolean).join(', ')
             : undefined,
           ticketCount:   ticketIds.length,
           reservationId: `rsvp-${ticketIds[0]}`,

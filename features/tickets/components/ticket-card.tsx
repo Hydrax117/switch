@@ -66,6 +66,8 @@ export function TicketCard({ ticket, className }: TicketCardProps) {
   const isValid = ticket.status === 'ACTIVE' && !eventEnded
   const location = ticket.event.venue
     ? `${ticket.event.venue.name}, ${ticket.event.venue.city}`
+    : ticket.event.venueName
+    ? [ticket.event.venueName, ticket.event.venueCity].filter(Boolean).join(', ')
     : null
 
   const modalData: TicketModalData = {
@@ -84,6 +86,7 @@ export function TicketCard({ ticket, className }: TicketCardProps) {
       imageUrl: ticket.event.imageUrl,
       startsAt: ticket.event.startsAt,
       venue: ticket.event.venue,
+      resolvedVenue: location,
     },
     timeSlot: ticket.timeSlotTickets.length > 0 ? ticket.timeSlotTickets[0].timeSlot : undefined,
     eventSeat: ticket.eventSeat,

@@ -35,6 +35,9 @@ export interface EventData {
   endsAt: Date | null
   status: string
   venue: Venue | null
+  venueName: string | null
+  venueCity: string | null
+  venueAddress: string | null
 }
 
 export interface TimeSlotData {

@@ -178,6 +178,9 @@ export async function getUserTickets(userId: string, filters?: { status?: string
     endsAt: Date | null
     status: string
     venue: { id: string; name: string; city: string } | null
+    venueName: string | null
+    venueCity: string | null
+    venueAddress: string | null
   }
   ticketType: {
     id: string
@@ -231,6 +234,9 @@ export async function getUserTickets(userId: string, filters?: { status?: string
           endsAt: true,
           status: true,
           venue: { select: { id: true, name: true, city: true } },
+          venueName: true,
+          venueCity: true,
+          venueAddress: true,
         },
       },
       ticketType: { select: { id: true, name: true, price: true, currency: true } },

@@ -150,6 +150,7 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
         select: {
           id: true, slug: true, title: true, startsAt: true, imageUrl: true,
           venue: { select: { name: true, city: true } },
+          venueName: true, venueCity: true,
           organizer: { select: { id: true, feePercent: true } },
         },
       },
@@ -251,6 +252,8 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
         eventImageUrl: reservation.event.imageUrl ?? undefined,
         eventVenue:    reservation.event.venue
           ? `${reservation.event.venue.name}, ${reservation.event.venue.city}`
+          : reservation.event.venueName
+          ? [reservation.event.venueName, reservation.event.venueCity].filter(Boolean).join(', ')
           : undefined,
         ticketCount:   tickets.length,
         reservationId,

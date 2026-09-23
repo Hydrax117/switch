@@ -23,6 +23,8 @@ export interface TicketModalData {
     imageUrl: string | null
     startsAt: Date
     venue: { name: string; city: string } | null
+    /** Resolved venue label, prefers FK relation then inline fields */
+    resolvedVenue: string | null
   }
   timeSlot?: {
     id: string
@@ -224,11 +226,11 @@ export function TicketModal({ ticket, open, onClose }: TicketModalProps) {
                 icon={Calendar}
                 value={format(ticket.timeSlot?.startsAt ?? ticket.event.startsAt, 'h:mm a')}
               />
-              {ticket.event.venue && (
+              {ticket.event.resolvedVenue && (
                 <TicketField
                   label="Venue"
                   icon={MapPin}
-                  value={`${ticket.event.venue.name}, ${ticket.event.venue.city}`}
+                  value={ticket.event.resolvedVenue}
                   wide
                 />
               )}

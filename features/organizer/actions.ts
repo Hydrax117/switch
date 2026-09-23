@@ -962,7 +962,7 @@ export async function issueComplimentaryTicket(input: {
   // Verify event ownership
   const event = await db.event.findUnique({
     where: { id: input.eventId, organizerId: organizer.id },
-    select: { id: true, title: true, slug: true, startsAt: true },
+    select: { id: true, title: true, slug: true, startsAt: true, venue: { select: { name: true, city: true } }, venueName: true, venueCity: true },
   })
   if (!event) return { success: false, error: 'Event not found' }
 
@@ -1024,6 +1024,11 @@ export async function issueComplimentaryTicket(input: {
         eventTitle: event.title,
         eventDate: event.startsAt,
         eventSlug: event.slug,
+        eventVenue: event.venue
+          ? `${event.venue.name}, ${event.venue.city}`
+          : event.venueName
+          ? [event.venueName, event.venueCity].filter(Boolean).join(', ')
+          : undefined,
         ticketCount: 1,
         reservationId: ticket.id,
         tickets: [
@@ -1082,6 +1087,9 @@ export async function resendConfirmationEmail(input: {
           slug: true,
           startsAt: true,
           organizerId: true,
+          venue: { select: { name: true, city: true } },
+          venueName: true,
+          venueCity: true,
         },
       },
     },
@@ -1098,6 +1106,11 @@ export async function resendConfirmationEmail(input: {
       eventTitle: ticket.event.title,
       eventDate: ticket.event.startsAt,
       eventSlug: ticket.event.slug,
+      eventVenue: ticket.event.venue
+        ? `${ticket.event.venue.name}, ${ticket.event.venue.city}`
+        : ticket.event.venueName
+        ? [ticket.event.venueName, ticket.event.venueCity].filter(Boolean).join(', ')
+        : undefined,
       ticketCount: 1,
       reservationId: ticket.eventId,
       tickets: [
