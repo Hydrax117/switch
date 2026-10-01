@@ -1,39 +1,43 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 
 /**
- * Reads the `_scroll` query param after login redirects and scrolls to the
- * matching element, then cleans up the param from the URL.
+ * After hydration, reads the `_scroll` query param and scrolls to the
+ * matching element by id, then removes the param from the URL.
  *
- * Why a query param instead of a hash fragment:
- * HTTP 302 redirects strip the URL fragment before the request is sent, so
- * server-side redirect() can't carry a hash to the browser. Using _scroll as
- * a regular param survives the redirect chain.
+ * Why a query param instead of a hash: server-side redirect() in a Server
+ * Action performs a client-side RSC navigation — fragments survive — but to
+ * be safe we use a plain param that definitely survives all redirect paths.
+ *
+ * Why not useSearchParams: it requires Suspense wrapping; reading
+ * window.location directly in useEffect is simpler and avoids that constraint.
  */
 export function ScrollToHash() {
-  const searchParams = useSearchParams()
-  const scrollTarget = searchParams.get('_scroll')
-
   useEffect(() => {
-    if (!scrollTarget) return
+    const params = new URLSearchParams(window.location.search)
+    const target = params.get('_scroll')
+    if (!target) return
 
-    // Small delay lets page layout, reveal animations, and sticky headers settle
+    // Remove _scroll from the URL immediately so it doesn't persist on refresh
+    params.delete('_scroll')
+    const cleanUrl =
+      window.location.pathname +
+      (params.toString() ? `?${params.toString()}` : '') +
+      window.location.hash
+    window.history.replaceState(null, '', cleanUrl)
+
+    // Scroll after a short delay so layout and reveal animations have settled
     const id = setTimeout(() => {
-      const el = document.getElementById(scrollTarget)
+      const el = document.getElementById(target)
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-
-      // Clean up the _scroll param from the URL so it doesn't persist on refresh
-      const url = new URL(window.location.href)
-      url.searchParams.delete('_scroll')
-      window.history.replaceState(null, '', url.toString())
-    }, 150)
+    }, 300)
 
     return () => clearTimeout(id)
-  }, [scrollTarget])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // run once on mount — that's the only time we land from a redirect
 
   return null
 }
