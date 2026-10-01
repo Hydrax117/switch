@@ -329,7 +329,7 @@ export function ShowSelector({ eventSlug, timeSlots, isLoggedIn }: ShowSelectorP
             )}
           >
             <Lock className="h-4 w-4" />
-            Sign in to buy tickets
+            Buy Tickets
           </a>
         ) : (
           <button

@@ -94,6 +94,15 @@ export async function verifyOtpAction(
 
   const { email, otp } = parsed.data
 
+  // Read optional redirect target — only allow internal paths for safety
+  const rawRedirect = formData.get('redirectTo')
+  const redirectTo =
+    typeof rawRedirect === 'string' &&
+    rawRedirect.startsWith('/') &&
+    !rawRedirect.startsWith('//')
+      ? rawRedirect
+      : '/dashboard'
+
   try {
     const result = await verifyOtp(email, otp)
 
@@ -121,5 +130,5 @@ export async function verifyOtpAction(
   }
 
   // Redirect outside the try/catch — redirect() throws internally
-  redirect('/dashboard')
+  redirect(redirectTo)
 }

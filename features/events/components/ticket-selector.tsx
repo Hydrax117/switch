@@ -171,7 +171,7 @@ function ReservedTicketSummary({ event, isLoggedIn }: { event: EventDetail; isLo
             )}
           >
             <Lock className="h-4 w-4" />
-            Sign in to choose seats
+            Buy Tickets
           </Link>
         ) : (
           <Link
@@ -323,7 +323,7 @@ function GATicketSelector({ event, isLoggedIn }: { event: EventDetail; isLoggedI
             )}
           >
             <Lock className="h-4 w-4" />
-            Sign in to buy tickets
+            Buy Tickets
           </Link>
         ) : (
           <button
