@@ -186,6 +186,17 @@ function buildEventDetailInclude(eventId: string) {
       },
       orderBy: { position: 'asc' as const },
     },
+    timeSlots: {
+      select: {
+        id: true,
+        label: true,
+        startsAt: true,
+        endsAt: true,
+        status: true,
+      },
+      where: { status: { not: 'INACTIVE' as const } },
+      orderBy: { startsAt: 'asc' as const },
+    },
     _count: {
       select: { tickets: true, eventSeats: true },
     },
