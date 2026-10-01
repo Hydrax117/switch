@@ -217,7 +217,7 @@ export default async function EventDetailPage({ params }: PageProps) {
             </div>
 
             {/* ── Right column (desktop sticky ticket panel) ─────────── */}
-            <div className="hidden lg:block">
+            <div id="tickets" className="hidden lg:block">
               <TicketPanel event={event} isLoggedIn={isLoggedIn} />
             </div>
           </div>

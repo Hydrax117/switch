@@ -358,8 +358,8 @@ export function ShowSelector({ eventSlug, timeSlots, isLoggedIn }: ShowSelectorP
                 .map((e) => `${e.timeSlotId}:${e.ticketTypeId}:${e.quantity}`)
                 .join(',')
               const redirect = showsParam
-                ? `/events/${eventSlug}?shows=${encodeURIComponent(showsParam)}`
-                : `/events/${eventSlug}`
+                ? `/events/${eventSlug}?shows=${encodeURIComponent(showsParam)}#tickets`
+                : `/events/${eventSlug}#tickets`
               return `/login?redirect=${encodeURIComponent(redirect)}`
             })()}
             className={cn(
