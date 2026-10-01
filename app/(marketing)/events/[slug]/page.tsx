@@ -140,6 +140,8 @@ export default async function EventDetailPage({ params }: PageProps) {
 
         {/* ── Main content ───────────────────────────────────────────── */}
         <div className="mx-auto max-w-[1120px] px-5 py-14 sm:px-8 sm:py-20">
+          {/* Scroll anchor — always in DOM, not hidden by breakpoint */}
+          <div id="tickets" className="scroll-mt-24" aria-hidden />
           <div className="grid gap-16 lg:grid-cols-[1fr_360px] lg:gap-14 xl:grid-cols-[1fr_380px]">
             {/* ── Left column ────────────────────────────────────────── */}
             <div className="flex flex-col gap-16">
@@ -165,7 +167,7 @@ export default async function EventDetailPage({ params }: PageProps) {
               )}
 
               {/* Ticket panel — mobile only (above hosts) */}
-              <div id="tickets" className="lg:hidden">
+              <div className="lg:hidden">
                 <SectionReveal>
                   <TicketPanel event={event} isLoggedIn={isLoggedIn} />
                 </SectionReveal>
@@ -219,7 +221,7 @@ export default async function EventDetailPage({ params }: PageProps) {
             </div>
 
             {/* ── Right column (desktop sticky ticket panel) ─────────── */}
-            <div id="tickets" className="hidden lg:block">
+            <div className="hidden lg:block">
               <TicketPanel event={event} isLoggedIn={isLoggedIn} />
             </div>
           </div>
