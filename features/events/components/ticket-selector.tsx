@@ -336,8 +336,8 @@ function GATicketSelector({ event, isLoggedIn }: { event: EventDetail; isLoggedI
                 .map(([id, qty]) => `${id}:${qty}`)
                 .join(',')
               const redirect = ticketsParam
-                ? `/events/${event.slug}?tickets=${encodeURIComponent(ticketsParam)}#tickets`
-                : `/events/${event.slug}#tickets`
+                ? `/events/${event.slug}?tickets=${encodeURIComponent(ticketsParam)}&_scroll=tickets`
+                : `/events/${event.slug}?_scroll=tickets`
               return `/login?redirect=${encodeURIComponent(redirect)}`
             })()}
             className={cn(

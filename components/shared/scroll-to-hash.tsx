@@ -1,30 +1,39 @@
 'use client'
 
 import { useEffect } from 'react'
-import { usePathname } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 /**
- * After hydration, scrolls to the element matching window.location.hash.
- * Needed because server-side redirects strip URL fragments, so the browser
- * can't scroll on initial paint — we do it once the page is hydrated.
+ * Reads the `_scroll` query param after login redirects and scrolls to the
+ * matching element, then cleans up the param from the URL.
+ *
+ * Why a query param instead of a hash fragment:
+ * HTTP 302 redirects strip the URL fragment before the request is sent, so
+ * server-side redirect() can't carry a hash to the browser. Using _scroll as
+ * a regular param survives the redirect chain.
  */
 export function ScrollToHash() {
-  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const scrollTarget = searchParams.get('_scroll')
 
   useEffect(() => {
-    const hash = window.location.hash
-    if (!hash) return
+    if (!scrollTarget) return
 
-    // Small delay lets reveal animations / sticky headers settle
+    // Small delay lets page layout, reveal animations, and sticky headers settle
     const id = setTimeout(() => {
-      const el = document.querySelector(hash)
+      const el = document.getElementById(scrollTarget)
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-    }, 120)
+
+      // Clean up the _scroll param from the URL so it doesn't persist on refresh
+      const url = new URL(window.location.href)
+      url.searchParams.delete('_scroll')
+      window.history.replaceState(null, '', url.toString())
+    }, 150)
 
     return () => clearTimeout(id)
-  }, [pathname])
+  }, [scrollTarget])
 
   return null
 }
