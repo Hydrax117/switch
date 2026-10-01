@@ -23,6 +23,7 @@ import { SectionReveal } from '@/components/events/section-reveal'
 import { EventProgramme } from '@/components/events/event-programme'
 import { EventReviewsSection } from '@/features/reviews/components/event-reviews-section'
 import { getEventReviews, getUserEventReviewStatus } from '@/features/reviews/actions'
+import { ScrollToHash } from '@/components/shared/scroll-to-hash'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -91,6 +92,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
+      <ScrollToHash />
       <Suspense>
         <HeaderWithSession />
       </Suspense>
