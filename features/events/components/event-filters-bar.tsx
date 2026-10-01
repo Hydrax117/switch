@@ -16,9 +16,10 @@ interface Category {
 interface EventFiltersBarProps {
   categories: Category[]
   activeFilters: EventFiltersParsed
+  totalEvents: number
 }
 
-export function EventFiltersBar({ categories, activeFilters }: EventFiltersBarProps) {
+export function EventFiltersBar({ categories, activeFilters, totalEvents }: EventFiltersBarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -137,7 +138,7 @@ export function EventFiltersBar({ categories, activeFilters }: EventFiltersBarPr
           >
             All
             {!activeFilters.category && (
-              <span className="ml-1 text-[11px] opacity-60">{categories.length + 1}</span>
+              <span className="ml-1 text-[11px] opacity-60">{totalEvents}</span>
             )}
           </button>
 

@@ -43,7 +43,11 @@ interface PageProps {
 }
 
 export default async function EventsPage({ searchParams }: PageProps) {
-  const [rawParams, categories] = await Promise.all([searchParams, getCategories()])
+  const [rawParams, categories, allEvents] = await Promise.all([
+    searchParams,
+    getCategories(),
+    getEvents({}),
+  ])
   const filters = eventFiltersSchema.parse(rawParams)
 
   return (
@@ -59,7 +63,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
         {/* ── Filters ── */}
         <div className="border-border/40 border-b pb-4 sm:pb-6">
           <div className="mx-auto max-w-[1120px] px-5 pt-2 sm:px-8">
-            <EventFiltersBar categories={categories} activeFilters={filters} />
+            <EventFiltersBar categories={categories} activeFilters={filters} totalEvents={allEvents.total} />
           </div>
         </div>
 
