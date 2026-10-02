@@ -27,10 +27,14 @@ const QUEUE_NAME = 'reservation-expiry'
 
 export function createReservationExpiryWorker(redisUrl: string) {
   const isTls = redisUrl.startsWith('rediss://')
+  let tlsHostname: string | undefined
+  if (isTls) {
+    try { tlsHostname = new URL(redisUrl).hostname } catch { /* malformed URL */ }
+  }
 
   const connection = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
-    ...(isTls && { tls: { rejectUnauthorized: false } }),
+    ...(isTls && tlsHostname ? { tls: { servername: tlsHostname } } : isTls ? { tls: {} } : {}),
   })
 
   const worker = new Worker<ReservationExpiryJobData>(

@@ -68,19 +68,19 @@ function validateEnv() {
       console.error('❌ Invalid environment variables:')
       console.error(parsed.error.flatten().fieldErrors)
 
-      // In development, throw to surface the error immediately
-      if (process.env.NODE_ENV !== 'production') {
-        throw new Error('Invalid environment variables. Check the console for details.')
-      }
+      // Hard crash in all environments so misconfigured deploys are caught
+      // immediately at startup rather than silently failing at runtime.
+      throw new Error('Invalid environment variables. Check the console for details.')
     }
 
-    return parsed.data ?? {}
+    return parsed.data
   }
 
   // On the client, only expose NEXT_PUBLIC_ vars
   const parsed = clientSchema.safeParse({
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
   })
 
   return parsed.data ?? {}

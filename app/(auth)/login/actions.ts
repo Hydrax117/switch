@@ -116,13 +116,17 @@ export async function verifyOtpAction(
       }
     }
 
-    // Load the user to get their id + role for the session token
-    const user = await db.user.findUniqueOrThrow({ where: { email } })
+    // Load the user to get their id + role + sessionVersion for the session token
+    const user = await db.user.findUniqueOrThrow({
+      where: { email },
+      select: { id: true, email: true, role: true, sessionVersion: true },
+    })
 
     await createSession({
       userId: user.id,
       email: user.email,
       role: user.role,
+      sessionVersion: user.sessionVersion,
     })
   } catch (err) {
     console.error('[verifyOtpAction]', err)
