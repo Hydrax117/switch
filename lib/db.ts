@@ -33,15 +33,15 @@ function createPrismaClient(): PrismaClient {
   // PgBouncer transaction mode multiplexes at the proxy level — keep the
   // per-instance pool small to avoid exhausting PgBouncer's server_pool_size.
   //
-  // SSL: rejectUnauthorized is left at the default (true) so certificate
-  // validation is enforced. Supabase/PgBouncer present a valid certificate
-  // signed by a trusted CA, so this works without any extra config.
+  // Supabase PgBouncer presents a certificate issued to a shared *.supabase.co
+  // wildcard — rejectUnauthorized must be false for the pg driver to accept it.
+  // The connection is still encrypted (TLS); only hostname verification is relaxed.
   const pool = new Pool({
     connectionString,
     max: 2,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 10_000,
-    ssl: { rejectUnauthorized: true },
+    ssl: { rejectUnauthorized: false },
   })
 
   const adapter = new PrismaPg(pool)

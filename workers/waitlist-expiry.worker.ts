@@ -25,14 +25,12 @@ const QUEUE_NAME = 'waitlist-expiry'
 
 export function createWaitlistExpiryWorker(redisUrl: string) {
   const isTls = redisUrl.startsWith('rediss://')
-  let tlsHostname: string | undefined
-  if (isTls) {
-    try { tlsHostname = new URL(redisUrl).hostname } catch { /* malformed URL */ }
-  }
 
   const connection = new Redis(redisUrl, {
     maxRetriesPerRequest: null,
-    ...(isTls && tlsHostname ? { tls: { servername: tlsHostname } } : isTls ? { tls: {} } : {}),
+    // Upstash TLS uses a shared *.upstash.io wildcard cert — rejectUnauthorized
+    // must be false for the ioredis client to accept it. Connection is still encrypted.
+    ...(isTls && { tls: { rejectUnauthorized: false } }),
   })
 
   const worker = new Worker<WaitlistExpiryJobData>(

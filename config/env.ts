@@ -68,12 +68,21 @@ function validateEnv() {
       console.error('❌ Invalid environment variables:')
       console.error(parsed.error.flatten().fieldErrors)
 
-      // Hard crash in all environments so misconfigured deploys are caught
-      // immediately at startup rather than silently failing at runtime.
-      throw new Error('Invalid environment variables. Check the console for details.')
+      // During `next build`, Next.js pre-renders pages in a build worker that
+      // may not have all runtime env vars present (e.g. on Vercel the build
+      // step runs before secrets are injected). Throwing here would break the
+      // build even for correctly configured deployments.
+      //
+      // NEXT_PHASE is set to 'phase-production-build' during `next build`.
+      // At actual server startup (runtime) it is unset or 'phase-production-server'.
+      // We only throw at runtime so misconfigured servers are caught on boot.
+      const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
+      if (!isBuildPhase) {
+        throw new Error('Invalid environment variables. Check the console for details.')
+      }
     }
 
-    return parsed.data
+    return parsed.data ?? {}
   }
 
   // On the client, only expose NEXT_PUBLIC_ vars
