@@ -160,7 +160,8 @@ function buildEventDetailInclude(eventId: string) {
                 seats: {
                   orderBy: [{ number: 'asc' as const }, { label: 'asc' as const }],
                   include: {
-                    // Filter to only this event's EventSeat records
+                    // Scope EventSeat records to this event only (seat maps are shared
+                    // across events — without this filter you'd get seats from all events).
                     eventSeats: {
                       where: { eventId },
                       select: { id: true, status: true, price: true },
@@ -206,15 +207,16 @@ function buildEventDetailInclude(eventId: string) {
 // ─── Get single event by slug ─────────────────────────────────────────────────
 
 export async function getEventBySlug(slug: string): Promise<EventDetail | null> {
-  // Step 1: cheap slug → id resolution (no joins)
+  // Resolve slug → id first. The id is required to scope the nested eventSeats
+  // filter to this event only (seat maps are shared across events — without the
+  // eventId filter every seat would return EventSeat rows from all events using
+  // that seat map). This is one cheap @unique index lookup on a tiny select.
   const stub = await db.event.findUnique({
     where: { slug },
     select: { id: true },
   })
-
   if (!stub) return null
 
-  // Step 2: single full fetch with the correct eventId filter from the start
   const event = await db.event.findUnique({
     where: { id: stub.id },
     include: buildEventDetailInclude(stub.id),
@@ -280,40 +282,59 @@ export function getUpcomingEvents(limit = 6): Promise<EventListItem[]> {
 
 // ─── Get events by category ───────────────────────────────────────────────────
 
-export async function getEventsByCategory(
-  categorySlug: string,
-  limit = 4
-): Promise<EventListItem[]> {
-  const events = await db.event.findMany({
-    where: {
-      status: EventStatus.PUBLISHED,
-      startsAt: { gte: new Date() },
-      category: { slug: categorySlug },
-    },
-    select: eventListSelect,
-    orderBy: { startsAt: 'asc' },
-    take: limit,
-  })
-  return events as EventListItem[]
+// Cache per (categorySlug, limit) for 2 minutes — same lifetime as upcoming events.
+const _getEventsByCategoryCached = unstable_cache(
+  async function __getEventsByCategory(categorySlug: string, limit: number): Promise<EventListItem[]> {
+    const events = await db.event.findMany({
+      where: {
+        status: EventStatus.PUBLISHED,
+        startsAt: { gte: new Date() },
+        category: { slug: categorySlug },
+      },
+      select: eventListSelect,
+      orderBy: { startsAt: 'asc' },
+      take: limit,
+    })
+    return events as EventListItem[]
+  },
+  ['events-by-category'],
+  { revalidate: 120, tags: ['events'] }
+)
+
+export function getEventsByCategory(categorySlug: string, limit = 4): Promise<EventListItem[]> {
+  return _getEventsByCategoryCached(categorySlug, limit)
 }
 
 // ─── Get related events (same category, excluding current) ───────────────────
 
-export async function getRelatedEvents(
+// Cache per (eventId, categoryId, limit) for 2 minutes.
+const _getRelatedEventsCached = unstable_cache(
+  async function __getRelatedEvents(
+    eventId: string,
+    categoryId: string | null,
+    limit: number
+  ): Promise<EventListItem[]> {
+    const events = await db.event.findMany({
+      where: {
+        id: { not: eventId },
+        status: EventStatus.PUBLISHED,
+        startsAt: { gte: new Date() },
+        ...(categoryId ? { categoryId } : {}),
+      },
+      select: eventListSelect,
+      orderBy: { startsAt: 'asc' },
+      take: limit,
+    })
+    return events as EventListItem[]
+  },
+  ['related-events'],
+  { revalidate: 120, tags: ['events'] }
+)
+
+export function getRelatedEvents(
   eventId: string,
   categoryId: string | null,
   limit = 6
 ): Promise<EventListItem[]> {
-  const events = await db.event.findMany({
-    where: {
-      id: { not: eventId },
-      status: EventStatus.PUBLISHED,
-      startsAt: { gte: new Date() },
-      ...(categoryId ? { categoryId } : {}),
-    },
-    select: eventListSelect,
-    orderBy: { startsAt: 'asc' },
-    take: limit,
-  })
-  return events as EventListItem[]
+  return _getRelatedEventsCached(eventId, categoryId, limit)
 }

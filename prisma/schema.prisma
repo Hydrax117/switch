@@ -423,6 +423,7 @@ model Row {
 
   /// Label must be unique within a section
   @@unique([sectionId, label])
+  @@index([sectionId])
   @@map("rows")
 }
 
@@ -449,6 +450,7 @@ model Seat {
 
   /// Label must be unique within a row
   @@unique([rowId, label])
+  @@index([rowId])
   @@index([sectionId])
   @@map("seats")
 }
@@ -671,6 +673,7 @@ model EventSeat {
   /// One EventSeat record per seat per event
   @@unique([eventId, seatId])
   @@index([eventId, status])
+  @@index([seatId])
   @@map("event_seats")
 }
 
