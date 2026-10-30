@@ -37,6 +37,15 @@ const bodySchema = z.object({
     .min(1)
     .max(10),
   promoCode: z.string().optional(),
+  billingInfo: z
+    .object({
+      firstName: z.string().min(1),
+      lastName: z.string().min(1),
+      phone: z.string().min(1),
+      email: z.string().email(),
+      country: z.string().min(1),
+    })
+    .optional(),
 })
 
 // ─── Promo helpers (inline to avoid circular imports) ─────────────────────────
@@ -56,10 +65,27 @@ function calcDiscount(
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-  // Rate limit: 10 payment initializations per minute per user
-  const rl = await rateLimit(`pay-init:user:${session.userId}`, { limit: 10, windowMs: 60_000, failClosed: true })
+  const rawBody = await req.json().catch(() => null)
+  const parsed = bodySchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const { eventId, selections, promoCode: promoCodeRaw, billingInfo } = parsed.data
+
+  // Require billing info — it supplies the email for ticket delivery
+  if (!billingInfo) {
+    return NextResponse.json({ error: 'Billing information is required' }, { status: 400 })
+  }
+
+  const promoCodeInput = promoCodeRaw?.toUpperCase().trim() || undefined
+
+  // Rate limit by authenticated userId or billing email for guests
+  const rateLimitKey = session
+    ? `pay-init:user:${session.userId}`
+    : `pay-init:email:${billingInfo.email.toLowerCase()}`
+  const rl = await rateLimit(rateLimitKey, { limit: 10, windowMs: 60_000, failClosed: true })
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Too many requests. Please wait before trying again.' },
@@ -70,15 +96,35 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const rawBody = await req.json().catch(() => null)
-  const parsed = bodySchema.safeParse(rawBody)
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  // Resolve the user — authenticated session takes priority; guests get upserted by email
+  let userId: string
+  if (session) {
+    userId = session.userId
+    // Also keep the user's name in sync if supplied
+    await db.user
+      .update({
+        where: { id: userId },
+        data: {
+          name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim(),
+        },
+      })
+      .catch(() => {
+        /* non-fatal */
+      })
+  } else {
+    // Guest: upsert a user record by email so FK constraints are satisfied.
+    // The guest can always claim their account later via OTP login.
+    const guest = await db.user.upsert({
+      where: { email: billingInfo.email.toLowerCase() },
+      update: { name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim() },
+      create: {
+        email: billingInfo.email.toLowerCase(),
+        name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim(),
+      },
+      select: { id: true },
+    })
+    userId = guest.id
   }
-
-  const { eventId, selections, promoCode: promoCodeRaw } = parsed.data
-  const promoCodeInput = promoCodeRaw?.toUpperCase().trim() || undefined
-  const { userId } = session
 
   // 1. Validate event
   const event = await db.event.findUnique({
@@ -133,10 +179,7 @@ export async function POST(req: NextRequest) {
       )
     }
     if (tt.salesEnd && new Date(tt.salesEnd) < new Date()) {
-      return NextResponse.json(
-        { error: `Sales for "${tt.name}" have ended` },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: `Sales for "${tt.name}" have ended` }, { status: 400 })
     }
     if (tt.salesStart && new Date(tt.salesStart) > new Date()) {
       return NextResponse.json(
@@ -232,29 +275,30 @@ export async function POST(req: NextRequest) {
     const totalTickets = selections.reduce((sum, s) => sum + s.quantity, 0)
     const currency = ttMap[selections[0]?.ticketTypeId ?? '']?.currency ?? 'NGN'
 
-    const { createOrder: _createOrder, createTicket: _createTicket } = await import('@/lib/order-helpers')
+    const { createOrder: _createOrder, createTicket: _createTicket } =
+      await import('@/lib/order-helpers')
 
     await db.$transaction(async (tx) => {
       const order = await _createOrder(tx, {
         userId,
         eventId,
-        reservationId:  reservation.id,
-        totalAmount:    0,
+        reservationId: reservation.id,
+        totalAmount: 0,
         currency,
         discountAmount: discountAmount,
-        promoCodeId:    promoCodeId ?? null,
+        promoCodeId: promoCodeId ?? null,
       })
 
       for (const sel of selections) {
         for (let i = 0; i < sel.quantity; i++) {
-          const year         = new Date().getFullYear()
+          const year = new Date().getFullYear()
           const ticketNumber = `SWT-${year}-${randomBytes(3).toString('hex').toUpperCase()}`
-          const qrCode       = randomBytes(32).toString('hex')
+          const qrCode = randomBytes(32).toString('hex')
 
           await _createTicket(tx, {
             eventId,
             userId,
-            orderId:      order.id,
+            orderId: order.id,
             ticketTypeId: sel.ticketTypeId,
             ticketNumber,
             qrCode,
@@ -293,7 +337,7 @@ export async function POST(req: NextRequest) {
         },
         orderBy: { issuedAt: 'asc' },
       })
-      
+
       await sendTicketConfirmationEmail({
         userId,
         eventTitle: event.title,
@@ -319,24 +363,21 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // 7. Fetch user email for Paystack
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    select: { email: true },
-  })
-  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+  // 7. Paystack email comes from billing info (already validated above)
+  const paystackEmail = billingInfo.email.toLowerCase()
 
   const reference = `SWT-${Date.now()}-${randomBytes(4).toString('hex')}`
   const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${event.slug}/checkout/success?reservation=${reservation.id}&type=ga`
 
   const result = await paystack.initializeTransaction({
-    email: user.email,
+    email: paystackEmail,
     amount: totalAmount,
     reference,
     callback_url: callbackUrl,
     metadata: {
       reservationId: reservation.id,
       userId,
+      isGuest: !session,
       eventId,
       // GA-specific: the ticket selections to fulfil on charge.success
       gaSelections: selections.map((sel) => ({

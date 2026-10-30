@@ -4,21 +4,36 @@
  * Initializes a Paystack transaction for a reservation.
  * Returns the authorization_url to redirect the user to Paystack Checkout.
  *
- * Body: { reservationId: string; promoCode?: string }
+ * Body: { reservationId: string; promoCode?: string; billingInfo: BillingInfo }
  *
- * When a promoCode is supplied the server validates it, calculates the
- * discounted amount, passes that to Paystack, and records the promo code id
- * in metadata so the webhook can track usage atomically on charge.success.
+ * Works for both authenticated users and guests. Guests must supply billingInfo
+ * whose email is used to upsert a User record (so FK constraints are satisfied)
+ * and to receive ticket confirmation emails.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
 import { paystack } from '@/lib/paystack'
-import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { rateLimit } from '@/lib/rate-limit'
 import { randomBytes } from 'crypto'
+import { z } from 'zod'
 
-// ─── Promo code helpers (inline to avoid circular imports) ────────────────────
+// ─── Validation ───────────────────────────────────────────────────────────────
+
+const bodySchema = z.object({
+  reservationId: z.string().min(1),
+  promoCode: z.string().optional(),
+  billingInfo: z.object({
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    phone: z.string().min(1),
+    email: z.string().email(),
+    country: z.string().min(1),
+  }),
+})
+
+// ─── Promo code helpers ───────────────────────────────────────────────────────
 
 function calcDiscount(
   discountType: 'PERCENTAGE' | 'FLAT',
@@ -33,10 +48,21 @@ function calcDiscount(
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
-  // Rate limit: 10 payment initializations per minute per user
-  const rl = await rateLimit(`pay-init:user:${session.userId}`, { limit: 10, windowMs: 60_000, failClosed: true })
+  const body = await req.json().catch(() => null)
+  const parsed = bodySchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const { reservationId, billingInfo, promoCode: promoCodeRaw } = parsed.data
+  const promoCodeInput = promoCodeRaw?.toUpperCase().trim() || undefined
+
+  // Rate limit by user or billing email
+  const rateLimitKey = session
+    ? `pay-init:user:${session.userId}`
+    : `pay-init:email:${billingInfo.email.toLowerCase()}`
+  const rl = await rateLimit(rateLimitKey, { limit: 10, windowMs: 60_000, failClosed: true })
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Too many requests. Please wait before trying again.' },
@@ -47,12 +73,29 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const body = await req.json().catch(() => null)
-  const reservationId = body?.reservationId as string | undefined
-  const promoCodeRaw = (body?.promoCode as string | undefined)?.toUpperCase().trim() || undefined
-
-  if (!reservationId) {
-    return NextResponse.json({ error: 'reservationId is required' }, { status: 400 })
+  // Resolve userId — authenticated or guest upsert
+  let userId: string
+  if (session) {
+    userId = session.userId
+    await db.user
+      .update({
+        where: { id: userId },
+        data: { name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim() },
+      })
+      .catch(() => {
+        /* non-fatal */
+      })
+  } else {
+    const guest = await db.user.upsert({
+      where: { email: billingInfo.email.toLowerCase() },
+      update: { name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim() },
+      create: {
+        email: billingInfo.email.toLowerCase(),
+        name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim(),
+      },
+      select: { id: true },
+    })
+    userId = guest.id
   }
 
   const reservation = await db.reservation.findUnique({
@@ -68,7 +111,8 @@ export async function POST(req: NextRequest) {
   if (!reservation) {
     return NextResponse.json({ error: 'Reservation not found' }, { status: 404 })
   }
-  if (reservation.userId !== session.userId) {
+  // Ownership check: must match the resolved userId
+  if (reservation.userId !== userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
   if (reservation.status !== 'ACTIVE') {
@@ -88,8 +132,7 @@ export async function POST(req: NextRequest) {
   let discountAmount = 0
   let totalAmount = subtotal
 
-  if (promoCodeRaw && subtotal > 0) {
-    // Collect ticket type ids in this reservation
+  if (promoCodeInput && subtotal > 0) {
     const ticketTypeIds = [
       ...new Set(
         reservation.eventSeats
@@ -99,11 +142,7 @@ export async function POST(req: NextRequest) {
     ]
 
     const promo = await db.promoCode.findFirst({
-      where: {
-        code: promoCodeRaw,
-        isActive: true,
-        eventId: reservation.eventId,
-      },
+      where: { code: promoCodeInput, isActive: true, eventId: reservation.eventId },
       select: {
         id: true,
         discountType: true,
@@ -153,24 +192,19 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // Fetch user email
-  const user = await db.user.findUnique({
-    where: { id: session.userId },
-    select: { email: true },
-  })
-  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
-
+  const paystackEmail = billingInfo.email.toLowerCase()
   const reference = `SWT-${Date.now()}-${randomBytes(4).toString('hex')}`
   const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${reservation.event.slug}/checkout/success?reservation=${reservationId}`
 
   const result = await paystack.initializeTransaction({
-    email: user.email,
+    email: paystackEmail,
     amount: totalAmount,
     reference,
     callback_url: callbackUrl,
     metadata: {
       reservationId,
-      userId: session.userId,
+      userId,
+      isGuest: !session,
       eventId: reservation.event.id,
       promoCodeId: promoCodeId ?? null,
       discountAmount,

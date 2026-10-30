@@ -36,11 +36,23 @@ export interface TicketData {
 // ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS = {
-  ACTIVE:    { label: 'Valid',      dot: '#10b981', text: '#065f46', bg: '#ecfdf5', border: '#6ee7b7' },
-  USED:      { label: 'Used',       dot: '#a1a1aa', text: '#52525b', bg: '#f4f4f5', border: '#d4d4d8' },
-  CANCELLED: { label: 'Cancelled',  dot: '#ef4444', text: '#991b1b', bg: '#fef2f2', border: '#fca5a5' },
-  REFUNDED:  { label: 'Refunded',   dot: '#f59e0b', text: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
-  EXPIRED:   { label: 'Expired',    dot: '#a1a1aa', text: '#52525b', bg: '#f4f4f5', border: '#d4d4d8' },
+  ACTIVE: { label: 'Valid', dot: '#10b981', text: '#065f46', bg: '#ecfdf5', border: '#6ee7b7' },
+  USED: { label: 'Used', dot: '#a1a1aa', text: '#52525b', bg: '#f4f4f5', border: '#d4d4d8' },
+  CANCELLED: {
+    label: 'Cancelled',
+    dot: '#ef4444',
+    text: '#991b1b',
+    bg: '#fef2f2',
+    border: '#fca5a5',
+  },
+  REFUNDED: {
+    label: 'Refunded',
+    dot: '#f59e0b',
+    text: '#92400e',
+    bg: '#fffbeb',
+    border: '#fcd34d',
+  },
+  EXPIRED: { label: 'Expired', dot: '#a1a1aa', text: '#52525b', bg: '#f4f4f5', border: '#d4d4d8' },
 } as const
 
 // ─── Generate ticket PNG ──────────────────────────────────────────────────────
@@ -52,11 +64,16 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
 
   const dateStr = ticket.eventDate.toLocaleDateString('en-NG', {
     timeZone: 'Africa/Lagos',
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   })
   const timeStr = ticket.eventDate.toLocaleTimeString('en-NG', {
     timeZone: 'Africa/Lagos',
-    hour: '2-digit', minute: '2-digit', hour12: true,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
   })
 
   const qrDataUrl = await QRCode.toDataURL(ticket.qrCode, {
@@ -89,15 +106,15 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
         style={{
           display: 'flex',
           position: 'relative',
-          height: '170px',
-          width: '100%',
+          height: '200px',
+          width: '400px',
           overflow: 'hidden',
           background: ticket.eventImageUrl
             ? 'transparent'
             : 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
         }}
       >
-        {/* Event banner image */}
+        {/* Event banner image — sized explicitly so Satori scales it down correctly */}
         {ticket.eventImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -105,10 +122,12 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
             alt=""
             style={{
               position: 'absolute',
-              top: 0, left: 0,
-              width: '100%', height: '100%',
+              top: 0,
+              left: 0,
+              width: '400px',
+              height: '200px',
               objectFit: 'cover',
-              objectPosition: 'center',
+              objectPosition: 'center top',
             }}
           />
         )}
@@ -118,7 +137,8 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.05) 100%)',
+            background:
+              'linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.05) 100%)',
             display: 'flex',
           }}
         />
@@ -127,7 +147,9 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
         <div
           style={{
             position: 'absolute',
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             height: '1px',
             background: 'rgba(255,255,255,0.3)',
             display: 'flex',
@@ -270,7 +292,8 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
             marginLeft: '20px',
             marginRight: '20px',
             height: '1px',
-            backgroundImage: 'repeating-linear-gradient(90deg, #d4d4d8 0, #d4d4d8 5px, transparent 5px, transparent 10px)',
+            backgroundImage:
+              'repeating-linear-gradient(90deg, #d4d4d8 0, #d4d4d8 5px, transparent 5px, transparent 10px)',
             display: 'flex',
           }}
         />
@@ -282,8 +305,8 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          padding: '0 20px 28px',
-          gap: '12px',
+          padding: '0 20px 24px',
+          gap: '10px',
           opacity: isValid ? 1 : 0.4,
         }}
       >
@@ -297,14 +320,14 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
             background: '#fafafa',
             border: '1.5px solid #e4e4e7',
             borderRadius: '16px',
-            padding: '20px',
+            padding: '16px',
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrDataUrl}
             alt="QR"
-            style={{ width: '190px', height: '190px', borderRadius: '4px' }}
+            style={{ width: '180px', height: '180px', borderRadius: '4px' }}
           />
           <span
             style={{
@@ -338,7 +361,7 @@ export async function generateTicketImage(ticket: TicketData): Promise<Buffer> {
 
   const imageResponse = new ImageResponse(element as ReactElement, {
     width: 400,
-    height: 680,
+    height: 780,
   })
 
   const arrayBuffer = await imageResponse.arrayBuffer()
@@ -370,9 +393,7 @@ function detailField(label: string, value: string, _icon: string, wide = false) 
         {label}
       </span>
       <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-        <span style={{ fontSize: '13px', color: '#27272a', fontWeight: 500 }}>
-          {value}
-        </span>
+        <span style={{ fontSize: '13px', color: '#27272a', fontWeight: 500 }}>{value}</span>
       </div>
     </div>
   )

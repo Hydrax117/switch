@@ -38,6 +38,8 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
 
 export async function sendTicketConfirmationEmail(params: {
   userId: string
+  /** True when the buyer checked out without an account. Renders a different email. */
+  isGuest?: boolean
   eventTitle: string
   eventDate: Date
   eventSlug: string
@@ -85,9 +87,8 @@ export async function sendTicketConfirmationEmail(params: {
   if (isBulkOrder) {
     // Generate ZIP file for bulk orders (5+)
     try {
-      const { generateTicketZip, uploadTicketZipToStorage } = await import(
-        '@/lib/ticket-zip-generator'
-      )
+      const { generateTicketZip, uploadTicketZipToStorage } =
+        await import('@/lib/ticket-zip-generator')
 
       const zip = await generateTicketZip({
         tickets: params.tickets.map((t) => ({
@@ -152,8 +153,79 @@ export async function sendTicketConfirmationEmail(params: {
     }
   }
 
-  // Build email HTML
-  const emailHtml = `
+  // ── Guest download URL — used in both small and bulk guest orders ────────────
+  // The guest-download endpoint is public but gated by reservationId (the URL
+  // is embedded in the email so only the recipient can use it).
+  const guestDownloadUrl = `${appUrl}/api/tickets/guest-download?reservation=${params.reservationId}`
+
+  // ── Build email HTML ────────────────────────────────────────────────────────
+  const firstName = user.name?.split(' ')[0] ?? 'there'
+
+  const emailHtml = params.isGuest
+    ? buildGuestEmail({
+        appUrl,
+        dateStr,
+        firstName,
+        eventTitle: params.eventTitle,
+        eventSlug: params.eventSlug,
+        ticketCount: params.ticketCount,
+        reservationId: params.reservationId,
+        zipDownloadUrl,
+        zipExpiresAt,
+        attachments,
+        guestDownloadUrl,
+      })
+    : buildAuthEmail({
+        appUrl,
+        dateStr,
+        eventTitle: params.eventTitle,
+        ticketCount: params.ticketCount,
+        reservationId: params.reservationId,
+        zipDownloadUrl,
+        zipExpiresAt,
+        attachments,
+      })
+
+  const subject = params.isGuest
+    ? `Your tickets for ${params.eventTitle} — ${APP_NAME}`
+    : `Your tickets for ${params.eventTitle} — ${APP_NAME}`
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: user.email,
+    subject,
+    html: emailHtml,
+    ...(attachments.length > 0 && { attachments }),
+  })
+
+  if (error) {
+    throw new Error(`Failed to send confirmation email: ${error.message}`)
+  }
+}
+
+// ─── Authenticated user confirmation email ────────────────────────────────────
+
+function buildAuthEmail(params: {
+  appUrl: string
+  dateStr: string
+  eventTitle: string
+  ticketCount: number
+  reservationId: string
+  zipDownloadUrl: string | null
+  zipExpiresAt: Date | null
+  attachments: Array<{ filename: string; content: Buffer }>
+}): string {
+  const {
+    appUrl,
+    dateStr,
+    eventTitle,
+    ticketCount,
+    reservationId,
+    zipDownloadUrl,
+    zipExpiresAt,
+    attachments,
+  } = params
+  return `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -175,7 +247,7 @@ export async function sendTicketConfirmationEmail(params: {
           <tr>
             <td style="background:#18181b;border-radius:12px;padding:20px;margin-bottom:16px;">
               <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;">You&apos;re going to</p>
-              <p style="margin:0 0 6px;font-size:20px;font-weight:700;color:#fafafa;">${params.eventTitle}</p>
+              <p style="margin:0 0 6px;font-size:20px;font-weight:700;color:#fafafa;">${eventTitle}</p>
               <p style="margin:0;font-size:13px;color:#a1a1aa;">${dateStr}</p>
             </td>
           </tr>
@@ -194,7 +266,7 @@ export async function sendTicketConfirmationEmail(params: {
                     <strong style="color:#fafafa;">Tickets ordered:</strong>
                   </td>
                   <td style="padding:8px 0;color:#fafafa;font-size:13px;text-align:right;">
-                    ${params.ticketCount}
+                    ${ticketCount}
                   </td>
                 </tr>
                 <tr style="border-top:1px solid #27272a;">
@@ -202,7 +274,7 @@ export async function sendTicketConfirmationEmail(params: {
                     <strong style="color:#fafafa;">Reference:</strong>
                   </td>
                   <td style="padding:8px 0;color:#fafafa;font-size:11px;font-family:monospace;text-align:right;letter-spacing:0.05em;">
-                    ${params.reservationId}
+                    ${reservationId}
                   </td>
                 </tr>
               </table>
@@ -218,7 +290,7 @@ export async function sendTicketConfirmationEmail(params: {
           <tr>
             <td style="background:#18181b;border-radius:12px;padding:20px;margin-bottom:16px;">
               <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;font-weight:600;">Download your tickets</p>
-              <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;">All ${params.ticketCount} ticket${params.ticketCount !== 1 ? 's are' : ' is'} ready as a single ZIP file.</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;">All ${ticketCount} ticket${ticketCount !== 1 ? 's are' : ' is'} ready as a single ZIP file.</p>
               <a href="${zipDownloadUrl}"
                  style="display:inline-block;background:#10b981;color:#fff;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px;text-decoration:none;">
                 Download ZIP →
@@ -236,7 +308,7 @@ export async function sendTicketConfirmationEmail(params: {
           <tr>
             <td style="background:#18181b;border-radius:12px;padding:12px;margin-bottom:16px;">
               <p style="margin:0;font-size:11px;color:#71717a;text-align:center;">
-                Your ${params.ticketCount} ticket${params.ticketCount !== 1 ? 's are' : ' is'} attached as PNG file${params.ticketCount !== 1 ? 's' : ''}. You can print or display at the venue.
+                Your ${ticketCount} ticket${ticketCount !== 1 ? 's are' : ' is'} attached as PNG file${ticketCount !== 1 ? 's' : ''}. You can print or display at the venue.
               </p>
             </td>
           </tr>
@@ -272,18 +344,197 @@ export async function sendTicketConfirmationEmail(params: {
   </table>
 </body>
 </html>`
+}
 
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to: user.email,
-    subject: `Your tickets for ${params.eventTitle} — ${APP_NAME}`,
-    html: emailHtml,
-    ...(attachments.length > 0 && { attachments }),
-  })
+// ─── Guest confirmation email ─────────────────────────────────────────────────
+// Key differences from the auth email:
+//   - Personal greeting using first name
+//   - "Download Tickets" button always present (in-app dashboard requires auth)
+//   - Inline attachment note instead of "View all my tickets" CTA
+//   - "Create an account" nudge to claim their tickets permanently
+//   - No link to /dashboard/tickets
 
-  if (error) {
-    throw new Error(`Failed to send confirmation email: ${error.message}`)
-  }
+function buildGuestEmail(params: {
+  appUrl: string
+  dateStr: string
+  firstName: string
+  eventTitle: string
+  eventSlug: string
+  ticketCount: number
+  reservationId: string
+  zipDownloadUrl: string | null
+  zipExpiresAt: Date | null
+  attachments: Array<{ filename: string; content: Buffer }>
+  guestDownloadUrl: string
+}): string {
+  const {
+    appUrl,
+    dateStr,
+    firstName,
+    eventTitle,
+    eventSlug,
+    ticketCount,
+    reservationId,
+    zipDownloadUrl,
+    zipExpiresAt,
+    attachments,
+    guestDownloadUrl,
+  } = params
+
+  // For bulk orders the primary download is the Supabase-hosted ZIP.
+  // For small orders the tickets are attached, but we also provide
+  // the guest-download button as a fallback in case the attachment
+  // doesn't come through.
+  const primaryDownloadUrl = zipDownloadUrl ?? guestDownloadUrl
+  const primaryDownloadLabel = zipDownloadUrl
+    ? `Download all ${ticketCount} tickets (ZIP)`
+    : ticketCount === 1
+      ? 'Download ticket'
+      : `Download all ${ticketCount} tickets`
+
+  const attachmentNote =
+    attachments.length > 0
+      ? `Your ${ticketCount} ticket${ticketCount !== 1 ? 's are' : ' is'} also attached to this email as PNG ${ticketCount !== 1 ? 'images' : 'image'}. You can save or print ${ticketCount !== 1 ? 'them' : 'it'} directly.`
+      : ''
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#09090b;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <p style="margin:0;font-size:22px;font-weight:700;color:#fafafa;">${APP_NAME}</p>
+              <p style="margin:4px 0 0;font-size:13px;color:#71717a;">Booking Confirmation</p>
+            </td>
+          </tr>
+
+          <!-- Greeting -->
+          <tr>
+            <td style="padding-bottom:20px;">
+              <p style="margin:0;font-size:16px;color:#fafafa;">
+                Hey <strong>${firstName}</strong>, you&apos;re going to an event! 🎉
+              </p>
+            </td>
+          </tr>
+
+          <!-- Event block -->
+          <tr>
+            <td style="background:#18181b;border-radius:12px;padding:20px;">
+              <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;">Your event</p>
+              <p style="margin:0 0 6px;font-size:20px;font-weight:700;color:#fafafa;">${eventTitle}</p>
+              <p style="margin:0;font-size:13px;color:#a1a1aa;">${dateStr}</p>
+            </td>
+          </tr>
+
+          <tr><td style="height:12px;"></td></tr>
+
+          <!-- Booking Details -->
+          <tr>
+            <td style="background:#18181b;border-radius:12px;padding:20px;">
+              <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;">
+                Booking details
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+                <tr>
+                  <td style="padding:8px 0;color:#a1a1aa;font-size:13px;">
+                    <strong style="color:#fafafa;">Tickets:</strong>
+                  </td>
+                  <td style="padding:8px 0;color:#fafafa;font-size:13px;text-align:right;">
+                    ${ticketCount}
+                  </td>
+                </tr>
+                <tr style="border-top:1px solid #27272a;">
+                  <td style="padding:8px 0;color:#a1a1aa;font-size:13px;">
+                    <strong style="color:#fafafa;">Reference:</strong>
+                  </td>
+                  <td style="padding:8px 0;color:#fafafa;font-size:11px;font-family:monospace;text-align:right;letter-spacing:0.05em;">
+                    ${reservationId}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr><td style="height:16px;"></td></tr>
+
+          <!-- Download block — always shown for guests -->
+          <tr>
+            <td style="background:#18181b;border-radius:12px;padding:20px;">
+              <p style="margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;font-weight:600;">
+                Your tickets
+              </p>
+              <p style="margin:0 0 16px;font-size:13px;color:#a1a1aa;">
+                Use the button below to download your ticket${ticketCount !== 1 ? 's' : ''} at any time.
+                ${attachmentNote ? `<br><br>${attachmentNote}` : ''}
+                ${
+                  zipDownloadUrl && zipExpiresAt
+                    ? `<br><br>The download link expires on <strong style="color:#fafafa;">${zipExpiresAt.toLocaleDateString('en-NG')}</strong>.`
+                    : ''
+                }
+              </p>
+              <a href="${primaryDownloadUrl}"
+                 style="display:inline-block;background:#10b981;color:#fff;font-weight:600;font-size:14px;padding:13px 28px;border-radius:10px;text-decoration:none;">
+                ↓ ${primaryDownloadLabel}
+              </a>
+            </td>
+          </tr>
+
+          <tr><td style="height:16px;"></td></tr>
+
+          <!-- Tips block -->
+          <tr>
+            <td style="background:#18181b;border-radius:12px;padding:16px 20px;">
+              <p style="margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#71717a;font-weight:600;">Good to know</p>
+              <ul style="margin:0;padding:0 0 0 16px;color:#a1a1aa;font-size:13px;line-height:1.8;">
+                <li>Show your ticket (printed or on your phone) at the venue entrance.</li>
+                <li>Save this email — it&apos;s the only way to access your tickets without an account.</li>
+                <li>Each ticket has a unique QR code. Don&apos;t share screenshots publicly.</li>
+              </ul>
+            </td>
+          </tr>
+
+          <tr><td style="height:20px;"></td></tr>
+
+          <!-- Create account nudge -->
+          <tr>
+            <td style="background:#1c1917;border:1px solid #292524;border-radius:12px;padding:20px;">
+              <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#fafafa;">
+                Want to manage your tickets in one place?
+              </p>
+              <p style="margin:0 0 16px;font-size:13px;color:#a1a1aa;">
+                Create a free ${APP_NAME} account with this email address to access your full ticket history, get event reminders, and buy tickets faster next time.
+              </p>
+              <a href="${appUrl}/login"
+                 style="display:inline-block;background:#6366f1;color:#fff;font-weight:600;font-size:13px;padding:10px 22px;border-radius:8px;text-decoration:none;">
+                Create account →
+              </a>
+            </td>
+          </tr>
+
+          <tr><td style="height:28px;"></td></tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="text-align:center;">
+              <p style="margin:0;font-size:11px;color:#3f3f46;">
+                Questions? Contact us at <a href="mailto:support@useswitch.net" style="color:#6366f1;text-decoration:none;">support@useswitch.net</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
 }
 
 // ─── Group booking invite ─────────────────────────────────────────────────────
@@ -602,7 +853,8 @@ export async function sendEventReminder(params: {
   })
 
   const locationParts = [params.venueName, params.venueAddress, params.venueCity].filter(Boolean)
-  const locationStr = locationParts.length > 0 ? locationParts.join(', ') : 'See event page for details'
+  const locationStr =
+    locationParts.length > 0 ? locationParts.join(', ') : 'See event page for details'
 
   const { error } = await resend.emails.send({
     from: FROM,

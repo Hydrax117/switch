@@ -28,14 +28,23 @@ const bodySchema = z.object({
   selections: z
     .array(
       z.object({
-        timeSlotId:   z.string().min(1),
+        timeSlotId: z.string().min(1),
         ticketTypeId: z.string().min(1),
-        quantity:     z.number().int().min(1).max(20),
+        quantity: z.number().int().min(1).max(20),
       })
     )
     .min(1)
     .max(20),
   promoCode: z.string().optional(),
+  billingInfo: z
+    .object({
+      firstName: z.string().min(1),
+      lastName: z.string().min(1),
+      phone: z.string().min(1),
+      email: z.string().email(),
+      country: z.string().min(1),
+    })
+    .optional(),
 })
 
 function calcDiscount(
@@ -51,15 +60,6 @@ function calcDiscount(
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-
-  const rl = await rateLimit(`pay-init:user:${session.userId}`, { limit: 10, windowMs: 60_000, failClosed: true })
-  if (!rl.success) {
-    return NextResponse.json(
-      { error: 'Too many requests. Please wait before trying again.' },
-      { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
-    )
-  }
 
   const rawBody = await req.json().catch(() => null)
   const parsed = bodySchema.safeParse(rawBody)
@@ -67,16 +67,64 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { eventId, selections, promoCode: promoCodeRaw } = parsed.data
+  const { eventId, selections, promoCode: promoCodeRaw, billingInfo } = parsed.data
+
+  if (!billingInfo) {
+    return NextResponse.json({ error: 'Billing information is required' }, { status: 400 })
+  }
+
   const promoCodeInput = promoCodeRaw?.toUpperCase().trim() || undefined
-  const { userId } = session
+
+  const rateLimitKey = session
+    ? `pay-init:user:${session.userId}`
+    : `pay-init:email:${billingInfo.email.toLowerCase()}`
+  const rl = await rateLimit(rateLimitKey, { limit: 10, windowMs: 60_000, failClosed: true })
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait before trying again.' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) },
+      }
+    )
+  }
+
+  // Resolve userId — authenticated or guest upsert
+  let userId: string
+  if (session) {
+    userId = session.userId
+    await db.user
+      .update({
+        where: { id: userId },
+        data: { name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim() },
+      })
+      .catch(() => {
+        /* non-fatal */
+      })
+  } else {
+    const guest = await db.user.upsert({
+      where: { email: billingInfo.email.toLowerCase() },
+      update: { name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim() },
+      create: {
+        email: billingInfo.email.toLowerCase(),
+        name: `${billingInfo.firstName} ${billingInfo.lastName}`.trim(),
+      },
+      select: { id: true },
+    })
+    userId = guest.id
+  }
 
   // 1. Validate event
   const event = await db.event.findUnique({
     where: { id: eventId },
     select: {
-      id: true, slug: true, title: true, startsAt: true,
-      status: true, salesStart: true, salesEnd: true,
+      id: true,
+      slug: true,
+      title: true,
+      startsAt: true,
+      status: true,
+      salesStart: true,
+      salesEnd: true,
       organizer: { select: { id: true, feePercent: true } },
     },
   })
@@ -105,13 +153,13 @@ export async function POST(req: NextRequest) {
   }
 
   const resolvedSelections: Array<{
-    timeSlotId:   string
+    timeSlotId: string
     ticketTypeId: string
-    quantity:     number
-    price:        number
-    currency:     string
-    slotLabel:    string
-    ttName:       string
+    quantity: number
+    price: number
+    currency: string
+    slotLabel: string
+    ttName: string
   }> = []
 
   for (const sel of selections) {
@@ -136,33 +184,42 @@ export async function POST(req: NextRequest) {
     `
     const row = rows[0]
     if (!row) {
+      return NextResponse.json({ error: `Show/ticket combination not found` }, { status: 400 })
+    }
+    if (row.slotStatus !== 'ACTIVE') {
       return NextResponse.json(
-        { error: `Show/ticket combination not found` },
+        { error: `Show "${row.slotLabel}" is not available` },
         { status: 400 }
       )
     }
-    if (row.slotStatus !== 'ACTIVE') {
-      return NextResponse.json({ error: `Show "${row.slotLabel}" is not available` }, { status: 400 })
-    }
     if (row.ttStatus !== 'ACTIVE') {
-      return NextResponse.json({ error: `Ticket type "${row.ttName}" is not available` }, { status: 400 })
+      return NextResponse.json(
+        { error: `Ticket type "${row.ttName}" is not available` },
+        { status: 400 }
+      )
     }
     const now = new Date()
     if (row.salesStart && now < row.salesStart) {
-      return NextResponse.json({ error: `Tickets for "${row.ttName}" are not on sale yet` }, { status: 400 })
+      return NextResponse.json(
+        { error: `Tickets for "${row.ttName}" are not on sale yet` },
+        { status: 400 }
+      )
     }
     if (row.salesEnd && now > row.salesEnd) {
-      return NextResponse.json({ error: `Ticket sales for "${row.ttName}" have ended` }, { status: 400 })
+      return NextResponse.json(
+        { error: `Ticket sales for "${row.ttName}" have ended` },
+        { status: 400 }
+      )
     }
 
     resolvedSelections.push({
-      timeSlotId:   sel.timeSlotId,
+      timeSlotId: sel.timeSlotId,
       ticketTypeId: sel.ticketTypeId,
-      quantity:     sel.quantity,
-      price:        row.price,
-      currency:     row.currency,
-      slotLabel:    row.slotLabel,
-      ttName:       row.ttName,
+      quantity: sel.quantity,
+      price: row.price,
+      currency: row.currency,
+      slotLabel: row.slotLabel,
+      ttName: row.ttName,
     })
   }
 
@@ -179,20 +236,32 @@ export async function POST(req: NextRequest) {
     const promo = await db.promoCode.findFirst({
       where: { code: promoCodeInput, isActive: true, eventId },
       select: {
-        id: true, discountType: true, discountValue: true,
-        maxUses: true, usedCount: true, expiresAt: true, ticketTypeId: true,
+        id: true,
+        discountType: true,
+        discountValue: true,
+        maxUses: true,
+        usedCount: true,
+        expiresAt: true,
+        ticketTypeId: true,
       },
     })
 
-    if (!promo) return NextResponse.json({ error: 'Invalid or expired promo code' }, { status: 400 })
+    if (!promo)
+      return NextResponse.json({ error: 'Invalid or expired promo code' }, { status: 400 })
     if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) {
       return NextResponse.json({ error: 'This promo code has expired' }, { status: 400 })
     }
     if (promo.maxUses !== null && promo.usedCount >= promo.maxUses) {
-      return NextResponse.json({ error: 'This promo code has reached its usage limit' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'This promo code has reached its usage limit' },
+        { status: 400 }
+      )
     }
     if (promo.ticketTypeId && !ticketTypeIds.includes(promo.ticketTypeId)) {
-      return NextResponse.json({ error: 'This code is not valid for the selected ticket types' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'This code is not valid for the selected ticket types' },
+        { status: 400 }
+      )
     }
 
     discountAmount = calcDiscount(
@@ -200,19 +269,22 @@ export async function POST(req: NextRequest) {
       promo.discountValue,
       subtotal
     )
-    totalAmount  = Math.max(0, subtotal - discountAmount)
+    totalAmount = Math.max(0, subtotal - discountAmount)
     promoCodeId = promo.id
   }
 
   // 5. Reserve all slots atomically (all-or-nothing)
-  const reserveResult = await reserveTimeSlots({
-    eventId,
-    selections: resolvedSelections.map((s) => ({
-      timeSlotId:   s.timeSlotId,
-      ticketTypeId: s.ticketTypeId,
-      quantity:     s.quantity,
-    })),
-  })
+  const reserveResult = await reserveTimeSlots(
+    {
+      eventId,
+      selections: resolvedSelections.map((s) => ({
+        timeSlotId: s.timeSlotId,
+        ticketTypeId: s.ticketTypeId,
+        quantity: s.quantity,
+      })),
+    },
+    userId
+  )
 
   if (!reserveResult.success) {
     return NextResponse.json({ error: reserveResult.error }, { status: 409 })
@@ -235,44 +307,42 @@ export async function POST(req: NextRequest) {
       })
     } catch (err) {
       console.error('[initialize-shows] free order error:', err)
-      return NextResponse.json({ error: 'Failed to issue free tickets. Please try again.' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Failed to issue free tickets. Please try again.' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({ free: true, reservationId })
   }
 
-  // 7. Fetch user email for Paystack
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    select: { email: true },
-  })
-  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+  // 7. Paystack email comes from billing info
+  const paystackEmail = billingInfo.email.toLowerCase()
 
-  const reference   = `SWT-${Date.now()}-${randomBytes(4).toString('hex')}`
+  const reference = `SWT-${Date.now()}-${randomBytes(4).toString('hex')}`
   const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${event.slug}/checkout/success?reservation=${reservationId}&type=shows`
 
   const result = await paystack.initializeTransaction({
-    email:         user.email,
-    amount:        totalAmount,
+    email: paystackEmail,
+    amount: totalAmount,
     reference,
-    callback_url:  callbackUrl,
+    callback_url: callbackUrl,
     metadata: {
       reservationId,
       userId,
+      isGuest: !session,
       eventId,
       // Tell webhook this is a time-slot order
       slotSelections: resolvedSelections.map((s) => ({
-        timeSlotId:   s.timeSlotId,
+        timeSlotId: s.timeSlotId,
         ticketTypeId: s.ticketTypeId,
-        quantity:     s.quantity,
-        price:        s.price,
-        currency:     s.currency,
+        quantity: s.quantity,
+        price: s.price,
+        currency: s.currency,
       })),
-      promoCodeId:    promoCodeId ?? null,
+      promoCodeId: promoCodeId ?? null,
       discountAmount,
-      custom_fields: [
-        { display_name: 'Event', variable_name: 'event_title', value: event.title },
-      ],
+      custom_fields: [{ display_name: 'Event', variable_name: 'event_title', value: event.title }],
     },
   })
 

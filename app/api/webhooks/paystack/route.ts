@@ -29,7 +29,7 @@ import { randomBytes } from 'crypto'
 
 function generateTicketNumber(): string {
   const year = new Date().getFullYear()
-  const hex  = randomBytes(3).toString('hex').toUpperCase()
+  const hex = randomBytes(3).toString('hex').toUpperCase()
   return `SWT-${year}-${hex}`
 }
 
@@ -40,7 +40,7 @@ function generateQrCode(): string {
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const rawBody   = await req.text()
+  const rawBody = await req.text()
   const signature = req.headers.get('x-paystack-signature') ?? ''
 
   if (!(await paystack.verifyWebhookSignature(rawBody, signature))) {
@@ -80,25 +80,25 @@ export async function POST(req: NextRequest) {
 
 interface TicketSelection {
   ticketTypeId: string
-  quantity:     number
-  price:        number
-  currency:     string
+  quantity: number
+  price: number
+  currency: string
 }
 
 interface SlotSelection {
-  timeSlotId:   string
+  timeSlotId: string
   ticketTypeId: string
-  quantity:     number
-  price:        number
-  currency:     string
+  quantity: number
+  price: number
+  currency: string
 }
 
 // ─── charge.success ───────────────────────────────────────────────────────────
 
 async function handleChargeSuccess(data: Record<string, unknown>) {
-  const reference            = data.reference as string
+  const reference = data.reference as string
   const paystackTransactionId = String(data.id)
-  const amountPaid           = data.amount as number
+  const amountPaid = data.amount as number
 
   const meta = (data.metadata ?? {}) as Record<string, unknown>
 
@@ -123,15 +123,19 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
   const groupSlotId = meta.groupSlotId as string | undefined
   if (groupSlotId) {
     const { confirmGroupSlotPayment } = await import('@/features/group-booking/actions')
-    const result = await confirmGroupSlotPayment({ slotId: groupSlotId, paystackReference: reference })
+    const result = await confirmGroupSlotPayment({
+      slotId: groupSlotId,
+      paystackReference: reference,
+    })
     if (!result.success) {
       console.error('[webhook/paystack] confirmGroupSlotPayment failed:', result.error)
     }
     return
   }
 
-  const userId         = meta.userId as string | undefined
-  const promoCodeId    = (meta.promoCodeId as string | undefined) || undefined
+  const userId = meta.userId as string | undefined
+  const isGuest = meta.isGuest === true
+  const promoCodeId = (meta.promoCodeId as string | undefined) || undefined
   const discountAmount = typeof meta.discountAmount === 'number' ? meta.discountAmount : 0
 
   if (!reservationId || !userId) {
@@ -148,9 +152,14 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
       },
       event: {
         select: {
-          id: true, slug: true, title: true, startsAt: true, imageUrl: true,
+          id: true,
+          slug: true,
+          title: true,
+          startsAt: true,
+          imageUrl: true,
           venue: { select: { name: true, city: true } },
-          venueName: true, venueCity: true,
+          venueName: true,
+          venueCity: true,
           organizer: { select: { id: true, feePercent: true } },
         },
       },
@@ -186,7 +195,7 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
   }
 
   const isTimeSlotOrder = slotSelections.length > 0
-  const isGAOrder       = !isTimeSlotOrder && gaSelections.length > 0
+  const isGAOrder = !isTimeSlotOrder && gaSelections.length > 0
 
   // Debug: log what type of order we're processing
   console.log('[webhook/paystack] order type detected', {
@@ -201,18 +210,35 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
 
   if (isTimeSlotOrder) {
     await handleTimeSlotChargeSuccess({
-      reservation, slotSelections, userId, reference,
-      paystackTransactionId, amountPaid, promoCodeId, discountAmount,
+      reservation,
+      slotSelections,
+      userId,
+      reference,
+      paystackTransactionId,
+      amountPaid,
+      promoCodeId,
+      discountAmount,
     })
   } else if (isGAOrder) {
     await handleGAChargeSuccess({
-      reservation, gaSelections, userId, reference,
-      paystackTransactionId, amountPaid, promoCodeId, discountAmount,
+      reservation,
+      gaSelections,
+      userId,
+      reference,
+      paystackTransactionId,
+      amountPaid,
+      promoCodeId,
+      discountAmount,
     })
   } else {
     await handleReservedChargeSuccess({
-      reservation, userId, reference,
-      paystackTransactionId, amountPaid, promoCodeId, discountAmount,
+      reservation,
+      userId,
+      reference,
+      paystackTransactionId,
+      amountPaid,
+      promoCodeId,
+      discountAmount,
     })
   }
 
@@ -229,9 +255,9 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
           where: { orderId: order.id },
           select: {
             ticketNumber: true,
-            qrCode:       true,
-            ticketType:   { select: { name: true } },
-            eventSeat:    { select: { seat: { select: { label: true } } } },
+            qrCode: true,
+            ticketType: { select: { name: true } },
+            eventSeat: { select: { seat: { select: { label: true } } } },
             timeSlotTickets: {
               select: {
                 timeSlot: { select: { label: true, startsAt: true } },
@@ -246,26 +272,27 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
     if (tickets.length > 0) {
       await sendTicketConfirmationEmail({
         userId,
-        eventTitle:    reservation.event.title,
-        eventDate:     reservation.event.startsAt,
-        eventSlug:     reservation.event.slug,
+        isGuest,
+        eventTitle: reservation.event.title,
+        eventDate: reservation.event.startsAt,
+        eventSlug: reservation.event.slug,
         eventImageUrl: reservation.event.imageUrl ?? undefined,
-        eventVenue:    reservation.event.venue
+        eventVenue: reservation.event.venue
           ? `${reservation.event.venue.name}, ${reservation.event.venue.city}`
           : reservation.event.venueName
-          ? [reservation.event.venueName, reservation.event.venueCity].filter(Boolean).join(', ')
-          : undefined,
-        ticketCount:   tickets.length,
+            ? [reservation.event.venueName, reservation.event.venueCity].filter(Boolean).join(', ')
+            : undefined,
+        ticketCount: tickets.length,
         reservationId,
         tickets: tickets.map((t) => {
           const slot = t.timeSlotTickets[0]?.timeSlot
           return {
-            ticketNumber:   t.ticketNumber,
-            qrCode:         t.qrCode,
+            ticketNumber: t.ticketNumber,
+            qrCode: t.qrCode,
             ticketTypeName: t.ticketType.name,
-            seatLabel:      t.eventSeat?.seat?.label ?? null,
-            showLabel:      slot?.label ?? null,
-            showDate:       slot?.startsAt ?? null,
+            seatLabel: t.eventSeat?.seat?.label ?? null,
+            showLabel: slot?.label ?? null,
+            showDate: slot?.startsAt ?? null,
           }
         }),
       })
@@ -289,16 +316,17 @@ async function handleTimeSlotChargeSuccess({
   discountAmount,
 }: {
   reservation: {
-    id: string; eventId: string
+    id: string
+    eventId: string
     event: { id: string; organizer: { id: string; feePercent: number | null } }
   }
-  slotSelections:        SlotSelection[]
-  userId:                string
-  reference:             string
+  slotSelections: SlotSelection[]
+  userId: string
+  reference: string
   paystackTransactionId: string
-  amountPaid:            number
-  promoCodeId:           string | undefined
-  discountAmount:        number
+  amountPaid: number
+  promoCodeId: string | undefined
+  discountAmount: number
 }) {
   // Validate that we have slot selections — this is required for time-slot orders
   if (!slotSelections || slotSelections.length === 0) {
@@ -311,32 +339,32 @@ async function handleTimeSlotChargeSuccess({
 
   await db.$transaction(async (tx) => {
     const feePercent = resolveFeePercent(reservation.event.organizer.feePercent)
-    const feeAmount  = Math.round(amountPaid * (feePercent / 100))
-    const netAmount  = amountPaid - feeAmount
+    const feeAmount = Math.round(amountPaid * (feePercent / 100))
+    const netAmount = amountPaid - feeAmount
 
     // 1. Order
     const order = await createOrder(tx, {
       userId,
-      eventId:        reservation.eventId,
-      reservationId:  reservation.id,
-      totalAmount:    amountPaid,
-      currency:       slotSelections[0]?.currency ?? 'NGN',
+      eventId: reservation.eventId,
+      reservationId: reservation.id,
+      totalAmount: amountPaid,
+      currency: slotSelections[0]?.currency ?? 'NGN',
       discountAmount,
-      promoCodeId:    promoCodeId ?? null,
+      promoCodeId: promoCodeId ?? null,
     })
 
     // 2. Payment
     await createPayment(tx, {
-      orderId:               order.id,
-      organizerId:           reservation.event.organizer.id,
+      orderId: order.id,
+      organizerId: reservation.event.organizer.id,
       userId,
-      eventId:               reservation.eventId,
-      amount:                amountPaid,
-      currency:              slotSelections[0]?.currency ?? 'NGN',
-      platformFeePercent:    feePercent,
-      platformFeeAmount:     feeAmount,
+      eventId: reservation.eventId,
+      amount: amountPaid,
+      currency: slotSelections[0]?.currency ?? 'NGN',
+      platformFeePercent: feePercent,
+      platformFeeAmount: feeAmount,
       netAmount,
-      paystackReference:     reference,
+      paystackReference: reference,
       paystackTransactionId,
     })
 
@@ -344,12 +372,12 @@ async function handleTimeSlotChargeSuccess({
     for (const sel of slotSelections) {
       for (let i = 0; i < sel.quantity; i++) {
         const ticket = await createTicket(tx, {
-          eventId:      reservation.eventId,
+          eventId: reservation.eventId,
           userId,
-          orderId:      order.id,
+          orderId: order.id,
           ticketTypeId: sel.ticketTypeId,
           ticketNumber: generateTicketNumber(),
-          qrCode:       generateQrCode(),
+          qrCode: generateQrCode(),
         })
 
         const insertResult = await tx.$executeRaw`
@@ -374,7 +402,7 @@ async function handleTimeSlotChargeSuccess({
 
       await tx.ticketType.update({
         where: { id: sel.ticketTypeId },
-        data:  { sold: { increment: sel.quantity } },
+        data: { sold: { increment: sel.quantity } },
       })
     }
 
@@ -392,7 +420,7 @@ async function handleTimeSlotChargeSuccess({
     // 5. Complete reservation
     await tx.reservation.update({
       where: { id: reservation.id },
-      data:  { status: ReservationStatus.COMPLETED },
+      data: { status: ReservationStatus.COMPLETED },
     })
   })
 }
@@ -410,60 +438,61 @@ async function handleGAChargeSuccess({
   discountAmount,
 }: {
   reservation: {
-    id: string; eventId: string
+    id: string
+    eventId: string
     event: { id: string; organizer: { id: string; feePercent: number | null } }
   }
-  gaSelections:          TicketSelection[]
-  userId:                string
-  reference:             string
+  gaSelections: TicketSelection[]
+  userId: string
+  reference: string
   paystackTransactionId: string
-  amountPaid:            number
-  promoCodeId:           string | undefined
-  discountAmount:        number
+  amountPaid: number
+  promoCodeId: string | undefined
+  discountAmount: number
 }) {
   await db.$transaction(async (tx) => {
     const feePercent = resolveFeePercent(reservation.event.organizer.feePercent)
-    const feeAmount  = Math.round(amountPaid * (feePercent / 100))
-    const netAmount  = amountPaid - feeAmount
+    const feeAmount = Math.round(amountPaid * (feePercent / 100))
+    const netAmount = amountPaid - feeAmount
 
     const order = await createOrder(tx, {
       userId,
-      eventId:        reservation.eventId,
-      reservationId:  reservation.id,
-      totalAmount:    amountPaid,
-      currency:       gaSelections[0]?.currency ?? 'NGN',
+      eventId: reservation.eventId,
+      reservationId: reservation.id,
+      totalAmount: amountPaid,
+      currency: gaSelections[0]?.currency ?? 'NGN',
       discountAmount,
-      promoCodeId:    promoCodeId ?? null,
+      promoCodeId: promoCodeId ?? null,
     })
 
     await createPayment(tx, {
-      orderId:               order.id,
-      organizerId:           reservation.event.organizer.id,
+      orderId: order.id,
+      organizerId: reservation.event.organizer.id,
       userId,
-      eventId:               reservation.eventId,
-      amount:                amountPaid,
-      currency:              gaSelections[0]?.currency ?? 'NGN',
-      platformFeePercent:    feePercent,
-      platformFeeAmount:     feeAmount,
+      eventId: reservation.eventId,
+      amount: amountPaid,
+      currency: gaSelections[0]?.currency ?? 'NGN',
+      platformFeePercent: feePercent,
+      platformFeeAmount: feeAmount,
       netAmount,
-      paystackReference:     reference,
+      paystackReference: reference,
       paystackTransactionId,
     })
 
     for (const sel of gaSelections) {
       for (let i = 0; i < sel.quantity; i++) {
         await createTicket(tx, {
-          eventId:      reservation.eventId,
+          eventId: reservation.eventId,
           userId,
-          orderId:      order.id,
+          orderId: order.id,
           ticketTypeId: sel.ticketTypeId,
           ticketNumber: generateTicketNumber(),
-          qrCode:       generateQrCode(),
+          qrCode: generateQrCode(),
         })
       }
       await tx.ticketType.update({
         where: { id: sel.ticketTypeId },
-        data:  { sold: { increment: sel.quantity } },
+        data: { sold: { increment: sel.quantity } },
       })
     }
 
@@ -479,7 +508,7 @@ async function handleGAChargeSuccess({
 
     await tx.reservation.update({
       where: { id: reservation.id },
-      data:  { status: ReservationStatus.COMPLETED },
+      data: { status: ReservationStatus.COMPLETED },
     })
   })
 }
@@ -496,7 +525,8 @@ async function handleReservedChargeSuccess({
   discountAmount,
 }: {
   reservation: {
-    id: string; eventId: string
+    id: string
+    eventId: string
     event: { id: string; organizer: { id: string; feePercent: number | null } }
     eventSeats: Array<{
       id: string | true
@@ -504,40 +534,40 @@ async function handleReservedChargeSuccess({
       ticketType: { id: string; price: number; currency: string } | null
     }>
   }
-  userId:                string
-  reference:             string
+  userId: string
+  reference: string
   paystackTransactionId: string
-  amountPaid:            number
-  promoCodeId:           string | undefined
-  discountAmount:        number
+  amountPaid: number
+  promoCodeId: string | undefined
+  discountAmount: number
 }) {
   await db.$transaction(async (tx) => {
     const feePercent = resolveFeePercent(reservation.event.organizer.feePercent)
-    const feeAmount  = Math.round(amountPaid * (feePercent / 100))
-    const netAmount  = amountPaid - feeAmount
-    const currency   = reservation.eventSeats[0]?.ticketType?.currency ?? 'NGN'
+    const feeAmount = Math.round(amountPaid * (feePercent / 100))
+    const netAmount = amountPaid - feeAmount
+    const currency = reservation.eventSeats[0]?.ticketType?.currency ?? 'NGN'
 
     const order = await createOrder(tx, {
       userId,
-      eventId:        reservation.eventId,
-      reservationId:  reservation.id,
-      totalAmount:    amountPaid,
+      eventId: reservation.eventId,
+      reservationId: reservation.id,
+      totalAmount: amountPaid,
       currency,
       discountAmount,
-      promoCodeId:    promoCodeId ?? null,
+      promoCodeId: promoCodeId ?? null,
     })
 
     await createPayment(tx, {
-      orderId:               order.id,
-      organizerId:           reservation.event.organizer.id,
+      orderId: order.id,
+      organizerId: reservation.event.organizer.id,
       userId,
-      eventId:               reservation.eventId,
-      amount:                amountPaid,
+      eventId: reservation.eventId,
+      amount: amountPaid,
       currency,
-      platformFeePercent:    feePercent,
-      platformFeeAmount:     feeAmount,
+      platformFeePercent: feePercent,
+      platformFeeAmount: feeAmount,
       netAmount,
-      paystackReference:     reference,
+      paystackReference: reference,
       paystackTransactionId,
     })
 
@@ -547,20 +577,20 @@ async function handleReservedChargeSuccess({
       }
 
       await createTicket(tx, {
-        eventId:      reservation.eventId,
+        eventId: reservation.eventId,
         userId,
-        orderId:      order.id,
+        orderId: order.id,
         ticketTypeId: eventSeat.ticketTypeId!,
         ticketNumber: generateTicketNumber(),
-        qrCode:       generateQrCode(),
-        eventSeatId:  eventSeat.id as string,
+        qrCode: generateQrCode(),
+        eventSeatId: eventSeat.id as string,
       })
     }
 
     // Batch-update all sold seats in one query
     await tx.eventSeat.updateMany({
       where: { id: { in: reservation.eventSeats.map((s) => s.id as string) } },
-      data:  { status: EventSeatStatus.SOLD },
+      data: { status: EventSeatStatus.SOLD },
     })
 
     // Group sold-count increments by ticketTypeId then batch
@@ -588,7 +618,7 @@ async function handleReservedChargeSuccess({
 
     await tx.reservation.update({
       where: { id: reservation.id },
-      data:  { status: ReservationStatus.COMPLETED },
+      data: { status: ReservationStatus.COMPLETED },
     })
   })
 }
@@ -599,7 +629,7 @@ async function handleTransferSuccess(data: Record<string, unknown>) {
   const transferCode = data.transfer_code as string
   await db.payoutRequest.updateMany({
     where: { paystackTransferCode: transferCode },
-    data:  { status: PayoutStatus.COMPLETED, completedAt: new Date() },
+    data: { status: PayoutStatus.COMPLETED, completedAt: new Date() },
   })
 }
 
@@ -609,6 +639,6 @@ async function handleTransferFailed(data: Record<string, unknown>) {
   const transferCode = data.transfer_code as string
   await db.payoutRequest.updateMany({
     where: { paystackTransferCode: transferCode },
-    data:  { status: PayoutStatus.APPROVED },
+    data: { status: PayoutStatus.APPROVED },
   })
 }
