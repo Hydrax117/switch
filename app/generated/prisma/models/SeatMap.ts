@@ -527,14 +527,6 @@ export type SeatMapUncheckedUpdateManyWithoutVenueNestedInput = {
   deleteMany?: Prisma.SeatMapScalarWhereInput | Prisma.SeatMapScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type EnumSeatMapStatusFieldUpdateOperationsInput = {
   set?: $Enums.SeatMapStatus
 }
