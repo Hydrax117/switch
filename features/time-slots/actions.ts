@@ -16,7 +16,7 @@ import {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const RESERVATION_TTL_MS      = 600 * 1000 // 10 minutes
+const RESERVATION_TTL_MS = 600 * 1000 // 10 minutes
 const RESERVATION_TTL_SECONDS = 600
 
 // ─── Reserve multiple time slots (attendee checkout) ─────────────────────────
@@ -26,19 +26,21 @@ const RESERVATION_TTL_SECONDS = 600
 // fails we roll back the ones already acquired.
 
 export async function reserveTimeSlots(
-  input: unknown
+  input: unknown,
+  guestUserId?: string
 ): Promise<
-  | { success: true; reservationId: string; expiresAt: Date }
-  | { success: false; error: string }
+  { success: true; reservationId: string; expiresAt: Date } | { success: false; error: string }
 > {
   const session = await getSession()
-  if (!session) return { success: false, error: 'UNAUTHENTICATED' }
 
   const parsed = reserveTimeSlotsSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid input' }
 
   const { eventId, selections } = parsed.data
-  const { userId } = session
+
+  // Resolve userId — authenticated session, caller-supplied guest id, or fail
+  const userId = session?.userId ?? guestUserId
+  if (!userId) return { success: false, error: 'UNAUTHENTICATED' }
 
   // 1. Validate each slot + ticket-type combination
   for (const sel of selections) {
@@ -130,9 +132,10 @@ export async function reserveTimeSlots(
     if (available < sel.quantity) {
       return {
         success: false,
-        error: available <= 0
-          ? 'This time slot is sold out for the selected ticket type'
-          : `Only ${available} spot(s) remaining for this show`,
+        error:
+          available <= 0
+            ? 'This time slot is sold out for the selected ticket type'
+            : `Only ${available} spot(s) remaining for this show`,
       }
     }
   }
@@ -156,7 +159,8 @@ export async function reserveTimeSlots(
       }
       return {
         success: false,
-        error: 'A reservation for one of these slots is already in progress. Please complete or cancel it first.',
+        error:
+          'A reservation for one of these slots is already in progress. Please complete or cancel it first.',
       }
     }
 
@@ -187,11 +191,11 @@ export async function reserveTimeSlots(
 
       await writeAuditLog(tx, {
         entityType: AuditEntityType.RESERVATION,
-        entityId:   newReservation.id,
-        action:     AuditAction.CREATED,
-        newStatus:  ReservationStatus.ACTIVE,
-        actor:      userId,
-        metadata:   { eventId, selections, expiresAt: expiresAt.toISOString() },
+        entityId: newReservation.id,
+        action: AuditAction.CREATED,
+        newStatus: ReservationStatus.ACTIVE,
+        actor: userId,
+        metadata: { eventId, selections, expiresAt: expiresAt.toISOString() },
       })
 
       return newReservation
@@ -219,7 +223,8 @@ export async function upsertTimeSlot(
   if (!session) return { success: false, error: 'UNAUTHENTICATED' }
 
   const parsed = upsertTimeSlotSchema.safeParse(input)
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
+  if (!parsed.success)
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
 
   const { eventId, timeSlotId, label, startsAt, endsAt, capacities } = parsed.data
 
@@ -269,8 +274,8 @@ export async function upsertTimeSlot(
             eventId,
             label,
             startsAt: new Date(startsAt),
-            endsAt:   new Date(endsAt),
-            status:   TicketTypeStatus.ACTIVE,
+            endsAt: new Date(endsAt),
+            status: TicketTypeStatus.ACTIVE,
           },
           select: { id: true },
         })
