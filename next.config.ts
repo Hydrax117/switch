@@ -77,18 +77,18 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              // Scripts: self + inline (Next.js requires unsafe-inline for hydration) + Paystack
-              "script-src 'self' 'unsafe-inline' https://js.paystack.co",
+              // Scripts: self + inline (Next.js requires unsafe-inline for hydration) + Paystack + Cloudflare (browser integrity check / Turnstile)
+              "script-src 'self' 'unsafe-inline' https://js.paystack.co https://challenges.cloudflare.com",
               // Styles: self + inline (Tailwind inlines critical CSS)
               "style-src 'self' 'unsafe-inline'",
               // Images: self, data URIs, and all configured CDN/storage domains
               "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co https://images.unsplash.com https://avatars.githubusercontent.com https://*.s3.amazonaws.com https://*.cloudfront.net https://utfs.io",
               // Fonts served from self
               "font-src 'self'",
-              // API calls: self + Paystack + Sentry tunnel
-              "connect-src 'self' https://api.paystack.co https://*.supabase.co https://*.sentry.io",
-              // Paystack checkout iframe + Google Maps embed
-              'frame-src https://checkout.paystack.com https://maps.google.com https://www.google.com',
+              // API calls: self + Paystack + Sentry tunnel + Cloudflare Turnstile verification
+              "connect-src 'self' https://api.paystack.co https://*.supabase.co https://*.sentry.io https://challenges.cloudflare.com",
+              // Paystack checkout iframe + Google Maps embed + Cloudflare Turnstile challenge iframe
+              'frame-src https://checkout.paystack.com https://maps.google.com https://www.google.com https://challenges.cloudflare.com',
               // Workers / service workers
               "worker-src 'self' blob:",
               // No plugins

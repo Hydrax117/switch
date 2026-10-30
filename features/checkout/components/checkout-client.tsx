@@ -10,6 +10,11 @@ import { validatePromoCode } from '@/features/promo-codes/actions'
 import { OrderSummary } from './order-summary'
 import type { TicketType } from '@/app/generated/prisma/client'
 import type { PromoValidation } from '@/features/promo-codes/types'
+import {
+  BillingInfoForm,
+  validateBillingInfo,
+  type BillingInfo,
+} from './billing-info-form'
 
 interface CheckoutSeat {
   id: string
@@ -33,11 +38,12 @@ interface CheckoutClientProps {
   }
   checkoutSeats: CheckoutSeat[]
   subtotal: number
+  guestMode?: boolean
 }
 
 const COUNTDOWN_SECONDS = 600 // 10 minutes
 
-export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClientProps) {
+export function CheckoutClient({ event, checkoutSeats, subtotal, guestMode }: CheckoutClientProps) {
   const router = useRouter()
   const [reservationId, setReservationId] = useState<string | null>(null)
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS)
@@ -45,6 +51,16 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [expired, setExpired] = useState(false)
+
+  // ── Billing info ──────────────────────────────────────────────────────────
+  const [billing, setBilling] = useState<BillingInfo>({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    country: 'Nigeria',
+  })
+  const [billingErrors, setBillingErrors] = useState<Partial<Record<keyof BillingInfo, string>>>({})
 
   // ── Promo code state ──────────────────────────────────────────────────────
   const [promoInput, setPromoInput] = useState('')
@@ -56,8 +72,10 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
   const effectiveTotal = appliedPromo ? appliedPromo.finalTotal : subtotal
   const isEffectivelyFree = effectiveTotal === 0
 
-  // ── Step 1: Create reservation on mount for reserved seating ──
+  // ── Step 1: Create reservation on mount (authenticated users only) ──
+  // Guests defer reservation until pay-time so we have their email first.
   useEffect(() => {
+    if (guestMode) return // handled inside handlePay
     if (event.seatingType === 'GENERAL_ADMISSION' || checkoutSeats.length === 0) return
 
     let cancelled = false
@@ -152,7 +170,35 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
 
   // ── Pay / confirm ──
   const handlePay = async () => {
-    if (!reservationId && !isFree && !isEffectivelyFree) return
+    // Validate billing info first
+    const errors = validateBillingInfo(billing)
+    if (Object.keys(errors).length > 0) {
+      setBillingErrors(errors)
+      document.getElementById('billing-info-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    setBillingErrors({})
+
+    // For guest reserved seating: create the reservation now that we have the email
+    let activeReservationId = reservationId
+    if (guestMode && !activeReservationId && checkoutSeats.length > 0) {
+      setIsReserving(true)
+      const result = await reserveSeats({
+        eventId: event.id,
+        eventSeatIds: checkoutSeats.map((s) => s.id),
+        guestEmail: billing.email.toLowerCase(),
+      })
+      setIsReserving(false)
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
+      setReservationId(result.reservationId)
+      setSecondsLeft(Math.max(0, Math.floor((result.expiresAt.getTime() - Date.now()) / 1000)))
+      activeReservationId = result.reservationId
+    }
+
+    if (!activeReservationId && !isFree && !isEffectivelyFree) return
     setError(null)
     setIsInitiatingPayment(true)
 
@@ -161,8 +207,9 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          reservationId,
+          reservationId: activeReservationId,
           promoCode: appliedPromo?.code ?? undefined,
+          billingInfo: billing,
         }),
       })
       const json = (await res.json()) as {
@@ -179,7 +226,7 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
       }
 
       if (json.free) {
-        router.push(`/events/${event.slug}/checkout/success?reservation=${reservationId}`)
+        router.push(`/events/${event.slug}/checkout/success?reservation=${activeReservationId}`)
         return
       }
 
@@ -202,7 +249,7 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
     !isReserving &&
     !error &&
     !expired &&
-    (isFree || isEffectivelyFree || reservationId !== null)
+    (isFree || isEffectivelyFree || reservationId !== null || guestMode)
 
   if (expired) {
     return (
@@ -227,12 +274,12 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:gap-12">
       {/* ── Left: payment section ── */}
-      <div>
+      <div className="space-y-6">
         {/* Countdown */}
         {reservationId && (
           <div
             className={cn(
-              'mb-6 flex items-center gap-3 rounded-xl border px-4 py-3',
+              'flex items-center gap-3 rounded-xl border px-4 py-3',
               isUrgent
                 ? 'border-red-500/30 bg-red-500/10 text-red-500'
                 : 'border-border bg-muted/40 text-muted-foreground'
@@ -250,22 +297,32 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
 
         {/* Errors */}
         {error && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-[13px] text-red-500">
+          <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-[13px] text-red-500">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {error}
           </div>
         )}
 
         {isReserving && (
-          <div className="border-border bg-muted/30 mb-6 flex items-center gap-3 rounded-xl border px-4 py-3">
+          <div className="border-border bg-muted/30 flex items-center gap-3 rounded-xl border px-4 py-3">
             <Loader2 className="text-brand-500 h-4 w-4 animate-spin" />
             <p className="text-muted-foreground text-[13px]">Holding your seats…</p>
           </div>
         )}
 
+        {/* ── Billing info ── */}
+        <div id="billing-info-section">
+          <BillingInfoForm
+            value={billing}
+            onChange={setBilling}
+            errors={billingErrors}
+            disabled={isInitiatingPayment || isReserving}
+          />
+        </div>
+
         {/* ── Promo code ── */}
         {!isFree && (
-          <div className="border-border mb-6 rounded-2xl border p-5">
+          <div className="border-border rounded-2xl border p-5">
             <div className="mb-3 flex items-center gap-2">
               <Tag className="text-brand-500 h-4 w-4" />
               <h2 className="text-[15px] font-semibold">Promo Code</h2>
@@ -381,7 +438,7 @@ export function CheckoutClient({ event, checkoutSeats, subtotal }: CheckoutClien
         </div>
 
         {/* CTA */}
-        <div className="mt-6">
+        <div>
           <button
             onClick={handlePay}
             disabled={!canPay}

@@ -65,6 +65,8 @@ interface Props {
   initiallyConfirmed: boolean
   /** Pre-loaded confirmed data (only when initiallyConfirmed = true) */
   initialData?: ConfirmedData
+  /** True when the purchaser has no active session (guest checkout) */
+  isGuest?: boolean
 }
 
 const POLL_INTERVAL_MS = 2_000
@@ -78,6 +80,7 @@ export function PaymentConfirmationPoller({
   orderType,
   initiallyConfirmed,
   initialData,
+  isGuest,
 }: Props) {
   const [confirmedData, setConfirmedData] = useState<ConfirmedData | null>(
     initiallyConfirmed && initialData ? initialData : null
@@ -322,13 +325,23 @@ export function PaymentConfirmationPoller({
 
       {/* Actions */}
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Link
-          href="/dashboard/tickets"
-          className="from-brand-600 flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 py-3 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
-        >
-          View my tickets
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        {isGuest ? (
+          <Link
+            href={`/events/${eventSlug}`}
+            className="from-brand-600 flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 py-3 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Back to event
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        ) : (
+          <Link
+            href="/dashboard/tickets"
+            className="from-brand-600 flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r to-violet-600 py-3 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            View my tickets
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        )}
         <Link
           href="/events"
           className="border-border hover:bg-muted flex flex-1 items-center justify-center rounded-xl border py-3 text-[14px] font-medium transition-colors"

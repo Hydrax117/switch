@@ -7,6 +7,8 @@ export const reserveSeatsSchema = z.object({
   sessionTokens: z.record(z.string()).optional(),
   /** directLinkToken for HIDDEN types (?unlock= query param) */
   directLinkToken: z.string().optional(),
+  /** Guest checkout: email to upsert a user record when there is no session */
+  guestEmail: z.string().email().optional(),
 })
 
 export const reserveGASchema = z.object({

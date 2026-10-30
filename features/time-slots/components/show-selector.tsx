@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Plus, Minus, ShoppingCart, Lock, CheckCircle2, X, CalendarDays } from 'lucide-react'
+import { Plus, Minus, ShoppingCart, CheckCircle2, X, CalendarDays } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TimeSlotWithAvailability } from '../types'
 
@@ -351,43 +351,21 @@ export function ShowSelector({ eventSlug, timeSlots, isLoggedIn }: ShowSelectorP
 
       {/* ── CTA ── */}
       <div>
-        {!isLoggedIn ? (
-          <a
-            href={(() => {
-              const showsParam = cartEntries
-                .map((e) => `${e.timeSlotId}:${e.ticketTypeId}:${e.quantity}`)
-                .join(',')
-              const redirect = showsParam
-                ? `/events/${eventSlug}?shows=${encodeURIComponent(showsParam)}&_scroll=tickets`
-                : `/events/${eventSlug}?_scroll=tickets`
-              return `/login?redirect=${encodeURIComponent(redirect)}`
-            })()}
-            className={cn(
-              'flex w-full items-center justify-center gap-2 rounded-xl py-3',
-              'text-[14px] font-semibold text-white transition-opacity hover:opacity-90',
-              'from-brand-600 bg-gradient-to-r to-violet-600'
-            )}
-          >
-            <Lock className="h-4 w-4" />
-            Buy Tickets
-          </a>
-        ) : (
-          <button
-            type="button"
-            disabled={totalTickets === 0}
-            onClick={handleCheckout}
-            className={cn(
-              'flex w-full items-center justify-center gap-2 rounded-xl py-3',
-              'text-[14px] font-semibold text-white transition-all',
-              totalTickets > 0
-                ? 'from-brand-600 cursor-pointer bg-gradient-to-r to-violet-600 hover:opacity-90'
-                : 'bg-muted text-muted-foreground cursor-not-allowed'
-            )}
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {totalTickets === 0 ? 'Select tickets' : 'Continue to checkout'}
-          </button>
-        )}
+        <button
+          type="button"
+          disabled={totalTickets === 0}
+          onClick={handleCheckout}
+          className={cn(
+            'flex w-full items-center justify-center gap-2 rounded-xl py-3',
+            'text-[14px] font-semibold text-white transition-all',
+            totalTickets > 0
+              ? 'from-brand-600 cursor-pointer bg-gradient-to-r to-violet-600 hover:opacity-90'
+              : 'bg-muted text-muted-foreground cursor-not-allowed'
+          )}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          {totalTickets === 0 ? 'Select tickets' : 'Continue to checkout'}
+        </button>
       </div>
 
       <p className="text-muted-foreground text-center text-[11px]">

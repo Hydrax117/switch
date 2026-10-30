@@ -14,7 +14,6 @@ import { getSession } from '@/lib/session'
 
 export async function GET(req: NextRequest) {
   const session = await getSession()
-  if (!session) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
   const reservationId = req.nextUrl.searchParams.get('reservation')
   const type          = req.nextUrl.searchParams.get('type') // 'ga' | 'shows' | null
@@ -57,9 +56,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Reservation not found' }, { status: 404 })
   }
 
-  if (reservation.userId !== session.userId) {
+  // Ownership: authenticated user must own it, OR it's a guest reservation
+  // (no session) — we verify by reservationId alone (treated as a secret token)
+  if (session && reservation.userId !== session.userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
+
+  // Use reservation.userId for ticket queries (works for both auth and guest)
+  const ownerUserId = reservation.userId
 
   // Surface EXPIRED so the client stops polling
   const status =
@@ -107,7 +111,7 @@ export async function GET(req: NextRequest) {
       INNER JOIN "time_slot_tickets" tst ON tst."ticketId" = t."id"
       LEFT JOIN "time_slots" ts ON ts."id" = tst."timeSlotId"
       WHERE t."eventId"  = ${reservation.eventId}
-        AND t."userId"   = ${session.userId}
+        AND t."userId"   = ${ownerUserId}
         AND t."issuedAt" >= ${new Date(reservation.createdAt.getTime() - 60000)}
         AND t."status"   = 'ACTIVE'
       ORDER BY COALESCE(ts."startsAt", t."issuedAt"), tt."name"
@@ -158,7 +162,7 @@ export async function GET(req: NextRequest) {
     const gaTickets = await db.ticket.findMany({
       where: {
         eventId:  reservation.eventId,
-        userId:   session.userId,
+        userId:   ownerUserId,
         issuedAt: { gte: reservation.createdAt },
       },
       select: {

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Minus, Plus, ShoppingCart, Lock, AlertCircle, Map, Users } from 'lucide-react'
+import { Minus, Plus, ShoppingCart, AlertCircle, Map, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatPrice, getMinPrice } from '../utils'
 import type { EventDetail } from '../types'
@@ -161,31 +161,17 @@ function ReservedTicketSummary({ event, isLoggedIn }: { event: EventDetail; isLo
 
       {/* Choose seats CTA */}
       <div className="pt-1">
-        {!isLoggedIn ? (
-          <Link
-            href={`/login?redirect=/events/${event.slug}/seats`}
-            className={cn(
-              'flex w-full items-center justify-center gap-2 rounded-xl py-3',
-              'text-[14px] font-semibold text-white transition-opacity hover:opacity-90',
-              'from-brand-600 bg-gradient-to-r to-violet-600'
-            )}
-          >
-            <Lock className="h-4 w-4" />
-            Buy Tickets
-          </Link>
-        ) : (
-          <Link
-            href={`/events/${event.slug}/seats`}
-            className={cn(
-              'flex w-full items-center justify-center gap-2 rounded-xl py-3',
-              'text-[14px] font-semibold text-white transition-opacity hover:opacity-90',
-              'from-brand-600 bg-gradient-to-r to-violet-600'
-            )}
-          >
-            <Map className="h-4 w-4" />
-            Choose your seats
-          </Link>
-        )}
+        <Link
+          href={`/events/${event.slug}/seats`}
+          className={cn(
+            'flex w-full items-center justify-center gap-2 rounded-xl py-3',
+            'text-[14px] font-semibold text-white transition-opacity hover:opacity-90',
+            'from-brand-600 bg-gradient-to-r to-violet-600'
+          )}
+        >
+          <Map className="h-4 w-4" />
+          Choose your seats
+        </Link>
       </div>
     </div>
   )
@@ -328,33 +314,10 @@ function GATicketSelector({ event, isLoggedIn }: { event: EventDetail; isLoggedI
 
       {/* CTA */}
       <div className="pt-1">
-        {!isLoggedIn ? (
-          <Link
-            href={(() => {
-              const ticketsParam = Object.entries(selections)
-                .filter(([, qty]) => qty > 0)
-                .map(([id, qty]) => `${id}:${qty}`)
-                .join(',')
-              const redirect = ticketsParam
-                ? `/events/${event.slug}?tickets=${encodeURIComponent(ticketsParam)}&_scroll=tickets`
-                : `/events/${event.slug}?_scroll=tickets`
-              return `/login?redirect=${encodeURIComponent(redirect)}`
-            })()}
-            className={cn(
-              'flex w-full items-center justify-center gap-2 rounded-xl py-3',
-              'text-[14px] font-semibold text-white transition-opacity hover:opacity-90',
-              'from-brand-600 bg-gradient-to-r to-violet-600'
-            )}
-          >
-            <Lock className="h-4 w-4" />
-            Buy Tickets
-          </Link>
-        ) : (
-          <button
+        <button
             disabled={totalItems === 0}
             onClick={() => {
               if (totalItems === 0) return
-              // Encode selections as ticketTypeId:quantity pairs, e.g. "abc:2,def:1"
               const ticketsParam = Object.entries(selections)
                 .filter(([, qty]) => qty > 0)
                 .map(([id, qty]) => `${id}:${qty}`)
@@ -372,7 +335,6 @@ function GATicketSelector({ event, isLoggedIn }: { event: EventDetail; isLoggedI
             <ShoppingCart className="h-4 w-4" />
             {totalItems === 0 ? 'Select tickets' : 'Continue to checkout'}
           </button>
-        )}
       </div>
     </div>
   )

@@ -31,7 +31,6 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
   const [session, event] = await Promise.all([getSession(), getEventBySlug(slug)])
 
   if (!event) notFound()
-  if (!session) redirect(`/login?redirect=/events/${slug}/checkout`)
 
   // ── Time-slot / show order: parse ?shows=slotId:ticketTypeId:qty,... ──────
   if (showsParam) {
@@ -104,7 +103,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
 
     return (
       <div className="relative flex min-h-screen flex-col">
-        <SiteHeader userEmail={session.email} />
+        <SiteHeader userEmail={session?.email} />
 
         <main className="flex-1 pt-[60px]">
           <div className="border-border/60 border-b">
@@ -141,6 +140,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
               event={{ id: event.id, slug: event.slug, title: event.title }}
               selections={resolvedSelections}
               subtotal={subtotal}
+              guestMode={!session}
             />
           </div>
         </main>
@@ -198,7 +198,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
 
     return (
       <div className="relative flex min-h-screen flex-col">
-        <SiteHeader userEmail={session.email} />
+        <SiteHeader userEmail={session?.email} />
 
         <main className="flex-1 pt-[60px]">
           {/* ── Top bar ── */}
@@ -246,6 +246,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
               }}
               selections={resolvedSelections}
               subtotal={subtotal}
+              guestMode={!session}
             />
           </div>
         </main>
@@ -316,7 +317,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <SiteHeader userEmail={session.email} />
+      <SiteHeader userEmail={session?.email} />
 
       <main className="flex-1 pt-[60px]">
         {/* ── Top bar ── */}
@@ -365,6 +366,7 @@ export default async function CheckoutPage({ params, searchParams }: PageProps) 
             }}
             checkoutSeats={checkoutSeats}
             subtotal={subtotal}
+            guestMode={!session}
           />
         </div>
       </main>

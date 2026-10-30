@@ -31,14 +31,9 @@ export default async function SeatsPage({ params }: PageProps) {
     redirect(`/events/${slug}`)
   }
 
-  // Must be logged in to select seats
-  if (!session) {
-    redirect(`/login?redirect=/events/${slug}/seats`)
-  }
-
   return (
     <div className="relative flex min-h-screen flex-col">
-      <SiteHeader userEmail={session.email} />
+      <SiteHeader userEmail={session?.email} />
 
       <main className="flex-1 pt-[60px]">
         {/* ── Top bar ── */}
@@ -74,7 +69,7 @@ export default async function SeatsPage({ params }: PageProps) {
         </div>
 
         {/* ── Seat map ── */}
-        <SeatMapClient event={event} userId={session.userId} />
+        <SeatMapClient event={event} userId={session?.userId ?? ''} />
       </main>
 
       <SiteFooter />

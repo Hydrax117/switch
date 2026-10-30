@@ -18,7 +18,6 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
   const { reservation: reservationId, type } = await searchParams
 
   const session = await getSession()
-  if (!session) redirect('/login')
   if (!reservationId) redirect(`/events/${slug}`)
 
   const isGA    = type === 'ga'
@@ -27,10 +26,11 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
 
   // Load reservation — accept ACTIVE (webhook not yet fired) and COMPLETED
   const reservation = await db.reservation.findUnique({
-    where: { id: reservationId, userId: session.userId },
+    where: { id: reservationId },
     select: {
       status: true,
       eventId: true,
+      userId: true,
       createdAt: true,
       expiresAt: true,
       event: {
@@ -102,7 +102,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
         INNER JOIN "time_slot_tickets" tst ON tst."ticketId" = t."id"
         LEFT JOIN "time_slots" ts ON ts."id" = tst."timeSlotId"
         WHERE t."eventId"  = ${reservation.eventId}
-          AND t."userId"   = ${session.userId}
+          AND t."userId"   = ${reservation.userId}
           AND t."issuedAt" >= ${new Date(reservation.createdAt.getTime() - 60000)}
           AND t."status"   = 'ACTIVE'
         ORDER BY COALESCE(ts."startsAt", t."issuedAt"), tt."name"
@@ -141,7 +141,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
       const gaTickets = await db.ticket.findMany({
         where: {
           eventId:  reservation.eventId,
-          userId:   session.userId,
+          userId:   reservation.userId,
           issuedAt: { gte: reservation.createdAt },
         },
         select: {
@@ -201,7 +201,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <SiteHeader userEmail={session.email} />
+      <SiteHeader userEmail={session?.email} />
 
       <main className="flex-1 pt-[60px]">
         <PaymentConfirmationPoller
@@ -210,6 +210,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Page
           orderType={orderType}
           initiallyConfirmed={!isPending}
           initialData={initialData}
+          isGuest={!session}
         />
       </main>
 

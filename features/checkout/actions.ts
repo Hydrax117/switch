@@ -138,13 +138,27 @@ async function autoEnrolIncludedSessions(
 
 export async function reserveSeats(input: unknown): Promise<ReserveSeatsResult> {
   const session = await getSession()
-  if (!session) return { success: false, error: 'Not authenticated' }
 
   const parsed = reserveSeatsSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid input' }
 
-  const { eventId, eventSeatIds, sessionTokens = {}, directLinkToken } = parsed.data
-  const { userId } = session
+  const { eventId, eventSeatIds, sessionTokens = {}, directLinkToken, guestEmail } = parsed.data
+
+  // Resolve userId — authenticated session or guest upsert by email
+  let userId: string
+  if (session) {
+    userId = session.userId
+  } else if (guestEmail) {
+    const guest = await db.user.upsert({
+      where: { email: guestEmail.toLowerCase() },
+      update: {},
+      create: { email: guestEmail.toLowerCase() },
+      select: { id: true },
+    })
+    userId = guest.id
+  } else {
+    return { success: false, error: 'Not authenticated' }
+  }
 
   // 1. Validate event exists and is published
   const event = await db.event.findUnique({
@@ -534,13 +548,11 @@ export async function confirmOrder(input: unknown): Promise<ConfirmOrderResult> 
 
 export async function releaseReservation(input: unknown): Promise<ReleaseReservationResult> {
   const session = await getSession()
-  if (!session) return { success: false, error: 'Not authenticated' }
 
   const parsed = releaseReservationSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid input' }
 
   const { reservationId } = parsed.data
-  const { userId } = session
 
   const reservation = await db.reservation.findUnique({
     where: { id: reservationId },
@@ -550,7 +562,14 @@ export async function releaseReservation(input: unknown): Promise<ReleaseReserva
   })
 
   if (!reservation) return { success: false, error: 'Reservation not found' }
-  if (reservation.userId !== userId) return { success: false, error: 'Unauthorized' }
+
+  // Ownership check: authenticated user must own the reservation, or the
+  // reservation belongs to the guest flow (no active session at release time).
+  if (session && reservation.userId !== session.userId) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  const userId = reservation.userId
 
   try {
     await db.$transaction(async (tx) => {

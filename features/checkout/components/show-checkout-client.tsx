@@ -10,6 +10,11 @@ import { cn } from '@/lib/utils'
 import { formatPrice } from '@/features/events/utils'
 import { validatePromoCode } from '@/features/promo-codes/actions'
 import type { PromoValidation } from '@/features/promo-codes/types'
+import {
+  BillingInfoForm,
+  validateBillingInfo,
+  type BillingInfo,
+} from './billing-info-form'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,14 +36,25 @@ interface ShowCheckoutClientProps {
   }
   selections: ShowSelection[]
   subtotal:   number
+  guestMode?: boolean
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function ShowCheckoutClient({ event, selections, subtotal }: ShowCheckoutClientProps) {
+export function ShowCheckoutClient({ event, selections, subtotal, guestMode }: ShowCheckoutClientProps) {
   const router = useRouter()
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false)
   const [error, setError]    = useState<string | null>(null)
+
+  // ── Billing info ──────────────────────────────────────────────────────────
+  const [billing, setBilling] = useState<BillingInfo>({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    country: 'Nigeria',
+  })
+  const [billingErrors, setBillingErrors] = useState<Partial<Record<keyof BillingInfo, string>>>({})
 
   const [promoInput,         setPromoInput]         = useState('')
   const [isValidatingPromo,  setIsValidatingPromo]  = useState(false)
@@ -82,6 +98,13 @@ export function ShowCheckoutClient({ event, selections, subtotal }: ShowCheckout
   // ── Pay ──────────────────────────────────────────────────────────────────
 
   async function handlePay() {
+    const errors = validateBillingInfo(billing)
+    if (Object.keys(errors).length > 0) {
+      setBillingErrors(errors)
+      document.getElementById('billing-info-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    setBillingErrors({})
     setError(null)
     setIsInitiatingPayment(true)
 
@@ -97,6 +120,7 @@ export function ShowCheckoutClient({ event, selections, subtotal }: ShowCheckout
             quantity:     s.quantity,
           })),
           promoCode: appliedPromo?.code ?? undefined,
+          billingInfo: billing,
         }),
       })
 
@@ -132,18 +156,28 @@ export function ShowCheckoutClient({ event, selections, subtotal }: ShowCheckout
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:gap-12">
 
-      {/* ── Left: payment section ── */}
-      <div>
+      {/* ── Left: billing + payment section ── */}
+      <div className="space-y-6">
         {error && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-[13px] text-red-500">
+          <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-[13px] text-red-500">
             <AlertCircle className="h-4 w-4 shrink-0" />
             {error}
           </div>
         )}
 
+        {/* Billing info */}
+        <div id="billing-info-section">
+          <BillingInfoForm
+            value={billing}
+            onChange={setBilling}
+            errors={billingErrors}
+            disabled={isInitiatingPayment}
+          />
+        </div>
+
         {/* Promo code */}
         {!isFree && (
-          <div className="border-border mb-6 rounded-2xl border p-5">
+          <div className="border-border rounded-2xl border p-5">
             <div className="mb-3 flex items-center gap-2">
               <Tag className="text-brand-500 h-4 w-4" />
               <h2 className="text-[15px] font-semibold">Promo Code</h2>
@@ -246,7 +280,7 @@ export function ShowCheckoutClient({ event, selections, subtotal }: ShowCheckout
         </div>
 
         {/* CTA */}
-        <div className="mt-6">
+        <div>
           <button
             onClick={handlePay}
             disabled={isInitiatingPayment}
