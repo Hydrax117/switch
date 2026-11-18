@@ -322,6 +322,13 @@ export async function POST(req: NextRequest) {
   const reference = `SWT-${Date.now()}-${randomBytes(4).toString('hex')}`
   const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${event.slug}/checkout/success?reservation=${reservationId}&type=shows`
 
+  // Store the reference on the reservation so the recovery cron can call
+  // verifyTransaction without having to scan Paystack's transaction list.
+  await db.reservation.update({
+    where: { id: reservationId },
+    data: { paystackReference: reference },
+  })
+
   const result = await paystack.initializeTransaction({
     email: paystackEmail,
     amount: totalAmount,

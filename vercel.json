@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/event-cleanup",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/payment-recovery",
+      "schedule": "*/5 * * * *"
     }
   ],
   "headers": [

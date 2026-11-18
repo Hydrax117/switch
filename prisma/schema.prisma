@@ -693,6 +693,10 @@ model Reservation {
   gaHolds         Json?
   /// FK to waitlist entry that triggered this reservation (nullable)
   waitlistEntryId String? @unique
+  /// Paystack payment reference — stored at initialization so the recovery
+  /// job can call verifyTransaction without scanning Paystack's API.
+  /// Null for free orders (no Paystack transaction) and RSVP reservations.
+  paystackReference String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

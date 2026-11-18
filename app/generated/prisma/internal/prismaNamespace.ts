@@ -3691,6 +3691,7 @@ export const ReservationScalarFieldEnum = {
   expiresAt: 'expiresAt',
   gaHolds: 'gaHolds',
   waitlistEntryId: 'waitlistEntryId',
+  paystackReference: 'paystackReference',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
