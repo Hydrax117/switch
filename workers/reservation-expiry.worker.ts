@@ -4,8 +4,10 @@
  * Processes jobs from the "reservation-expiry" BullMQ queue.
  * Fires when a reservation's hold window expires.
  *
- * If the reservation is still ACTIVE at that point it means the user
- * abandoned checkout without completing payment. We:
+ * First checks whether the user actually paid (Paystack verification).
+ * If they did, the order is confirmed and the job exits — no expiry.
+ *
+ * If no payment was made, we:
  *   1. Set Reservation status → EXPIRED
  *   2. Release all HELD EventSeats back to AVAILABLE
  *   3. Write an AuditLog entry for the reservation + each released seat
@@ -43,10 +45,9 @@ export function createReservationExpiryWorker(redisUrl: string) {
 
       // Dynamic imports — avoid loading Prisma/app code at worker bootstrap time
       const { db } = await import('@/lib/db')
-      const { ReservationStatus, EventSeatStatus, AuditEntityType, AuditAction } = await import(
-        '@/app/generated/prisma/client'
-      )
-      const { releaseAllSeatLocks, releaseGaHold, releaseSlotHold } = await import('@/lib/redis')
+      const { ReservationStatus, EventSeatStatus, AuditEntityType, AuditAction } =
+        await import('@/app/generated/prisma/client')
+      const { releaseAllSeatLocks, releaseGaHold } = await import('@/lib/redis')
       const { writeAuditLog } = await import('@/lib/audit')
       const { advanceWaitlist } = await import('@/features/waitlist/actions')
       const { sendReservationExpired } = await import('@/lib/email')
@@ -60,6 +61,7 @@ export function createReservationExpiryWorker(redisUrl: string) {
           eventId: true,
           userId: true,
           gaHolds: true,
+          paystackReference: true,
           eventSeats: {
             select: {
               id: true,
@@ -97,11 +99,42 @@ export function createReservationExpiryWorker(redisUrl: string) {
         return
       }
 
-      const heldSeats = reservation.eventSeats.filter(
-        (s) => s.status === EventSeatStatus.HELD
-      )
+      // ── 3. Payment recovery check ─────────────────────────────────────────
+      // Before expiring, verify with Paystack whether the user actually paid.
+      // The webhook may have failed (308 redirect, timeout, etc.) even though
+      // the charge succeeded. If so, confirm the order now instead of expiring.
+      if (reservation.paystackReference) {
+        try {
+          const { paystack } = await import('@/lib/paystack')
+          const verified = await paystack.verifyTransaction(reservation.paystackReference)
 
-      // ── 3. DB transaction — atomically expire reservation and release seats ─
+          if (verified.status === 'success') {
+            const { confirmCharge } = await import('@/lib/confirm-charge')
+            const result = await confirmCharge(verified)
+            console.log(
+              `[ReservationExpiry] Payment recovery for ${reservationId}: ${result.status}`,
+              result.status !== 'confirmed' ? result.reason : ''
+            )
+            // Whether we confirmed or the order was already there, do not expire
+            return
+          }
+
+          console.log(
+            `[ReservationExpiry] Paystack status=${verified.status} for ${reservationId} — proceeding with expiry`
+          )
+        } catch (err) {
+          // Paystack API unreachable — proceed with expiry rather than leaving
+          // the reservation stuck in ACTIVE indefinitely.
+          console.error(
+            `[ReservationExpiry] verifyTransaction failed for ${reservationId}, expiring anyway:`,
+            err
+          )
+        }
+      }
+
+      const heldSeats = reservation.eventSeats.filter((s) => s.status === EventSeatStatus.HELD)
+
+      // ── 4. DB transaction — atomically expire reservation and release seats ─
       await db.$transaction(async (tx) => {
         // Set Reservation → EXPIRED
         await tx.reservation.update({
@@ -155,37 +188,32 @@ export function createReservationExpiryWorker(redisUrl: string) {
         `[ReservationExpiry] Reservation ${reservationId} expired; ${heldSeats.length} seat(s) released`
       )
 
-      // ── 4. Release Redis locks (outside transaction — best-effort) ──────────
+      // ── 5. Release Redis locks (outside transaction — best-effort) ──────────
 
-      // Seat-based locks
       if (heldSeats.length > 0) {
         const seatIds = heldSeats.map((s) => s.id)
         releaseAllSeatLocks(reservation.eventId, seatIds, reservation.userId).catch((err) => {
-          console.error(`[ReservationExpiry] Failed to release seat locks for ${reservationId}:`, err)
+          console.error(
+            `[ReservationExpiry] Failed to release seat locks for ${reservationId}:`,
+            err
+          )
         })
       }
 
-      // GA holds from gaHolds JSON: { [ticketTypeId]: quantity }
+      // GA / slot holds from gaHolds JSON: { "[timeSlotId]:[ticketTypeId]" | ticketTypeId: quantity }
       const gaHolds = reservation.gaHolds as Record<string, number> | null
       if (gaHolds && typeof gaHolds === 'object') {
-        for (const ticketTypeId of Object.keys(gaHolds)) {
-          releaseGaHold(reservation.eventId, ticketTypeId, reservation.userId).catch((err) => {
+        for (const holdKey of Object.keys(gaHolds)) {
+          releaseGaHold(reservation.eventId, holdKey, reservation.userId).catch((err) => {
             console.error(
-              `[ReservationExpiry] Failed to release GA hold ${ticketTypeId} for ${reservationId}:`,
+              `[ReservationExpiry] Failed to release hold ${holdKey} for ${reservationId}:`,
               err
             )
           })
         }
       }
 
-      // Time-slot holds — reservations with a single gaHolds entry that map to a timeSlotId
-      // releaseSlotHold is called when the reservation used a slot hold key
-      // (time-slot reservations store the hold under the userId; release it here)
-      // Note: slot holds use slotHoldKey(timeSlotId, userId). The timeSlotId is not stored
-      // directly on the reservation, so we attempt a best-effort release via GA holds key
-      // which covers the GA and slot paths consistently.
-
-      // ── 5. Advance waitlist for each ticketTypeId in gaHolds ────────────────
+      // ── 6. Advance waitlist for each ticketTypeId in gaHolds ────────────────
       if (gaHolds && typeof gaHolds === 'object') {
         for (const [ticketTypeId, qty] of Object.entries(gaHolds)) {
           advanceWaitlist({ ticketTypeId, releasedQty: qty }).catch((err) => {
@@ -197,7 +225,7 @@ export function createReservationExpiryWorker(redisUrl: string) {
         }
       }
 
-      // ── 6. Send reservation-expired email (non-blocking) ───────────────────
+      // ── 7. Send reservation-expired email (non-blocking) ───────────────────
       if (reservation.user && reservation.event) {
         sendReservationExpired({
           toEmail: reservation.user.email,
