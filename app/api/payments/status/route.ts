@@ -12,11 +12,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/session'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30
+
 export async function GET(req: NextRequest) {
   const session = await getSession()
 
   const reservationId = req.nextUrl.searchParams.get('reservation')
-  const type          = req.nextUrl.searchParams.get('type') // 'ga' | 'shows' | null
+  const type = req.nextUrl.searchParams.get('type') // 'ga' | 'shows' | null
 
   if (!reservationId) {
     return NextResponse.json({ error: 'reservation param required' }, { status: 400 })
@@ -25,27 +28,27 @@ export async function GET(req: NextRequest) {
   const reservation = await db.reservation.findUnique({
     where: { id: reservationId },
     select: {
-      userId:    true,
-      status:    true,
+      userId: true,
+      status: true,
       expiresAt: true,
       createdAt: true,
-      eventId:   true,
+      eventId: true,
       event: {
         select: {
-          title:    true,
-          slug:     true,
+          title: true,
+          slug: true,
           imageUrl: true,
           startsAt: true,
-          endsAt:   true,
+          endsAt: true,
           venue: { select: { name: true, city: true, state: true } },
         },
       },
       eventSeats: {
         select: {
-          id:    true,
+          id: true,
           price: true,
           tickets: { select: { id: true, ticketNumber: true } },
-          seat:    { select: { label: true } },
+          seat: { select: { label: true } },
           ticketType: { select: { name: true, currency: true } },
         },
       },
@@ -76,25 +79,25 @@ export async function GET(req: NextRequest) {
   }
 
   const event = {
-    title:    reservation.event.title,
-    slug:     reservation.event.slug,
+    title: reservation.event.title,
+    slug: reservation.event.slug,
     imageUrl: reservation.event.imageUrl,
     startsAt: reservation.event.startsAt,
-    endsAt:   reservation.event.endsAt ?? null,
-    venue:    reservation.event.venue ?? null,
+    endsAt: reservation.event.endsAt ?? null,
+    venue: reservation.event.venue ?? null,
   }
 
   // ── Shows (time-slot) order ───────────────────────────────────────────────
   if (type === 'shows') {
     // Fetch tickets issued for this reservation via the order link
     interface ShowTicketRow {
-      ticketId:      string
-      ticketNumber:  string
-      ticketTypeId:  string
+      ticketId: string
+      ticketNumber: string
+      ticketTypeId: string
       ticketTypeName: string
-      price:         number
-      currency:      string
-      slotLabel:     string
+      price: number
+      currency: string
+      slotLabel: string
     }
 
     const rows: ShowTicketRow[] = await db.$queryRaw`
@@ -120,7 +123,13 @@ export async function GET(req: NextRequest) {
     // Group by slotLabel + ticketTypeName for display
     const groupMap: Record<
       string,
-      { ticketTypeId: string; name: string; price: number; currency: string; tickets: { id: string; ticketNumber: string }[] }
+      {
+        ticketTypeId: string
+        name: string
+        price: number
+        currency: string
+        tickets: { id: string; ticketNumber: string }[]
+      }
     > = {}
 
     for (const row of rows) {
@@ -132,19 +141,19 @@ export async function GET(req: NextRequest) {
       if (!groupMap[key]) {
         groupMap[key] = {
           ticketTypeId: row.ticketTypeId,
-          name:         displayName,
-          price:        row.price,
-          currency:     row.currency,
-          tickets:      [],
+          name: displayName,
+          price: row.price,
+          currency: row.currency,
+          tickets: [],
         }
       }
       groupMap[key]!.tickets.push({ id: row.ticketId, ticketNumber: row.ticketNumber })
     }
 
-    const gaTicketGroups  = Object.values(groupMap)
+    const gaTicketGroups = Object.values(groupMap)
     const totalTicketCount = rows.length
-    const totalPaid        = rows.reduce((s, r) => s + r.price, 0)
-    const currency         = rows[0]?.currency ?? 'NGN'
+    const totalPaid = rows.reduce((s, r) => s + r.price, 0)
+    const currency = rows[0]?.currency ?? 'NGN'
 
     return NextResponse.json({
       status: 'COMPLETED',
@@ -161,40 +170,46 @@ export async function GET(req: NextRequest) {
   if (type === 'ga') {
     const gaTickets = await db.ticket.findMany({
       where: {
-        eventId:  reservation.eventId,
-        userId:   ownerUserId,
+        eventId: reservation.eventId,
+        userId: ownerUserId,
         issuedAt: { gte: reservation.createdAt },
       },
       select: {
-        id:          true,
+        id: true,
         ticketNumber: true,
-        ticketType:  { select: { id: true, name: true, price: true, currency: true } },
+        ticketType: { select: { id: true, name: true, price: true, currency: true } },
       },
       orderBy: { issuedAt: 'asc' },
     })
 
     const groupMap: Record<
       string,
-      { ticketTypeId: string; name: string; price: number; currency: string; tickets: { id: string; ticketNumber: string }[] }
+      {
+        ticketTypeId: string
+        name: string
+        price: number
+        currency: string
+        tickets: { id: string; ticketNumber: string }[]
+      }
     > = {}
     for (const t of gaTickets) {
       const key = t.ticketType.id
       if (!groupMap[key]) {
         groupMap[key] = {
           ticketTypeId: key,
-          name:         t.ticketType.name,
-          price:        t.ticketType.price,
-          currency:     t.ticketType.currency,
-          tickets:      [],
+          name: t.ticketType.name,
+          price: t.ticketType.price,
+          currency: t.ticketType.currency,
+          tickets: [],
         }
       }
       groupMap[key]!.tickets.push({ id: t.id, ticketNumber: t.ticketNumber })
     }
 
-    const gaTicketGroups   = Object.values(groupMap)
+    const gaTicketGroups = Object.values(groupMap)
     const totalTicketCount = gaTickets.length
-    const totalPaid        = gaTickets.reduce((s, t) => s + t.ticketType.price, 0)
-    const currency         = gaTickets[0]?.ticketType.currency ?? 'NGN'
+    const totalPaid = gaTickets.reduce((s, t) => s + t.ticketType.price, 0)
+    const currency = gaTickets[0]?.ticketType.currency ?? 'NGN'
 
     return NextResponse.json({
       status: 'COMPLETED',
@@ -209,17 +224,17 @@ export async function GET(req: NextRequest) {
 
   // ── Reserved seating order ────────────────────────────────────────────────
   const reservedTickets = reservation.eventSeats.map((es) => ({
-    id:             es.tickets[0]?.id ?? es.id,
-    ticketNumber:   es.tickets[0]?.ticketNumber ?? '—',
+    id: es.tickets[0]?.id ?? es.id,
+    ticketNumber: es.tickets[0]?.ticketNumber ?? '—',
     ticketTypeName: es.ticketType?.name ?? 'Ticket',
-    seatLabel:      es.seat?.label ?? null,
-    price:          es.price,
-    currency:       es.ticketType?.currency ?? 'NGN',
+    seatLabel: es.seat?.label ?? null,
+    price: es.price,
+    currency: es.ticketType?.currency ?? 'NGN',
   }))
 
   const totalTicketCount = reservedTickets.length
-  const totalPaid        = reservedTickets.reduce((s, t) => s + t.price, 0)
-  const currency         = reservedTickets[0]?.currency ?? 'NGN'
+  const totalPaid = reservedTickets.reduce((s, t) => s + t.price, 0)
+  const currency = reservedTickets[0]?.currency ?? 'NGN'
 
   return NextResponse.json({
     status: 'COMPLETED',

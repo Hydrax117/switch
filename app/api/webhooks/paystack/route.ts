@@ -25,6 +25,8 @@ import {
 } from '@/app/generated/prisma/client'
 import { randomBytes } from 'crypto'
 
+export const maxDuration = 60
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function generateTicketNumber(): string {
