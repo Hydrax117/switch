@@ -55,6 +55,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  // Log the full metadata so we can see exactly what Paystack sends back
+  if (event.event === 'charge.success') {
+    const meta = (event.data?.metadata ?? {}) as Record<string, unknown>
+    console.log('[webhook/paystack] charge.success received', {
+      reference: event.data?.reference,
+      amount: event.data?.amount,
+      reservationId: meta.reservationId,
+      userId: meta.userId,
+      isGuest: meta.isGuest,
+      slotSelectionsType: typeof meta.slotSelections,
+      slotSelectionsRaw: JSON.stringify(meta.slotSelections)?.slice(0, 300),
+      gaSelectionsType: typeof meta.gaSelections,
+      metadataKeys: Object.keys(meta),
+    })
+  }
+
   try {
     if (event.event === 'charge.success') {
       await handleChargeSuccess(event.data)
@@ -100,7 +116,29 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
   const paystackTransactionId = String(data.id)
   const amountPaid = data.amount as number
 
-  const meta = (data.metadata ?? {}) as Record<string, unknown>
+  // ── Re-verify via Paystack API to get the full, unmangled metadata ──────────
+  // Paystack can strip or stringify nested arrays/objects in the webhook payload.
+  // Calling verifyTransaction gives us the authoritative metadata exactly as sent.
+  let meta: Record<string, unknown>
+  try {
+    const verified = await paystack.verifyTransaction(reference)
+    if (verified.status !== 'success') {
+      console.error('[webhook/paystack] Transaction not successful on verify', {
+        reference,
+        status: verified.status,
+      })
+      return
+    }
+    meta = (verified.metadata ?? {}) as Record<string, unknown>
+    console.log('[webhook/paystack] verified metadata keys:', Object.keys(meta))
+  } catch (err) {
+    console.error('[webhook/paystack] verifyTransaction failed, falling back to webhook payload', {
+      reference,
+      err,
+    })
+    // Fall back to webhook payload metadata if verify call fails
+    meta = (data.metadata ?? {}) as Record<string, unknown>
+  }
 
   // ── Idempotency ───────────────────────────────────────────────────────────
   const reservationId = meta.reservationId as string | undefined
@@ -139,7 +177,10 @@ async function handleChargeSuccess(data: Record<string, unknown>) {
   const discountAmount = typeof meta.discountAmount === 'number' ? meta.discountAmount : 0
 
   if (!reservationId || !userId) {
-    console.error('[webhook/paystack] Missing metadata on charge', { reference })
+    console.error('[webhook/paystack] Missing metadata on charge', {
+      reference,
+      metadataKeys: Object.keys(meta),
+    })
     return
   }
 
